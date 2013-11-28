@@ -22,13 +22,19 @@ import static eu.hydrologis.geopaparazzi.util.Constants.PREF_KEY_SERVER;
 import static eu.hydrologis.geopaparazzi.util.Constants.PREF_KEY_USER;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.TreeSet;
+
+import jsqlite.Database;
+import jsqlite.Stmt;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -41,6 +47,9 @@ import eu.geopaparazzi.library.util.ResourcesManager;
 import eu.geopaparazzi.library.util.Utilities;
 import eu.geopaparazzi.library.util.activities.DirectoryBrowserActivity;
 import eu.geopaparazzi.library.webproject.WebProjectsListActivity;
+import eu.geopaparazzi.spatialite.database.spatial.SpatialDatabasesManager;
+import eu.geopaparazzi.spatialite.database.spatial.core.ISpatialDatabaseHandler;
+import eu.geopaparazzi.spatialite.database.spatial.core.SpatialiteDatabaseHandler;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DaoBookmarks;
 
@@ -55,11 +64,21 @@ public class ImportActivity extends Activity {
         super.onCreate(icicle);
         setContentView(R.layout.imports);
 
-        ImageButton gpxExportButton = (ImageButton) findViewById(R.id.gpxImportButton);
-        gpxExportButton.setOnClickListener(new Button.OnClickListener(){
+        ImageButton gpxImportButton = (ImageButton) findViewById(R.id.gpxImportButton);
+        gpxImportButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
                 try {
                     importGpx();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        ImageButton shpImportButton = (ImageButton) findViewById(R.id.shpImportButton);
+        shpImportButton.setOnClickListener(new Button.OnClickListener(){
+            public void onClick( View v ) {
+                try {
+                    importShp();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -163,6 +182,54 @@ public class ImportActivity extends Activity {
         browseIntent.putExtra(DirectoryBrowserActivity.EXTENTION, ".gpx"); //$NON-NLS-1$
         startActivity(browseIntent);
         finish();
+    }
+
+    private void importShp() throws Exception {
+        AssetManager assetManager = this.getAssets();
+        InputStream inputStream = assetManager.open("empty_db.sqlite");
+
+        File sdcardDir = ResourcesManager.getInstance(this).getSdcardDir();
+        File mapsDir = ResourcesManager.getInstance(this).getMapsDir();
+
+        String dbName = "naturalearth.sqlite";
+        File outDbFile = new File(mapsDir, dbName);
+        FileUtilities.copyFile(inputStream, new FileOutputStream(outDbFile));
+
+        String shp1RelPath = "shps/10m_admin_0_countries";
+        File shp1File = new File(sdcardDir, shp1RelPath);
+        String shp1Path = shp1File.getAbsolutePath();
+        String shp1Name = shp1File.getName();
+
+        Database db_java = new jsqlite.Database();
+        db_java.open(outDbFile.getAbsolutePath(), jsqlite.Constants.SQLITE_OPEN_READWRITE);
+
+        // CREATE VIRTUAL TABLE roads using virtualshape('/sdcard/maps/roads',CP1252,3857);
+        String query1 = "CREATE VIRTUAL TABLE roads using virtualshape('" + shp1Path + "',CP1252,3857);";
+        // select RegisterVirtualGeometry('roads');
+        String query2 = "select RegisterVirtualGeometry('" + shp1Name + "');";
+        // create table myroads as select * from roads;
+        String newShp1Name = shp1Name + "_gp";
+        String query3 = "create table " + newShp1Name + " as select * from " + shp1Name + ";";
+        // select recovergeometrycolumn('myroads','Geometry',3857,'LINESTRING')
+        String query4 = "select recovergeometrycolumn('" + newShp1Name + "','Geometry',3857,'POLYGON')";
+        // select CreateSpatialIndex('myroads','Geometry');
+        String query5 = "select CreateSpatialIndex('" + newShp1Name + "','Geometry');";
+
+        execStatement(db_java, query1);
+        execStatement(db_java, query2);
+        execStatement(db_java, query3);
+        execStatement(db_java, query4);
+        execStatement(db_java, query5);
+
+        SpatialDatabasesManager.reset();
+        SpatialDatabasesManager.getInstance().init(this, null);
+
+    }
+
+    private void execStatement( Database db_java, String query1 ) throws jsqlite.Exception {
+        Stmt stmt = db_java.prepare(query1);
+        stmt.step();
+        stmt.close();
     }
 
 }
