@@ -37,6 +37,7 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -195,34 +196,52 @@ public class ImportActivity extends Activity {
         File outDbFile = new File(mapsDir, dbName);
         FileUtilities.copyFile(inputStream, new FileOutputStream(outDbFile));
 
-        String shp1RelPath = "shps/10m_admin_0_countries";
+        String shp1RelPath = "shps/110m_populated_places";
         File shp1File = new File(sdcardDir, shp1RelPath);
+        File shp1FileReal = new File(sdcardDir, shp1RelPath + ".shp");
+        if (!shp1FileReal.exists()) {
+            System.out.println();
+        }
         String shp1Path = shp1File.getAbsolutePath();
-        String shp1Name = shp1File.getName();
+        String shp1Name = "TEST" + shp1File.getName();
+        shp1Name = shp1Name.toLowerCase();
 
         Database db_java = new jsqlite.Database();
         db_java.open(outDbFile.getAbsolutePath(), jsqlite.Constants.SQLITE_OPEN_READWRITE);
 
+        String query0 = "DROP TABLE " + shp1Name + ";";
         // CREATE VIRTUAL TABLE roads using virtualshape('/sdcard/maps/roads',CP1252,3857);
-        String query1 = "CREATE VIRTUAL TABLE roads using virtualshape('" + shp1Path + "',CP1252,3857);";
+        String query1 = "CREATE VIRTUAL TABLE " + shp1Name + " using virtualshape('" + shp1Path + "',CP1252,3857);";
         // select RegisterVirtualGeometry('roads');
         String query2 = "select RegisterVirtualGeometry('" + shp1Name + "');";
         // create table myroads as select * from roads;
         String newShp1Name = shp1Name + "_gp";
         String query3 = "create table " + newShp1Name + " as select * from " + shp1Name + ";";
         // select recovergeometrycolumn('myroads','Geometry',3857,'LINESTRING')
-        String query4 = "select recovergeometrycolumn('" + newShp1Name + "','Geometry',3857,'POLYGON')";
+        String geomName = "the_geom";
+        String query4 = "select recovergeometrycolumn('" + newShp1Name + "','" + geomName + "',3857,'POINT')";
         // select CreateSpatialIndex('myroads','Geometry');
-        String query5 = "select CreateSpatialIndex('" + newShp1Name + "','Geometry');";
+        String query5 = "select CreateSpatialIndex('" + newShp1Name + "','" + geomName + "');";
 
+        try {
+            Log.i("IMPORT", query0);
+            execStatement(db_java, query0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.i("IMPORT", query1);
         execStatement(db_java, query1);
+        Log.i("IMPORT", query2);
         execStatement(db_java, query2);
+        Log.i("IMPORT", query3);
         execStatement(db_java, query3);
+        Log.i("IMPORT", query4);
         execStatement(db_java, query4);
+        Log.i("IMPORT", query5);
         execStatement(db_java, query5);
 
         SpatialDatabasesManager.reset();
-        SpatialDatabasesManager.getInstance().init(this, null);
+        SpatialDatabasesManager.getInstance().init(this, mapsDir);
 
     }
 

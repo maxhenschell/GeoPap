@@ -139,6 +139,7 @@ public class Database {
      * Destructor for object.
      */
 
+    @Override
     protected void finalize() {
 	synchronized(this) {
 	    _finalize();
@@ -492,7 +493,7 @@ public class Database {
      * above, otherwise a no-op.
      *
      * @param name the name of the function whose return type is to be set
-     * @param type return type code, e.g. jsqlite.Constants.SQLITE_NUMERIC
+     * @param type return type code, e.g. SQLite.Constants.SQLITE_NUMERIC
      */
 
     public void function_type(String name, int type) {
@@ -918,7 +919,7 @@ public class Database {
 	    double d = Double.valueOf(s).doubleValue();
 	    return long_from_julian(d);
 	} catch (java.lang.Exception ee) {
-	    throw new jsqlite.Exception("not a julian date: " + s + ": " + ee);
+	    throw new jsqlite.Exception("not a julian date");
 	}
     }
 
@@ -935,15 +936,14 @@ public class Database {
 	return d;
     }
 
-    public native void spatialite_create();
-    
     /**
      * Static initializer to load the native part.
      */
 
     static {
 	try {
-		System.loadLibrary("jsqlite");
+	    System.loadLibrary("proj");
+	    System.loadLibrary("jsqlite");
 	} catch (Throwable t) {
 	    System.err.println("Unable to load sqlite_jni: " + t);
 	}

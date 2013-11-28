@@ -1514,7 +1514,7 @@ public class SpatialiteDatabaseHandler implements ISpatialDatabaseHandler {
             while( stmt.step() ) {
                 int column_count = stmt.column_count();
                 for( int i = 0; i < column_count; i++ ) {
-                    String cName = stmt.column_name(i);
+                    String cName = stmt.column_origin_name(i);
                     if (cName.equalsIgnoreCase(spatialTable.getGeomName())) {
                         continue;
                     }
@@ -1579,7 +1579,7 @@ public class SpatialiteDatabaseHandler implements ISpatialDatabaseHandler {
             while( stmt.step() ) {
                 int column_count = stmt.column_count();
                 for( int i = 0; i < column_count; i++ ) {
-                    String cName = stmt.column_name(i);
+                    String cName = stmt.column_origin_name(i);
                     if (cName.equalsIgnoreCase(spatialTable.getGeomName())) {
                         continue;
                     }

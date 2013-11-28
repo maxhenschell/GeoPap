@@ -8,11 +8,11 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 /**
- * SQLite command line shell. This is a partial reimplementation
+ * SQLite command line shell. This is a partial reimplementaion
  * of sqlite/src/shell.c and can be invoked by:<P>
  *
  * <verb>
- *     java jsqlite.Shell [OPTIONS] database [SHELLCMD]
+ *     java SQLite.Shell [OPTIONS] database [SHELLCMD]
  * or
  *     java -jar sqlite.jar [OPTIONS] database [SHELLCMD]
  * </verb>
@@ -50,6 +50,7 @@ public class Shell implements Callback {
 	err = new PrintWriter(errs);
     }
 
+    @Override
     protected Object clone() {
         Shell s = new Shell(this.pw, this.err);
 	s.db = db;
@@ -147,7 +148,7 @@ public class Shell implements Callback {
 
     static boolean is_numeric(String str) {
 	try {
-	    Double d = Double.valueOf(str);
+	    Double.valueOf(str);
 	} catch (java.lang.Exception e) {
 	    return false;
 	}
@@ -166,14 +167,17 @@ public class Shell implements Callback {
 	}
     }
 
+    //@Override
     public void columns(String args[]) {
 	cols = args;
     }
 
+    //@Override
     public void types(String args[]) {
-	/* Empty body to satisfy jsqlite.Callback interface. */
+	/* Empty body to satisfy SQLite.Callback interface. */
     }
 
+    //@Override
     public boolean newrow(String args[]) {
 	int i;
 	String tname;
@@ -571,8 +575,7 @@ public class Shell implements Callback {
 	    System.exit(1);
 	}
 	try {
-	    s.db.open(dbname, jsqlite.Constants.SQLITE_OPEN_READWRITE |
-		      jsqlite.Constants.SQLITE_OPEN_CREATE);
+	    s.db.open(dbname, 0);
 	} catch (Exception e) {
 	    System.err.println("Unable to open database: " + e);
 	    System.exit(1);
@@ -643,11 +646,11 @@ class DBDump implements Callback {
     }
 
     public void columns(String col[]) {
-	/* Empty body to satisfy jsqlite.Callback interface. */
+	/* Empty body to satisfy SQLite.Callback interface. */
     }
 
     public void types(String args[]) {
-	/* Empty body to satisfy jsqlite.Callback interface. */
+	/* Empty body to satisfy SQLite.Callback interface. */
     }
 
     public boolean newrow(String args[]) {

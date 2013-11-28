@@ -57,7 +57,7 @@ public class Stmt {
      *         ...
      *       }
      *     }
-     *   } catch (jsqlite.Exception e) {
+     *   } catch (SQLite.Exception e) {
      *     s.close();
      *   }
      * </PRE>
@@ -207,7 +207,7 @@ public class Stmt {
     /**
      * Retrieve column type from exec'ed SQLite3 statement.
      * @param col column number, 0-based
-     * @return column type code, e.g. jsqlite.Constants.SQLITE_INTEGER
+     * @return column type code, e.g. SQLite.Constants.SQLITE_INTEGER
      */
     public native int column_type(int col) throws jsqlite.Exception;
 
@@ -261,14 +261,6 @@ public class Stmt {
      */
 
     public native String column_decltype(int col) throws jsqlite.Exception;
-
-    /**
-     * Return column name of column of SQLite3 statement.
-     * @param col column number, 0-based
-     * @return String or null
-     */
-
-    public native String column_name(int col) throws jsqlite.Exception;
 
     /**
      * Return origin column name of column of SQLite3 statement.

@@ -27,7 +27,7 @@ public class SQLRestore {
 	    } catch (EOFException e) {
 		line = null;
 	    } catch (IOException e) {
-		throw new jsqlite.Exception("I/O error: " + e);
+		throw new jsqlite.Exception("I/O error");
 	    }
 	    if (line == null) {
 		break;

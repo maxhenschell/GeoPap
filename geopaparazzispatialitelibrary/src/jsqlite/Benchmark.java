@@ -10,6 +10,7 @@
 package jsqlite;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public abstract class Benchmark {
+public class Benchmark {
 
     /* the tps scaling factor: here it is 1 */
     public static int tps = 1;
@@ -55,8 +56,8 @@ public abstract class Benchmark {
      *  runs one TPC BM B transaction
      */
 
-    public void run(String[] args) {
-        String DriverName = "";
+    public static void main(String[] args) {
+	String DriverName = "SQLite.JDBCDriver";
 	String DBUrl = "";
 	String DBUser = "";
 	String DBPassword = "";
@@ -107,19 +108,13 @@ public abstract class Benchmark {
 
 	if (DriverName.length() == 0 || DBUrl.length() == 0) {
 	    System.out.println("JDBC based benchmark program\n\n" +
-			       "JRE usage:\n\njava jsqlite.BenchmarkDriver " +
+			       "usage:\n\njava SQLite.Benchmark " +
 			       "-url [url_to_db] \\\n    " +
 			       "[-user [username]] " +
 			       "[-password [password]] " +
 			       "[-driver [driver_class_name]] \\\n    " +
 			       "[-v] [-init] [-tpc N] [-tps N] " +
-			       "[-clients N]\n");
-	    System.out.println("OJEC usage:\n\ncvm jsqlite.BenchmarkDataSource " +
-			       "[-user [username]] " +
-			       "[-password [password]] " +
-			       "[-driver [driver_class_name]] \\\n    " +
-			       "[-v] [-init] [-tpc N] [-tps N] " +
-			       "[-clients N]\n");
+			       "[-clients N]");
 	    System.out.println();
 	    System.out.println("-v          verbose mode");
 	    System.out.println("-init       initialize the tables");
@@ -127,7 +122,7 @@ public abstract class Benchmark {
 	    System.out.println("-tps N      scale factor");
 	    System.out.println("-clients N  number of simultaneous clients/threads");
 	    System.out.println();
-	    System.out.println("Default driver class is jsqlite.JDBCDriver");
+	    System.out.println("Default driver class is SQLite.JDBCDriver");
 	    System.out.println("in this case use an -url parameter of the form");
 	    System.out.println("  jdbc:sqlite:/[path]");
 	    System.exit(1);
@@ -143,17 +138,19 @@ public abstract class Benchmark {
 	System.out.println();
 
 	try {
-	    benchmark(DBUrl, DBUser, DBPassword, initialize_dataset);
+	    Class.forName(DriverName);
+
+		new Benchmark(DBUrl, DBUser, DBPassword, initialize_dataset);
 	} catch (java.lang.Exception e) {
 	    System.out.println(e.getMessage());
 	    e.printStackTrace();
 	}
     }
 
-    public void benchmark(String url, String user, String password, boolean init) {
-	Vector vClient = new Vector();
+    public Benchmark(String url, String user, String password, boolean init) {
+	Vector<Thread> vClient = new Vector<Thread>();
 	Thread Client = null;
-	Enumeration en = null;
+	Enumeration<Thread> en = null;
 	try {
 	    if (init) {
 		System.out.print("Initializing dataset...");
@@ -178,12 +175,12 @@ public abstract class Benchmark {
 	     */
 	    en = vClient.elements();
 	    while (en.hasMoreElements()) {
-		Client = (Thread) en.nextElement();
+		Client = en.nextElement();
 		Client.join();
 	    }
 	    vClient.removeAllElements();
 	    reportDone();
-        
+
 	    transactions = true;
 	    prepared_stmt = false;
 	    start_time = System.currentTimeMillis();
@@ -193,18 +190,18 @@ public abstract class Benchmark {
 		Client.start();
 		vClient.addElement(Client);
 	    }
- 
+
 	    /*
 	     * Barrier to complete this test session
 	     */
 	    en = vClient.elements();
 	    while (en.hasMoreElements()) {
-		Client = (Thread) en.nextElement();
+		Client = en.nextElement();
 		Client.join();
 	    }
 	    vClient.removeAllElements();
 	    reportDone();
- 
+
 	    transactions = false;
 	    prepared_stmt = true;
 	    start_time = System.currentTimeMillis();
@@ -218,10 +215,10 @@ public abstract class Benchmark {
 	    /*
 	     * Barrier to complete this test session
 	     */
-        
+
 	    en = vClient.elements();
 	    while (en.hasMoreElements()) {
-		Client = (Thread) en.nextElement();
+		Client = en.nextElement();
 		Client.join();
 	    }
 	    vClient.removeAllElements();
@@ -236,13 +233,13 @@ public abstract class Benchmark {
 		Client.start();
 		vClient.addElement(Client);
 	    }
- 
+
 	    /*
 	     * Barrier to complete this test session
 	     */
 	    en = vClient.elements();
 	    while (en.hasMoreElements()) {
-		Client = (Thread) en.nextElement();
+		Client = en.nextElement();
 		Client.join();
 	    }
 	    vClient.removeAllElements();
@@ -565,8 +562,18 @@ public abstract class Benchmark {
 	return (getRandomInt(min, max));
     }
 
-    public abstract Connection connect(String DBUrl, String DBUser,
-				     String DBPassword);
+    public static Connection connect(String DBUrl, String DBUser,
+				     String DBPassword) {
+	try {
+	    Connection conn =
+		DriverManager.getConnection(DBUrl, DBUser, DBPassword);
+	    return conn;
+	} catch (java.lang.Exception e) {
+	    System.out.println(e.getMessage());
+	    e.printStackTrace();
+	}
+	return null;
+    }
 
     public static void connectClose(Connection c) {
 	if (c == null) {
@@ -598,7 +605,7 @@ class BenchmarkThread extends Thread {
 			   Benchmark b) {
 	bench = b;
 	ntrans = number_of_txns;
-	Conn = b.connect(url, user, password);
+	Conn = Benchmark.connect(url, user, password);
 	if (Conn == null) {
 	    return;
 	}

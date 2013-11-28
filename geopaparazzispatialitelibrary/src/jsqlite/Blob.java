@@ -1,8 +1,6 @@
 package jsqlite;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Internal class implementing java.io.InputStream on
@@ -267,7 +265,7 @@ public class Blob {
      */
 
     public InputStream getInputStream() {
-	return new BlobR(this);
+	return (InputStream) new BlobR(this);
     }
 
     /**
@@ -276,7 +274,7 @@ public class Blob {
      */
 
     public OutputStream getOutputStream() {
-	return new BlobW(this);
+	return (OutputStream) new BlobW(this);
     }
 
     /**
