@@ -187,6 +187,17 @@ public class ClassNodeInfo<T> {
         }
         return i_rc;
     }
+     // -----------------------------------------------
+     /**
+     * Get Position Values
+     * - strict checking is done, since anything could be sent
+     * -- indended for use with SpatialVectorTable
+     * @return double[] position west,south,east,north,centerX,centerY,minzoom,maxzoom
+     */
+    public double[] getPositionValues()
+    {
+     return new double[]{boundsWest,boundsSouth,boundsEast,boundsNorth,centerX,centerY,(double)minZoom,(double)maxZoom};
+    }
     // -----------------------------------------------
     /**
       * Set Position Values

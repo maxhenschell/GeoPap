@@ -1,11 +1,11 @@
 package eu.geopaparazzi.mapsforge.mapsdirmanager.treeview;
 import eu.geopaparazzi.mapsforge.mapsdirmanager.treeview.ClassNodeInfo;
 /**
- * Information about the node.
- *
- * @param <T>
- *            type of the id for the tree
- */
+* Information about the node.
+*
+* @param <T>
+* type of the id for the tree
+*/
 public class TreeNodeInfo<T> {
     private final T id;
     private final int level;
@@ -15,26 +15,26 @@ public class TreeNodeInfo<T> {
     private final ClassNodeInfo this_classinfo;
 
     /**
-     * Creates the node information.
-     *
-     * @param id
-     *            id of the node
-     * @param level
-     *            level of the node
-     * @param withChildren
-     *            whether the node has children.
-     * @param visible
-     *            whether the tree node is visible.
-     * @param expanded
-     *            whether the tree node is expanded
-     * @param s_short_text
-     *            short text to be shown
-     * @param s_long_text
-     *            long text to be retrieved
-     * @param s_type
-     *            type to be retrieved
-     *
-     */
+* Creates the node information.
+*
+* @param id
+* id of the node
+* @param level
+* level of the node
+* @param withChildren
+* whether the node has children.
+* @param visible
+* whether the tree node is visible.
+* @param expanded
+* whether the tree node is expanded
+* @param s_short_text
+* short text to be shown
+* @param s_long_text
+* long text to be retrieved
+* @param s_type
+* type to be retrieved
+*
+*/
     public TreeNodeInfo(final T id, final int level,
             final boolean withChildren, final boolean visible,
             final boolean expanded,
@@ -90,6 +90,15 @@ public class TreeNodeInfo<T> {
     }
     public int getType() {
         return this_classinfo.getType();
+    }
+    public int getEnabled() {
+        return this_classinfo.getEnabled();
+    }
+    public void setEnabled(int i_enabled) {
+        this_classinfo.setEnabled(i_enabled);
+    }
+    public double[] getPositionValues() {
+        return this_classinfo.getPositionValues();
     }
     @Override
     public String toString() {
