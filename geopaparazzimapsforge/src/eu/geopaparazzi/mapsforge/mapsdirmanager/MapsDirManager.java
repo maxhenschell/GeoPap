@@ -54,6 +54,7 @@ import eu.geopaparazzi.mapsforge.mapsdirmanager.maps.tiles.MapGeneratorInternal;
 import eu.geopaparazzi.mapsforge.mapsdirmanager.maps.tiles.MapTable;
 import eu.geopaparazzi.mapsforge.mapsdirmanager.treeview.ClassNodeInfo;
 import eu.geopaparazzi.mapsforge.mapsdirmanager.treeview.MapsDirTreeViewList;
+import eu.geopaparazzi.mapsforge.mapsdirmanager.treeview.VectorTreeViewList;
 import eu.geopaparazzi.spatialite.database.spatial.SpatialDatabasesManager;
 import eu.geopaparazzi.spatialite.database.spatial.core.SpatialRasterTable;
 import eu.geopaparazzi.spatialite.database.spatial.core.SpatialVectorTable;
@@ -347,6 +348,7 @@ public class MapsDirManager {
                 + "] selected_map[" + s_selected_map + "]");
         // List will be returned sorted as Directory-File with levels set.
         maptype_classes = MapsDirTreeViewList.setMapTypeClasses(maptype_classes, get_maps_dir());
+        vector_classes = VectorTreeViewList.setMapTypeClasses(vector_classes, get_maps_dir());
     }
     // -----------------------------------------------
     /**
