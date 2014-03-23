@@ -78,6 +78,16 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
+        
+        <activity android:name=".maps.FredDataActivity" >
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>            
+          
+        </activity>
+        
         <activity android:name=".maps.GpsDataPropertiesActivity" >
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.GPSLOG_PROPERTIES" />
@@ -269,6 +279,7 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
+        
     </application>
 
 </manifest>

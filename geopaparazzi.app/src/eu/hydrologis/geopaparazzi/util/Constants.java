@@ -279,4 +279,20 @@ public interface Constants {
      * 
      */
     public static final String PREFS_KEY_NOTES_TEXT_SIZE = "PREFS_KEY_NOTES_TEXT_SIZE";
+
+    /*
+     * Fred constants
+     */
+    /**
+     * 
+     */
+    public static final String FRED_KEY_FIELD_LEVEL_ONE = "FRED_KEY_FIELD_LEVEL_ONE";
+    /**
+     * 
+     */
+    public static final String FRED_KEY_FIELD_LEVEL_TWO = "FRED_KEY_FIELD_LEVEL_TWO";
+    /**
+     * 
+     */
+    public static final String FRED_KEY_FIELD_LEVEL_THREE = "FRED_KEY_FIELD_LEVEL_THREE";
 }

@@ -328,6 +328,20 @@ public class MapsActivity extends MapActivity implements GpsManagerListener, OnT
         /*
         * tool buttons
         */
+        ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+        addfreddataButton.setOnClickListener(new Button.OnClickListener(){
+            public void onClick( View v ) {
+                MapViewPosition mapPosition = mapView.getMapPosition();
+                GeoPoint mapCenter = mapPosition.getMapCenter();
+                Intent mapFredIntent = new Intent(MapsActivity.this, FredDataActivity.class);
+                mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+
+                startActivity(mapFredIntent);
+            }
+        });
+
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         addnotebytagButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
