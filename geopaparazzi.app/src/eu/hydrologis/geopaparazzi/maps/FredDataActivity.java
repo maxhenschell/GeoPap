@@ -22,14 +22,17 @@ package eu.hydrologis.geopaparazzi.maps;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.WindowManager;
@@ -72,12 +75,13 @@ public class FredDataActivity extends Activity {
     private List<String> firstIDs; // first level information -- e.g. surveysite
     private List<String> secondIDs; // second level information -- e.g. obspoint
     private static String EXTERNAL_DB = "/mnt/sdcard/FRED/FRED.db";
+    // private static String EXTERNAL_DB = "/FRED/FRED.db";
     private static String FIRST_LEVEL_TABLE = "IPAQ_surveysite";
     private static String COLUMN_FIRST_LEVEL_ID = "Site_ID";
     private static String SECOND_LEVEL_TABLE = "IPAQ_Obspts";
     private static String COLUMN_SECOND_LEVEL_ID = "Obspts_ID";
-    private static String COLUMN_LAT = "utmnorth";
-    private static String COLUMN_LON = "utmeast";
+    private static String COLUMN_LAT = "latitude";
+    private static String COLUMN_LON = "longitude";
     // private static String COLUMN_NOTE = "Comments";
 
     public void onCreate( Bundle icicle ) {
@@ -128,6 +132,9 @@ public class FredDataActivity extends Activity {
 
         // get the data to populate the spinners
         // EXTERNAL_DB = "/mnt/sdcard/FRED/FRED.db";
+
+        final String fullDBPath = Environment.getExternalStorageDirectory().getPath() + "__" + EXTERNAL_DB;
+
         firstIDs = new ArrayList<String>();
         try {
             final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
@@ -137,7 +144,6 @@ public class FredDataActivity extends Activity {
         }
 
         secondIDs = new ArrayList<String>();
-        /*
         try {
             String firstIDsArrayFirstRow = firstIDs.get(0);
             int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
@@ -150,7 +156,6 @@ public class FredDataActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        **/
 
         // Bundle extras = getIntent().getExtras();
         // String levelOne = extras.get(Constants.FRED_KEY_FIELD_LEVEL_ONE);
@@ -200,6 +205,7 @@ public class FredDataActivity extends Activity {
 
                 final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
                 String note = edittextNote.getText().toString();
+                edittextNote.setText(fullDBPath);
 
                 String spinDat = (String) lvlOneSpinner.getSelectedItem();
                 int start = spinDat.indexOf("(") + 1; // the ID should be the second
@@ -209,8 +215,8 @@ public class FredDataActivity extends Activity {
                 start = spinDat.indexOf("(") + 1; // the ID should be the second
                 String SecondIDsID = spinDat.substring(start, spinDat.indexOf(", "));
 
-                String lat = String.format("%.6f", latitude);
-                String lon = String.format("%.6f", longitude);
+                String lat = String.format(Locale.getDefault(), "%.6f", latitude);
+                String lon = String.format(Locale.getDefault(), "%.6f", longitude);
 
                 final SQLiteDatabase sqlDB;
 
@@ -223,28 +229,36 @@ public class FredDataActivity extends Activity {
                 writeDataButton.setChecked(IsWritten);
             }
         });
+        // TODO FIX THIS BUTTON
+        Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
+        returnButton.setOnClickListener(new Button.OnClickListener(){
+            public void onClick( View v ) {
+                Intent intent = new Intent("com.syware.droiddb");
+                intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
+                // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.putExtra("parameter", "FRED"); // this needs work, see description
+                startActivity(intent);
+            }
+        });
 
         lvlOneSpinner = (Spinner) findViewById(R.id.fredfrm_levelonespinner);
-        try {
 
-            ArrayAdapter<String> lvlOneAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, firstIDs);
-            lvlOneAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            lvlOneSpinner.setAdapter(lvlOneAdapter);
-            lvlOneSpinner.setSelection(0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ArrayAdapter<String> lvlOneAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, firstIDs);
+        lvlOneAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        lvlOneSpinner.setAdapter(lvlOneAdapter);
+        lvlOneSpinner.setSelection(0);
 
         lvlTwoSpinner = (Spinner) findViewById(R.id.fredfrm_leveltwospinner);
-        try {
+        // try {
 
-            ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, secondIDs);
-            lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            lvlTwoSpinner.setAdapter(lvlTwoAdapter);
-            lvlTwoSpinner.setSelection(0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, secondIDs);
+        lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        lvlTwoSpinner.setAdapter(lvlTwoAdapter);
+        lvlTwoSpinner.setSelection(0);
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
 
         lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             public void onItemSelected( AdapterView< ? > adapterView, View view, int i, long l ) {
@@ -266,6 +280,16 @@ public class FredDataActivity extends Activity {
         });
 
     }
+
+    // TODO need an onStart() for this activity!!!
+    // TODO need an onPause() for this activity!!!
+    // TODO need an onStop() for this activity!!!
+    // TODO need an onResume() for this activity!!!
+
+    /**
+     * Checks to see whether to draw position from map or from GPS
+     * 
+     */
     private void checkPositionCoordinates() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
@@ -280,6 +304,19 @@ public class FredDataActivity extends Activity {
         }
     }
 
+    /**
+     * Gets a list of values from a table. This sorts descending
+     * by time so the most recently created record appears first
+     * 
+     * @param sqliteDatabase the DB to query
+     * @param tableName the table to query
+     * @param IdCol the ID column to grab
+     * @param NameCol the name column to grab (site name, or other text field)
+     * @param tsCol the time/date column 
+     * @param strWhere if selecting a row, which ID value to select on
+     * 
+     * @throws IOException if a problem
+     */
     private static List<String> getTableIDs( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
             String tsCol, String strWhere ) throws IOException {
 
@@ -364,6 +401,73 @@ public class FredDataActivity extends Activity {
         return true;
     }
 
+    /**
+     * Opens the DroidDB app.
+     * 
+     * 
+     */
+    /*  public static void openDroidDB() {
+          String droidDBAction = "com.syware.droiddb.VIEW";
+          String droidDBPackage = "com.syware.droiddb";
+          boolean hasDroidDB = false;
+          List<PackageInfo> installedPackages = new ArrayList<PackageInfo>();
+
+          if (GPLog.LOG_ABSURD)
+              GPLog.addLogEntry("DroidDB", "Attempt app open ");
+    */
+    // { // try to get the installed packages list. Seems to have troubles over different
+    // versions, so trying them all
+    /*
+      try {
+          installedPackages = context.getPackageManager().getInstalledPackages(0);
+      } catch (Exception e) {
+          // ignore
+      }
+      if (installedPackages.size() == 0)
+          try {
+              installedPackages = context.getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
+          } catch (Exception e) {
+              // ignore
+          }
+    }
+
+    if (installedPackages.size() > 0) {
+      // if a list is available, check if the status gps is installed
+      for( PackageInfo packageInfo : installedPackages ) {
+          String packageName = packageInfo.packageName;
+          if (GPLog.LOG_ABSURD)
+              GPLog.addLogEntry("FRED", packageName);
+          if (packageName.startsWith(droidDBPackage)) {
+              hasDroidDB = true;
+              if (GPLog.LOG_ABSURD)
+                  GPLog.addLogEntry("ACTIONBAR", "Found package: " + packageName);
+              break;
+          }
+      }
+    } else {
+    */
+    /*
+      * if no package list is available, for now try to fire it up anyways.
+      * This has been a problem for a user on droidx with android 2.2.1.
+      */
+    /*     hasDroidDB = true;
+     }
+
+     if (hasDroidDB) {
+         Intent intent = new Intent(droidDBAction);
+         startActivity(intent);
+     } else {
+         new AlertDialog.Builder(context).setTitle(context.getString(R.string.installgpsstatus_title))
+                 .setMessage("DroidDb is not installed?").setIcon(android.R.drawable.ic_dialog_info)
+                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener(){
+                     public void onClick( DialogInterface dialog, int whichButton ) {
+                         // ignore
+                     }
+                 }).setPositiveButton(android.R.string.ok, null).show();
+     }
+
+    }
+    */
     // @Override
     // public void finish() {
     // updateWithNewValues();
@@ -372,11 +476,13 @@ public class FredDataActivity extends Activity {
 
     // private void updateWithNewValues() {
     // try {
-    // DaoGpsLog.updateLogProperties(item.getId(), newColor, newWidth, item.isVisible(), newText);
+    // DaoGpsLog.updateLogProperties(item.getId(), newColor, newWidth, item.isVisible(),
+    // newText);
     // } catch (IOException e) {
     // GPLog.error(this, e.getLocalizedMessage(), e);
     // e.printStackTrace();
     // }
     // }
 
+    // }
 }

@@ -79,7 +79,8 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".maps.FredDataActivity" >
+        <activity 	android:name=".maps.FredDataActivity" 
+            		android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDS" />
 
