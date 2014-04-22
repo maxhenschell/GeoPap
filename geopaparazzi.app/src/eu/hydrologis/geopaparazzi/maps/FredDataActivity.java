@@ -261,6 +261,7 @@ public class FredDataActivity extends Activity {
         // }
 
         lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+
             public void onItemSelected( AdapterView< ? > adapterView, View view, int i, long l ) {
                 try {
                     // refresh data for second level spinner
@@ -269,6 +270,12 @@ public class FredDataActivity extends Activity {
                     String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
                     secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP", firstIDsID);
+
+                    ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(FredDataActivity.this,
+                            android.R.layout.simple_spinner_item, secondIDs);
+                    lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    lvlTwoSpinner.setAdapter(lvlTwoAdapter);
+                    lvlTwoSpinner.setSelection(0);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
