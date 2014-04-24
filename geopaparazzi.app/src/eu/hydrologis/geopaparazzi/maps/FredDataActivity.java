@@ -261,17 +261,21 @@ public class FredDataActivity extends Activity {
         // }
 
         lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            public void onItemSelected( AdapterView< ? > adapterView, View view, int i, long l ) {
+            public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
                 try {
                     // refresh data for second level spinner
-                    String firstIDsArrayFirstRow = firstIDs.get(0);
-                    int start = firstIDsArrayFirstRow.indexOf("(") + 1;
-                    String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
+                    String firstIDsArrayChosenRow = firstIDs.get(itemPosition);
+
+                    if (GPLog.LOG_HEAVY)
+                        GPLog.addLogEntry(this, "FirstLevel is " + firstIDsArrayChosenRow); //$NON-NLS-1$
+
+                    int start = firstIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
+                    String firstIDsID = firstIDsArrayChosenRow.substring(start, firstIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
                     secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP", firstIDsID);
 
                     if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "second IDs is " + secondIDs); //$NON-NLS-1$
+                        GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
 
                     ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(FredDataActivity.this,
                             android.R.layout.simple_spinner_item, secondIDs);
