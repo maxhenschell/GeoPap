@@ -32,7 +32,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.WindowManager;
@@ -82,7 +81,7 @@ public class FredDataActivity extends Activity {
     private static String COLUMN_SECOND_LEVEL_ID = "Obspts_ID";
     private static String COLUMN_LAT = "latitude";
     private static String COLUMN_LON = "longitude";
-    // private static String COLUMN_NOTE = "Comments";
+    private static String COLUMN_NOTE = "Comments";
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -133,7 +132,8 @@ public class FredDataActivity extends Activity {
         // get the data to populate the spinners
         // EXTERNAL_DB = "/mnt/sdcard/FRED/FRED.db";
 
-        final String fullDBPath = Environment.getExternalStorageDirectory().getPath() + "__" + EXTERNAL_DB;
+        // final String fullDBPath = Environment.getExternalStorageDirectory().getPath() + "__" +
+        // EXTERNAL_DB;
 
         firstIDs = new ArrayList<String>();
         try {
@@ -205,18 +205,18 @@ public class FredDataActivity extends Activity {
 
                 final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
                 String note = edittextNote.getText().toString();
-                edittextNote.setText(fullDBPath);
+                // edittextNote.setText(fullDBPath);
 
                 String spinDat = (String) lvlOneSpinner.getSelectedItem();
-                int start = spinDat.indexOf("(") + 1; // the ID should be the second
-                String firstIDsID = spinDat.substring(start, spinDat.indexOf(", "));
+                int start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
+                String firstIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
 
                 spinDat = (String) lvlTwoSpinner.getSelectedItem();
-                start = spinDat.indexOf("(") + 1; // the ID should be the second
-                String SecondIDsID = spinDat.substring(start, spinDat.indexOf(", "));
+                start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
+                String SecondIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
 
-                String lat = String.format(Locale.getDefault(), "%.6f", latitude);
-                String lon = String.format(Locale.getDefault(), "%.6f", longitude);
+                String lat = String.format(Locale.getDefault(), "%.6f", latitude); //$NON-NLS-1$
+                String lon = String.format(Locale.getDefault(), "%.6f", longitude); //$NON-NLS-1$
 
                 final SQLiteDatabase sqlDB;
 
@@ -233,11 +233,11 @@ public class FredDataActivity extends Activity {
         Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
         returnButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
-                Intent intent = new Intent("com.syware.droiddb");
+                Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
                 intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
                 // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.putExtra("parameter", "FRED"); // this needs work, see description
+                intent.putExtra("parameter", "FRED"); //$NON-NLS-1$  //$NON-NLS-2$
                 startActivity(intent);
             }
         });
@@ -271,6 +271,10 @@ public class FredDataActivity extends Activity {
 
                     int start = firstIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
                     String firstIDsID = firstIDsArrayChosenRow.substring(start, firstIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
+
+                    if (GPLog.LOG_HEAVY)
+                        GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
+
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
                     secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP", firstIDsID);
 
@@ -282,6 +286,38 @@ public class FredDataActivity extends Activity {
                     lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     lvlTwoSpinner.setAdapter(lvlTwoAdapter);
                     lvlTwoSpinner.setSelection(0);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            public void onNothingSelected( AdapterView< ? > adapterView ) {
+                return;
+            }
+        });
+
+        lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
+                try {
+                    // refresh data for second level spinner
+                    String SecondIDsArrayChosenRow = secondIDs.get(itemPosition);
+
+                    if (GPLog.LOG_HEAVY)
+                        GPLog.addLogEntry(this, "SecondLevel is " + SecondIDsArrayChosenRow); //$NON-NLS-1$
+
+                    int start = SecondIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
+                    String SecondIDsID = SecondIDsArrayChosenRow.substring(start, SecondIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
+
+                    if (GPLog.LOG_HEAVY)
+                        GPLog.addLogEntry(this, "SecondLevel ID is " + SecondIDsID); //$NON-NLS-1$
+
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
+                    String existingNoteData = getCommentData(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, COLUMN_NOTE,
+                            SecondIDsID);
+
+                    final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
+                    // String note = edittextNote.getText().toString();
+                    edittextNote.setText(existingNoteData);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -369,6 +405,37 @@ public class FredDataActivity extends Activity {
     }
 
     /**
+     * Gets data from a comments field to prevent overwriting
+     * 
+     * @param sqliteDatabase the DB to query
+     * @param tableName the table to query
+     * @param IdCol the ID column to query on
+     * @param NoteCol the comments field to grab
+     * @param strWhere which ID value to select on
+     * 
+     * @throws IOException if a problem
+     */
+    private static String getCommentData( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NoteCol,
+            String strWhere ) throws IOException {
+
+        String asColumnsToReturn[] = {NoteCol};
+        if (strWhere != null) {
+            strWhere = IdCol + "=" + strWhere;
+        }
+
+        Cursor c = null;
+        try {
+            c = sqliteDatabase.query(tableName, asColumnsToReturn, strWhere, null, null, null, null);
+            c.moveToFirst();
+            String note = c.getString(0);
+            return note;
+        } finally {
+            if (c != null)
+                c.close();
+        }
+    }
+
+    /**
      * Writes GPS data to an external database
      * 
      * @param lvlOneID the first level ID (surveysite)
@@ -392,7 +459,8 @@ public class FredDataActivity extends Activity {
             sb.append(SECOND_LEVEL_TABLE);
             sb.append(" SET ");
             sb.append(COLUMN_LAT).append("=").append(ddLat).append(", ");
-            sb.append(COLUMN_LON).append("=").append(ddLon).append(" ");
+            sb.append(COLUMN_LON).append("=").append(ddLon).append(", ");
+            sb.append(COLUMN_NOTE).append("= '").append(note).append("' ");
             sb.append("WHERE ").append(COLUMN_FIRST_LEVEL_ID).append("=").append(lvlOneID).append(" ");
             sb.append("AND ").append(COLUMN_SECOND_LEVEL_ID).append("=").append(lvlTwoID);
 
