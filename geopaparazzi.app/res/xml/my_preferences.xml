@@ -152,5 +152,20 @@
             android:title="@string/geopapcloud_server_label" >
         </EditTextPreference>
     </PreferenceScreen>
+    <PreferenceScreen android:title="@string/fred_preferences" android:order="300">
+        <EditTextPreference 
+            android:key="EXTERNAL_DB" 
+            android:title="@string/fred_external_db_path"
+            android:defaultValue="@string/fred_defval_external_db_path" android:order="301">
+        </EditTextPreference>
+        <EditTextPreference android:key="FIRST_LEVEL_TABLE" android:title="@string/fred_first_level_table" android:defaultValue="@string/fred_defval_first_level_table"/>
+        <EditTextPreference android:key="COLUMN_FIRST_LEVEL_ID" android:title="@string/fred_first_level_ID" android:defaultValue="@string/fred_defval_first_level_ID"/><EditTextPreference android:key="SECOND_LEVEL_TABLE" android:title="@string/fred_second_level_table" android:defaultValue="@string/fred_defval_second_level_table"/>
+        
+        <EditTextPreference android:key="COLUMN_SECOND_LEVEL_ID" android:title="@string/fred_second_level_ID" android:defaultValue="@string/fred_defval_second_level_ID"/>
+        <EditTextPreference android:key="COLUMN_LAT" android:title="@string/fred_column_Lat" android:defaultValue="@string/fred_defval_column_Lat"/>
+        <EditTextPreference android:key="COLUMN_LON" android:title="@string/fred_column_Lon" android:defaultValue="@string/fred_defval_column_Lon"/>
+        <EditTextPreference android:key="COLUMN_NOTE" android:title="@string/fred_column_note" android:defaultValue="@string/fred_defval_column_note"/>
+        <CheckBoxPreference android:key="TABLES_TWO_LEVELS" android:defaultValue="@string/fred_defval_two_levels" android:title="@string/fred_tables_two_levels"/>
+    </PreferenceScreen>
 
 </PreferenceScreen>

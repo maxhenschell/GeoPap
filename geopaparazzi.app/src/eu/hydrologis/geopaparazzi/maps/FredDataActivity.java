@@ -73,20 +73,22 @@ public class FredDataActivity extends Activity {
 
     private List<String> firstIDs; // first level information -- e.g. surveysite
     private List<String> secondIDs; // second level information -- e.g. obspoint
-    private static String EXTERNAL_DB = "/mnt/sdcard/FRED/FRED.db";
-    // private static String EXTERNAL_DB = "/FRED/FRED.db";
-    private static String FIRST_LEVEL_TABLE = "IPAQ_surveysite";
-    private static String COLUMN_FIRST_LEVEL_ID = "Site_ID";
-    private static String SECOND_LEVEL_TABLE = "IPAQ_Obspts";
-    private static String COLUMN_SECOND_LEVEL_ID = "Obspts_ID";
-    private static String COLUMN_LAT = "latitude";
-    private static String COLUMN_LON = "longitude";
-    private static String COLUMN_NOTE = "Comments";
+    // private static String EXTERNAL_DB = "localVal ";
+    // private static String EXTERNAL_DB = "/mnt/FRED/FRED.db";
+    // private static String FIRST_LEVEL_TABLE = "IPAQ_surveysite";
+    // private static String COLUMN_FIRST_LEVEL_ID = "Site_ID";
+    // private static String SECOND_LEVEL_TABLE = "IPAQ_Obspts";
+    // private static String COLUMN_SECOND_LEVEL_ID = "Obspts_ID";
+    // private static String COLUMN_LAT = "latitude";
+    // private static String COLUMN_LON = "longitude";
+    // private static String COLUMN_NOTE = "Comments";
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
 
         setContentView(R.layout.fred_writecoords);
+        // addPreferencesFromResource(R.xml.my_preferences);
+        PreferenceManager.setDefaultValues(this, R.xml.my_preferences, false);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
@@ -97,6 +99,23 @@ public class FredDataActivity extends Activity {
                 edit.commit();
             }
         });
+
+        // get defaults
+        final String EXTERNAL_DB = preferences.getString("EXTERNAL_DB", "default");
+        final Boolean TABLES_TWO_LEVELS = preferences.getBoolean("TABLES_TWO_LEVELS", true);
+        final String FIRST_LEVEL_TABLE = preferences.getString("FIRST_LEVEL_TABLE", "default1");
+        final String COLUMN_FIRST_LEVEL_ID = preferences.getString("COLUMN_FIRST_LEVEL_ID", "default2");
+        final String SECOND_LEVEL_TABLE = preferences.getString("SECOND_LEVEL_TABLE", "default3");
+        final String COLUMN_SECOND_LEVEL_ID = preferences.getString("COLUMN_SECOND_LEVEL_ID", "default4");
+        final String COLUMN_LAT = preferences.getString("COLUMN_LAT", "default5");
+        final String COLUMN_LON = preferences.getString("COLUMN_LON", "default6");
+        final String COLUMN_NOTE = preferences.getString("COLUMN_NOTE", "default7");
+
+        if (GPLog.LOG_HEAVY)
+            GPLog.addLogEntry(this, "prefs DB val: " + EXTERNAL_DB); //$NON-NLS-1$
+
+        if (GPLog.LOG_HEAVY)
+            GPLog.addLogEntry(this, "prefs 1st table: " + FIRST_LEVEL_TABLE); //$NON-NLS-1$
 
         boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
 
@@ -130,6 +149,7 @@ public class FredDataActivity extends Activity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         // get the data to populate the spinners
+        // TODO: this is temporary to help debug EXTERNAL_DB
         // EXTERNAL_DB = "/mnt/sdcard/FRED/FRED.db";
 
         // final String fullDBPath = Environment.getExternalStorageDirectory().getPath() + "__" +
@@ -138,7 +158,9 @@ public class FredDataActivity extends Activity {
         firstIDs = new ArrayList<String>();
         try {
             final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-            firstIDs = getTableIDs(sqlDB, FIRST_LEVEL_TABLE, COLUMN_FIRST_LEVEL_ID, "Surveysite", "TIMESTAMP", null);
+            // final SQLiteDatabase sqlDB =
+            // DatabaseManager.getInstance().getDatabase().openDatabase(fred_db, null, 2);
+            firstIDs = getTableIDs(sqlDB, FIRST_LEVEL_TABLE, COLUMN_FIRST_LEVEL_ID, "Surveysite", "TIMESTAMP", null, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -149,7 +171,8 @@ public class FredDataActivity extends Activity {
             int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
             String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
             final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-            secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP", firstIDsID);
+            secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
+                    COLUMN_FIRST_LEVEL_ID, firstIDsID);
             // secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt",
             // "TIMESTAMP",
             // null);
@@ -174,7 +197,8 @@ public class FredDataActivity extends Activity {
         fredElevTextView.setText(elevText);
 
         final EditText fredDestinationDB = (EditText) findViewById(R.id.fredfrm_destinationDB);
-        EXTERNAL_DB = fredDestinationDB.getText().toString();
+        // EXTERNAL_DB = fredDestinationDB.getText().toString();
+        fredDestinationDB.setText(EXTERNAL_DB);
 
         // need to query IPAQ_surveysite table and fields Site_ID and Surveysite
         // need to query IPAQ_obspoints table and fields Site_ID, Obspts_ID, Obspt
@@ -222,7 +246,9 @@ public class FredDataActivity extends Activity {
 
                 try {
                     sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-                    IsWritten = writeGpsData(firstIDsID, SecondIDsID, lat, lon, note, sqlDB);
+                    // IsWritten = writeGpsData(SECOND_LEVEL_TABLE, );
+                    IsWritten = writeGpsData(SECOND_LEVEL_TABLE, COLUMN_LAT, COLUMN_LON, COLUMN_NOTE, COLUMN_FIRST_LEVEL_ID,
+                            firstIDsID, TABLES_TWO_LEVELS, COLUMN_SECOND_LEVEL_ID, SecondIDsID, lat, lon, note, sqlDB);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -276,7 +302,8 @@ public class FredDataActivity extends Activity {
                         GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
 
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-                    secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP", firstIDsID);
+                    secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
+                            COLUMN_FIRST_LEVEL_ID, firstIDsID);
 
                     if (GPLog.LOG_HEAVY)
                         GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
@@ -328,7 +355,6 @@ public class FredDataActivity extends Activity {
         });
 
     }
-
     // TODO need an onStart() for this activity!!!
     // TODO need an onPause() for this activity!!!
     // TODO need an onStop() for this activity!!!
@@ -361,17 +387,18 @@ public class FredDataActivity extends Activity {
      * @param IdCol the ID column to grab
      * @param NameCol the name column to grab (site name, or other text field)
      * @param tsCol the time/date column 
+     * @param filterID the column name on which to filter the list (parent table ID) using strWhere
      * @param strWhere if selecting a row, which ID value to select on
      * 
      * @throws IOException if a problem
      */
     private static List<String> getTableIDs( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
-            String tsCol, String strWhere ) throws IOException {
+            String tsCol, String filterID, String strWhere ) throws IOException {
 
         String asColumnsToReturn[] = {NameCol, IdCol, tsCol};
-        String strSortOrder = tsCol + " DESC";
+        String strSortOrder = tsCol + " DESC"; //$NON-NLS-1$
         if (strWhere != null) {
-            strWhere = COLUMN_FIRST_LEVEL_ID + "=" + strWhere;
+            strWhere = filterID + "=" + strWhere; //$NON-NLS-1$
         }
 
         Cursor c = null;
@@ -386,7 +413,7 @@ public class FredDataActivity extends Activity {
                 String fName = c.getString(0);
                 String tStamp = c.getString(2);
                 try {
-                    String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")";
+                    String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     NmIdTsList.add(row);
                 } catch (Exception e) {
                     // ignore invalid rows
@@ -420,7 +447,7 @@ public class FredDataActivity extends Activity {
 
         String asColumnsToReturn[] = {NoteCol};
         if (strWhere != null) {
-            strWhere = IdCol + "=" + strWhere;
+            strWhere = IdCol + "=" + strWhere; //$NON-NLS-1$
         }
 
         Cursor c = null;
@@ -438,7 +465,14 @@ public class FredDataActivity extends Activity {
     /**
      * Writes GPS data to an external database
      * 
+     * @param tbl is the name of the table to write to
+     * @param colLat is the column name for Latitude
+     * @param colLon is the column name for Longitude
+     * @param colNot is the column name for a Notes/comments field
+     * @param colFirstID is the column name for the first level ID
      * @param lvlOneID the first level ID (surveysite)
+     * @param twoLvl is there a parent table (are there two levels?).
+     * @param colSecondID is the column name for the second level ID
      * @param lvlTwoID the second level ID (obspoint)
      * @param ddLon  decimal degrees longitude
      * @param ddLat decimal degrees latitude
@@ -446,8 +480,10 @@ public class FredDataActivity extends Activity {
      * @param sqlDB the DB to write to
      * @throws IOException if a problem
      */
-    private static boolean writeGpsData( String lvlOneID, String lvlTwoID, String ddLat, String ddLon, String note,
+    private static boolean writeGpsData( String tbl, String colLat, String colLon, String colNot, String colFirstID,
+            String lvlOneID, Boolean twoLvl, String colSecondID, String lvlTwoID, String ddLon, String ddLat, String note,
             SQLiteDatabase sqlDB ) throws IOException {
+
         try {
             // final SQLiteDatabase sqlDB =
             // DatabaseManager.getInstance().getDatabase().openDatabase(sqlDatB, null, 2);
@@ -455,25 +491,25 @@ public class FredDataActivity extends Activity {
 
             StringBuilder sb = new StringBuilder();
             sb = new StringBuilder();
-            sb.append("UPDATE ");
-            sb.append(SECOND_LEVEL_TABLE);
-            sb.append(" SET ");
-            sb.append(COLUMN_LAT).append("=").append(ddLat).append(", ");
-            sb.append(COLUMN_LON).append("=").append(ddLon).append(", ");
-            sb.append(COLUMN_NOTE).append("= '").append(note).append("' ");
-            sb.append("WHERE ").append(COLUMN_FIRST_LEVEL_ID).append("=").append(lvlOneID).append(" ");
-            sb.append("AND ").append(COLUMN_SECOND_LEVEL_ID).append("=").append(lvlTwoID);
+            sb.append("UPDATE "); //$NON-NLS-1$
+            sb.append(tbl);
+            sb.append(" SET "); //$NON-NLS-1$
+            sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colNot).append("= '").append(note).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append("WHERE ").append(colFirstID).append("=").append(lvlOneID).append(" "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            sb.append("AND ").append(colSecondID).append("=").append(lvlTwoID); //$NON-NLS-1$ //$NON-NLS-2$ 
 
             String query = sb.toString();
             if (GPLog.LOG_HEAVY)
-                GPLog.addLogEntry("FredWriteQuery", query);
+                GPLog.addLogEntry("FredWriteQuery", query); //$NON-NLS-1$
             SQLiteStatement sqlUpdate = sqlDB.compileStatement(query);
             sqlUpdate.execute();
             sqlUpdate.close();
 
             sqlDB.setTransactionSuccessful();
         } catch (Exception e) {
-            GPLog.error("FredWriteQuery", e.getLocalizedMessage(), e);
+            GPLog.error("FredWriteQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
             throw new IOException(e.getLocalizedMessage());
         } finally {
             sqlDB.endTransaction();
