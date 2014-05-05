@@ -73,8 +73,7 @@ public class FredDataActivity extends Activity {
 
     private List<String> firstIDs; // first level information -- e.g. surveysite
     private List<String> secondIDs; // second level information -- e.g. obspoint
-    // private static String EXTERNAL_DB = "localVal ";
-    // private static String EXTERNAL_DB = "/mnt/FRED/FRED.db";
+    private static String EXTERNAL_DB = "EXTERNAL_DB";
     // private static String FIRST_LEVEL_TABLE = "IPAQ_surveysite";
     // private static String COLUMN_FIRST_LEVEL_ID = "Site_ID";
     // private static String SECOND_LEVEL_TABLE = "IPAQ_Obspts";
@@ -87,10 +86,27 @@ public class FredDataActivity extends Activity {
         super.onCreate(icicle);
 
         setContentView(R.layout.fred_writecoords);
-        // addPreferencesFromResource(R.xml.my_preferences);
+
+        // get preferences
         PreferenceManager.setDefaultValues(this, R.xml.my_preferences, false);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
+        final Boolean TABLES_TWO_LEVELS = preferences.getBoolean("TABLES_TWO_LEVELS", true); //$NON-NLS-1$
+        final String FIRST_LEVEL_TABLE = preferences.getString("FIRST_LEVEL_TABLE", "default1"); //$NON-NLS-1$  //$NON-NLS-2$
+        final String COLUMN_FIRST_LEVEL_ID = preferences.getString("COLUMN_FIRST_LEVEL_ID", "default2"); //$NON-NLS-1$  //$NON-NLS-2$
+        final String SECOND_LEVEL_TABLE = preferences.getString("SECOND_LEVEL_TABLE", "default3"); //$NON-NLS-1$  //$NON-NLS-2$
+        final String COLUMN_SECOND_LEVEL_ID = preferences.getString("COLUMN_SECOND_LEVEL_ID", "default4"); //$NON-NLS-1$  //$NON-NLS-2$
+        final String COLUMN_LAT = preferences.getString("COLUMN_LAT", "default5"); //$NON-NLS-1$  //$NON-NLS-2$
+        final String COLUMN_LON = preferences.getString("COLUMN_LON", "default6"); //$NON-NLS-1$  //$NON-NLS-2$
+        final String COLUMN_NOTE = preferences.getString("COLUMN_NOTE", "default7"); //$NON-NLS-1$  //$NON-NLS-2$
+        // debug some of the defaults in case of problems
+        if (GPLog.LOG_HEAVY)
+            GPLog.addLogEntry(this, "prefs DB val: " + externalDB); //$NON-NLS-1$
+        if (GPLog.LOG_HEAVY)
+            GPLog.addLogEntry(this, "prefs 1st table: " + FIRST_LEVEL_TABLE); //$NON-NLS-1$
+
+        // position type toggle button
         togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
         togglePositionTypeButtonGps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ) {
@@ -100,25 +116,7 @@ public class FredDataActivity extends Activity {
             }
         });
 
-        // get defaults
-        final String EXTERNAL_DB = preferences.getString("EXTERNAL_DB", "default");
-        final Boolean TABLES_TWO_LEVELS = preferences.getBoolean("TABLES_TWO_LEVELS", true);
-        final String FIRST_LEVEL_TABLE = preferences.getString("FIRST_LEVEL_TABLE", "default1");
-        final String COLUMN_FIRST_LEVEL_ID = preferences.getString("COLUMN_FIRST_LEVEL_ID", "default2");
-        final String SECOND_LEVEL_TABLE = preferences.getString("SECOND_LEVEL_TABLE", "default3");
-        final String COLUMN_SECOND_LEVEL_ID = preferences.getString("COLUMN_SECOND_LEVEL_ID", "default4");
-        final String COLUMN_LAT = preferences.getString("COLUMN_LAT", "default5");
-        final String COLUMN_LON = preferences.getString("COLUMN_LON", "default6");
-        final String COLUMN_NOTE = preferences.getString("COLUMN_NOTE", "default7");
-
-        if (GPLog.LOG_HEAVY)
-            GPLog.addLogEntry(this, "prefs DB val: " + EXTERNAL_DB); //$NON-NLS-1$
-
-        if (GPLog.LOG_HEAVY)
-            GPLog.addLogEntry(this, "prefs 1st table: " + FIRST_LEVEL_TABLE); //$NON-NLS-1$
-
         boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
-
         if (GPLog.LOG_HEAVY)
             GPLog.addLogEntry(this, "position button set to: " + useMapCenterPosition); //$NON-NLS-1$
 
@@ -148,42 +146,27 @@ public class FredDataActivity extends Activity {
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        // get the data to populate the spinners
-        // TODO: this is temporary to help debug EXTERNAL_DB
-        // EXTERNAL_DB = "/mnt/sdcard/FRED/FRED.db";
-
-        // final String fullDBPath = Environment.getExternalStorageDirectory().getPath() + "__" +
-        // EXTERNAL_DB;
-
         firstIDs = new ArrayList<String>();
         try {
-            final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-            // final SQLiteDatabase sqlDB =
-            // DatabaseManager.getInstance().getDatabase().openDatabase(fred_db, null, 2);
+            final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
             firstIDs = getTableIDs(sqlDB, FIRST_LEVEL_TABLE, COLUMN_FIRST_LEVEL_ID, "Surveysite", "TIMESTAMP", null, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        secondIDs = new ArrayList<String>();
-        try {
-            String firstIDsArrayFirstRow = firstIDs.get(0);
-            int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
-            String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
-            final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-            secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
-                    COLUMN_FIRST_LEVEL_ID, firstIDsID);
-            // secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt",
-            // "TIMESTAMP",
-            // null);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (TABLES_TWO_LEVELS) {
+            secondIDs = new ArrayList<String>();
+            try {
+                String firstIDsArrayFirstRow = firstIDs.get(0);
+                int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
+                String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
+                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
+                secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
+                        COLUMN_FIRST_LEVEL_ID, firstIDsID);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
-        // Bundle extras = getIntent().getExtras();
-        // String levelOne = extras.get(Constants.FRED_KEY_FIELD_LEVEL_ONE);
-        // String levelTwo = extras.get(Constants.FRED_KEY_FIELD_LEVEL_TWO);
-        // String levelThree = extras.get(Constants.FRED_KEY_FIELD_LEVEL_THREE);
 
         final TextView fredLocTextView = (TextView) findViewById(R.id.fredfrm_location);
         String locText = fredLocTextView.getText().toString();
@@ -197,11 +180,7 @@ public class FredDataActivity extends Activity {
         fredElevTextView.setText(elevText);
 
         final EditText fredDestinationDB = (EditText) findViewById(R.id.fredfrm_destinationDB);
-        // EXTERNAL_DB = fredDestinationDB.getText().toString();
-        fredDestinationDB.setText(EXTERNAL_DB);
-
-        // need to query IPAQ_surveysite table and fields Site_ID and Surveysite
-        // need to query IPAQ_obspoints table and fields Site_ID, Obspts_ID, Obspt
+        fredDestinationDB.setText(externalDB);
 
         Button refreshButton = (Button) findViewById(R.id.refreshPosition);
         refreshButton.setOnClickListener(new Button.OnClickListener(){
@@ -235,18 +214,19 @@ public class FredDataActivity extends Activity {
                 int start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
                 String firstIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
 
-                spinDat = (String) lvlTwoSpinner.getSelectedItem();
-                start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
-                String SecondIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
+                String SecondIDsID = null;
+                if (TABLES_TWO_LEVELS) {
+                    spinDat = (String) lvlTwoSpinner.getSelectedItem();
+                    start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
+                    SecondIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
+                }
 
                 String lat = String.format(Locale.getDefault(), "%.6f", latitude); //$NON-NLS-1$
                 String lon = String.format(Locale.getDefault(), "%.6f", longitude); //$NON-NLS-1$
 
                 final SQLiteDatabase sqlDB;
-
                 try {
-                    sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-                    // IsWritten = writeGpsData(SECOND_LEVEL_TABLE, );
+                    sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
                     IsWritten = writeGpsData(SECOND_LEVEL_TABLE, COLUMN_LAT, COLUMN_LON, COLUMN_NOTE, COLUMN_FIRST_LEVEL_ID,
                             firstIDsID, TABLES_TWO_LEVELS, COLUMN_SECOND_LEVEL_ID, SecondIDsID, lat, lon, note, sqlDB);
                 } catch (IOException e) {
@@ -255,7 +235,7 @@ public class FredDataActivity extends Activity {
                 writeDataButton.setChecked(IsWritten);
             }
         });
-        // TODO FIX THIS BUTTON
+        // TODO improve THIS BUTTON
         Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
         returnButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
@@ -276,51 +256,52 @@ public class FredDataActivity extends Activity {
         lvlOneSpinner.setSelection(0);
 
         lvlTwoSpinner = (Spinner) findViewById(R.id.fredfrm_leveltwospinner);
-        // try {
+        if (TABLES_TWO_LEVELS) {
+            ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, secondIDs);
+            lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            lvlTwoSpinner.setAdapter(lvlTwoAdapter);
+            lvlTwoSpinner.setSelection(0);
 
-        ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, secondIDs);
-        lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        lvlTwoSpinner.setAdapter(lvlTwoAdapter);
-        lvlTwoSpinner.setSelection(0);
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // }
+            lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+                public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
+                    try {
+                        // refresh data for second level spinner
+                        String firstIDsArrayChosenRow = firstIDs.get(itemPosition);
 
-        lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
-                try {
-                    // refresh data for second level spinner
-                    String firstIDsArrayChosenRow = firstIDs.get(itemPosition);
+                        if (GPLog.LOG_HEAVY)
+                            GPLog.addLogEntry(this, "FirstLevel is " + firstIDsArrayChosenRow); //$NON-NLS-1$
 
-                    if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "FirstLevel is " + firstIDsArrayChosenRow); //$NON-NLS-1$
+                        int start = firstIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
+                        String firstIDsID = firstIDsArrayChosenRow.substring(start, firstIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
 
-                    int start = firstIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
-                    String firstIDsID = firstIDsArrayChosenRow.substring(start, firstIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
+                        if (GPLog.LOG_HEAVY)
+                            GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
 
-                    if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
+                        final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase()
+                                .openDatabase(externalDB, null, 2);
+                        secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
+                                COLUMN_FIRST_LEVEL_ID, firstIDsID);
 
-                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
-                    secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
-                            COLUMN_FIRST_LEVEL_ID, firstIDsID);
+                        if (GPLog.LOG_HEAVY)
+                            GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
 
-                    if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
-
-                    ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(FredDataActivity.this,
-                            android.R.layout.simple_spinner_item, secondIDs);
-                    lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    lvlTwoSpinner.setAdapter(lvlTwoAdapter);
-                    lvlTwoSpinner.setSelection(0);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                        ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(FredDataActivity.this,
+                                android.R.layout.simple_spinner_item, secondIDs);
+                        lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        lvlTwoSpinner.setAdapter(lvlTwoAdapter);
+                        lvlTwoSpinner.setSelection(0);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-            public void onNothingSelected( AdapterView< ? > adapterView ) {
-                return;
-            }
-        });
+                public void onNothingSelected( AdapterView< ? > adapterView ) {
+                    return;
+                }
+            });
+
+        } else {
+            lvlTwoSpinner.setEnabled(false);
+        }
 
         lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
@@ -337,7 +318,7 @@ public class FredDataActivity extends Activity {
                     if (GPLog.LOG_HEAVY)
                         GPLog.addLogEntry(this, "SecondLevel ID is " + SecondIDsID); //$NON-NLS-1$
 
-                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(EXTERNAL_DB, null, 2);
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
                     String existingNoteData = getCommentData(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, COLUMN_NOTE,
                             SecondIDsID);
 
@@ -497,9 +478,13 @@ public class FredDataActivity extends Activity {
             sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colNot).append("= '").append(note).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append("WHERE ").append(colFirstID).append("=").append(lvlOneID).append(" "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            sb.append("AND ").append(colSecondID).append("=").append(lvlTwoID); //$NON-NLS-1$ //$NON-NLS-2$ 
 
+            if (twoLvl) {
+                sb.append("WHERE ").append(colFirstID).append("=").append(lvlOneID).append(" "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                sb.append("AND ").append(colSecondID).append("=").append(lvlTwoID); //$NON-NLS-1$ //$NON-NLS-2$ 
+            } else {
+                sb.append("WHERE ").append(colFirstID).append("=").append(lvlOneID); //$NON-NLS-1$ //$NON-NLS-2$
+            }
             String query = sb.toString();
             if (GPLog.LOG_HEAVY)
                 GPLog.addLogEntry("FredWriteQuery", query); //$NON-NLS-1$
