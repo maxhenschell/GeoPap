@@ -81,6 +81,10 @@ public class FredDataActivity extends Activity {
     // private static String COLUMN_LAT = "latitude";
     // private static String COLUMN_LON = "longitude";
     // private static String COLUMN_NOTE = "Comments";
+    private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";
+    private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";
+    private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";
+    private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -100,6 +104,12 @@ public class FredDataActivity extends Activity {
         final String COLUMN_LAT = preferences.getString("COLUMN_LAT", "default5"); //$NON-NLS-1$  //$NON-NLS-2$
         final String COLUMN_LON = preferences.getString("COLUMN_LON", "default6"); //$NON-NLS-1$  //$NON-NLS-2$
         final String COLUMN_NOTE = preferences.getString("COLUMN_NOTE", "default7"); //$NON-NLS-1$  //$NON-NLS-2$
+
+        final String firstLevDescriptor = preferences.getString(COLUMN_FIRST_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
+        final String firstLevTimeStamp = preferences.getString(COLUMN_FIRST_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
+        final String secondLevDescriptor = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
+        final String secondLevTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
+
         // debug some of the defaults in case of problems
         if (GPLog.LOG_HEAVY)
             GPLog.addLogEntry(this, "prefs DB val: " + externalDB); //$NON-NLS-1$
@@ -149,7 +159,8 @@ public class FredDataActivity extends Activity {
         firstIDs = new ArrayList<String>();
         try {
             final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
-            firstIDs = getTableIDs(sqlDB, FIRST_LEVEL_TABLE, COLUMN_FIRST_LEVEL_ID, "Surveysite", "TIMESTAMP", null, null);
+            firstIDs = getTableIDs(sqlDB, FIRST_LEVEL_TABLE, COLUMN_FIRST_LEVEL_ID, firstLevDescriptor, firstLevTimeStamp, null,
+                    null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -161,8 +172,8 @@ public class FredDataActivity extends Activity {
                 int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
                 String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
-                secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
-                        COLUMN_FIRST_LEVEL_ID, firstIDsID);
+                secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, secondLevDescriptor,
+                        secondLevTimeStamp, COLUMN_FIRST_LEVEL_ID, firstIDsID);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -279,8 +290,8 @@ public class FredDataActivity extends Activity {
 
                         final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase()
                                 .openDatabase(externalDB, null, 2);
-                        secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, "Obspt", "TIMESTAMP",
-                                COLUMN_FIRST_LEVEL_ID, firstIDsID);
+                        secondIDs = getTableIDs(sqlDB, SECOND_LEVEL_TABLE, COLUMN_SECOND_LEVEL_ID, secondLevDescriptor,
+                                secondLevTimeStamp, COLUMN_FIRST_LEVEL_ID, firstIDsID);
 
                         if (GPLog.LOG_HEAVY)
                             GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
@@ -303,6 +314,7 @@ public class FredDataActivity extends Activity {
             lvlTwoSpinner.setEnabled(false);
         }
 
+        // get level two data to grab proper comment field
         lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
                 try {

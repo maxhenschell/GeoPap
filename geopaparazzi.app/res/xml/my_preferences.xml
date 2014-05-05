@@ -166,6 +166,10 @@
         <EditTextPreference android:key="COLUMN_LON" android:title="@string/fred_column_Lon" android:defaultValue="@string/fred_defval_column_Lon"/>
         <EditTextPreference android:key="COLUMN_NOTE" android:title="@string/fred_column_note" android:defaultValue="@string/fred_defval_column_note"/>
         <CheckBoxPreference android:key="TABLES_TWO_LEVELS" android:defaultValue="@string/fred_defval_two_levels" android:title="@string/fred_tables_two_levels"/>
+        <EditTextPreference android:key="COLUMN_FIRST_LEVEL_DESCRIPTOR" android:title="@string/fred_defval_first_level_descriptor" android:defaultValue="@string/fred_defval_first_level_descriptor"/>
+        <EditTextPreference android:key="COLUMN_SECOND_LEVEL_DESCRIPTOR" android:title="@string/fred_defval_second_level_descriptor" android:defaultValue="@string/fred_defval_second_level_descriptor"/>
+        <EditTextPreference android:key="COLUMN_FIRST_LEVEL_TIMESTAMP" android:title="@string/fred_defval_first_level_timestamp" android:defaultValue="@string/fred_defval_first_level_timestamp"/>
+        <EditTextPreference android:key="COLUMN_SECOND_LEVEL_TIMESTAMP" android:title="@string/fred_defval_second_level_timestamp" android:defaultValue="@string/fred_defval_second_level_timestamp"/>
     </PreferenceScreen>
 
 </PreferenceScreen>
