@@ -227,19 +227,23 @@
     
     <!-- Fred strings -->
     <string name="fred_preferences">FRED preferences</string>
-    <string name="fred_external_db_path">external database path</string>
-    <string name="fred_first_level_table">First level table name</string>
-    <string name="fred_second_level_table">Second level table name</string>
-    <string name="fred_first_level_ID">First level table ID column</string>
-    <string name="fred_second_level_ID">Second level table ID column</string>
-    <string name="fred_first_level_descriptor">First level descriptor column</string>
-    <string name="fred_second_level_descriptor">Second level descriptor column</string>
-    <string name="fred_first_level_timestamp">First level timestamp column</string>
-    <string name="fred_second_level_timestamp">Second level timestamp column</string>
+    <string name="fred_external_db_path">External database path</string>
+    <string name="parent_table_info">Parent table info</string>
+    <string name="fred_parent_table_present_summary">Is there a parent table that the table holding GPS data is related to? Check if yes.</string>   
+    <string name="child_table_info">Child table info</string>
+    <string name="fred_first_level_table">Parent table name</string>
+    <string name="fred_second_level_table">Child table name</string>
+    <string name="fred_first_level_ID">ID column name</string>
+    <string name="fred_second_level_ID">ID column name</string>
+    <string name="fred_first_level_descriptor">Descriptor column name</string>
+    <string name="fred_second_level_descriptor">Descriptor column name</string>
+    <string name="fred_descriptor_summary">A location descriptor field, e.g. sitename, point number, etc.</string>
+    <string name="fred_first_level_timestamp">Timestamp column name</string>
+    <string name="fred_second_level_timestamp">Timestamp column name</string>
     <string name="fred_column_Lat">Latitude column name</string>
     <string name="fred_column_Lon">Longitude column name</string>
     <string name="fred_column_note">Notes column name</string>
-    <string name="fred_tables_two_levels">Two-level table structure</string>
+    <string name="fred_tables_two_levels">Parent-Child table structure</string>
     <!-- Fred default values: change these to change defaults-->    
     <string name="fred_defval_external_db_path">/mnt/FRED/FRED.db</string>
     <string name="fred_defval_first_level_table">IPAQ_surveysite</string>
