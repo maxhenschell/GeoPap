@@ -48,7 +48,22 @@ public class DatabaseManager {
     */
     public static final float BUFFER = 0.001f;
 
+    private static DatabaseManager dbManager = null; // added back by tgh 5/17/2014
+
     private DatabaseOpenHelper databaseHelper;
+
+    /**
+     * Singleton access.
+     * 
+     * @return the {@link DatabaseManager}.
+     */
+    // added back by tgh 5/17/2014
+    public static DatabaseManager getInstance() {
+        if (dbManager == null) {
+            dbManager = new DatabaseManager();
+        }
+        return dbManager;
+    }
 
     /**
      * @param context the {@link Context} to use.

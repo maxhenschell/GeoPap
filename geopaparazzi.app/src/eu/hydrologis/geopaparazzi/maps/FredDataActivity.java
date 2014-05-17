@@ -193,7 +193,7 @@ public class FredDataActivity extends Activity {
         // filter child records by parent only if we have a parent table
         if (haveParentTable) {
             try {
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
+                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -202,7 +202,7 @@ public class FredDataActivity extends Activity {
                 String firstIDsArrayFirstRow = firstIDs.get(0);
                 int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
                 String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
+                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID, firstIDsID);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -210,7 +210,7 @@ public class FredDataActivity extends Activity {
 
         } else {
             try {
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
+                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -279,7 +279,7 @@ public class FredDataActivity extends Activity {
 
                 final SQLiteDatabase sqlDB;
                 try {
-                    sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
+                    sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this).openDatabase(externalDB, null, 2);
                     IsWritten = writeGpsData(childTable, colLat, colLon, colNote, parentID, firstIDsID, haveParentTable, childID,
                             SecondIDsID, lat, lon, note, sqlDB);
                 } catch (IOException e) {
@@ -336,7 +336,7 @@ public class FredDataActivity extends Activity {
                         if (GPLog.LOG_HEAVY)
                             GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
 
-                        final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase()
+                        final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                                 .openDatabase(externalDB, null, 2);
                         secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
                                 firstIDsID);
@@ -375,7 +375,8 @@ public class FredDataActivity extends Activity {
                     if (GPLog.LOG_HEAVY)
                         GPLog.addLogEntry(this, "SecondLevel ID is " + SecondIDsID); //$NON-NLS-1$
 
-                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase().openDatabase(externalDB, null, 2);
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
+                            .openDatabase(externalDB, null, 2);
                     String existingNoteData = getCommentData(sqlDB, childTable, childID, colNote, SecondIDsID);
 
                     final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
@@ -558,88 +559,4 @@ public class FredDataActivity extends Activity {
         return true;
     }
 
-    /**
-     * Opens the DroidDB app.
-     * 
-     * 
-     */
-    /*  public static void openDroidDB() {
-          String droidDBAction = "com.syware.droiddb.VIEW";
-          String droidDBPackage = "com.syware.droiddb";
-          boolean hasDroidDB = false;
-          List<PackageInfo> installedPackages = new ArrayList<PackageInfo>();
-
-          if (GPLog.LOG_ABSURD)
-              GPLog.addLogEntry("DroidDB", "Attempt app open ");
-    */
-    // { // try to get the installed packages list. Seems to have troubles over different
-    // versions, so trying them all
-    /*
-      try {
-          installedPackages = context.getPackageManager().getInstalledPackages(0);
-      } catch (Exception e) {
-          // ignore
-      }
-      if (installedPackages.size() == 0)
-          try {
-              installedPackages = context.getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
-          } catch (Exception e) {
-              // ignore
-          }
-    }
-
-    if (installedPackages.size() > 0) {
-      // if a list is available, check if the status gps is installed
-      for( PackageInfo packageInfo : installedPackages ) {
-          String packageName = packageInfo.packageName;
-          if (GPLog.LOG_ABSURD)
-              GPLog.addLogEntry("FRED", packageName);
-          if (packageName.startsWith(droidDBPackage)) {
-              hasDroidDB = true;
-              if (GPLog.LOG_ABSURD)
-                  GPLog.addLogEntry("ACTIONBAR", "Found package: " + packageName);
-              break;
-          }
-      }
-    } else {
-    */
-    /*
-      * if no package list is available, for now try to fire it up anyways.
-      * This has been a problem for a user on droidx with android 2.2.1.
-      */
-    /*     hasDroidDB = true;
-     }
-
-     if (hasDroidDB) {
-         Intent intent = new Intent(droidDBAction);
-         startActivity(intent);
-     } else {
-         new AlertDialog.Builder(context).setTitle(context.getString(R.string.installgpsstatus_title))
-                 .setMessage("DroidDb is not installed?").setIcon(android.R.drawable.ic_dialog_info)
-                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener(){
-                     public void onClick( DialogInterface dialog, int whichButton ) {
-                         // ignore
-                     }
-                 }).setPositiveButton(android.R.string.ok, null).show();
-     }
-
-    }
-    */
-    // @Override
-    // public void finish() {
-    // updateWithNewValues();
-    // super.finish();
-    // }
-
-    // private void updateWithNewValues() {
-    // try {
-    // DaoGpsLog.updateLogProperties(item.getId(), newColor, newWidth, item.isVisible(),
-    // newText);
-    // } catch (IOException e) {
-    // GPLog.error(this, e.getLocalizedMessage(), e);
-    // e.printStackTrace();
-    // }
-    // }
-
-    // }
 }
