@@ -30,8 +30,11 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -72,8 +75,12 @@ public class TantoMapurlsListActivity extends ListActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         Bundle extras = getIntent().getExtras();
-        String layersJson = extras.getString(TantoMapurlsActivity.RESULT_KEY);
-
+        String layersJsonKey = extras.getString(TantoMapurlsActivity.RESULT_KEY);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String layersJson = preferences.getString(layersJsonKey, "");
+        Editor editor = preferences.edit();
+        editor.remove(layersJsonKey);
+        editor.commit();
         try {
             mapurlsList.clear();
             JSONArray baseArray = new JSONArray(layersJson);

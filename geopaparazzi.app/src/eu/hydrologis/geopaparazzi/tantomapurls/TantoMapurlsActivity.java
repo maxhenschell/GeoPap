@@ -22,6 +22,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -38,7 +39,6 @@ import eu.geopaparazzi.library.util.PositionUtilities;
 import eu.geopaparazzi.library.util.StringAsyncTask;
 import eu.geopaparazzi.library.util.Utilities;
 import eu.geopaparazzi.mapsforge.mapsdirmanager.MapsDirManager;
-import eu.geopaparazzi.mapsforge.mapsdirmanager.treeview.MapsDirTreeViewList;
 import eu.hydrologis.geopaparazzi.GeopaparazziApplication;
 import eu.hydrologis.geopaparazzi.R;
 
@@ -154,8 +154,14 @@ public class TantoMapurlsActivity extends Activity implements OnClickListener {
                 if (response.startsWith("ERROR")) {
                     Utilities.messageDialog(context, response, null);
                 } else {
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(TantoMapurlsActivity.this);
+                    Editor editor = preferences.edit();
+                    String key = "MAPURLDATAPREFKEY";
+                    editor.putString(key, response);
+                    editor.commit();
+
                     Intent mapurlsIntent = new Intent(context, TantoMapurlsListActivity.class);
-                    mapurlsIntent.putExtra(RESULT_KEY, response);
+                    mapurlsIntent.putExtra(RESULT_KEY, key);
                     startActivityForResult(mapurlsIntent, CODE);
                 }
             }
@@ -197,9 +203,6 @@ public class TantoMapurlsActivity extends Activity implements OnClickListener {
             new Thread(new Runnable(){
                 public void run() {
                     try {
-                        MapsDirTreeViewList.ENABLE_MENU_PROPERTIES_FILE = true;
-                        MapsDirTreeViewList.ENABLE_MENU_EDIT_FILE = false;
-                        MapsDirTreeViewList.ENABLE_MENU_DELETE_FILE = false;
                         MapsDirManager.reset();
                         MapsDirManager.getInstance().init(GeopaparazziApplication.getInstance(), null);
                     } catch (Exception e) {
