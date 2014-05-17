@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -44,10 +46,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import eu.geopaparazzi.library.database.GPLog;
-import eu.geopaparazzi.library.gps.GpsManager;
+import eu.geopaparazzi.library.gps.GpsServiceStatus;
+import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.util.PositionUtilities;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DatabaseManager;
+//import eu.geopaparazzi.library.gps.GpsManager;
 
 /**
  * Fred activity.
@@ -65,6 +69,7 @@ public class FredDataActivity extends Activity {
     private double mapCenterLongitude;
     private double mapCenterElevation;
     private double[] gpsLocation;
+    private BroadcastReceiver broadcastReceiver;
 
     private ToggleButton togglePositionTypeButtonGps;
     private ToggleButton writeDataButton;
@@ -135,6 +140,8 @@ public class FredDataActivity extends Activity {
         mapCenterLatitude = mapCenter[1];
         mapCenterLongitude = mapCenter[0];
         // mapCenterElevation = 0.0;
+
+        /**
         if (GpsManager.getInstance(this).hasFix()) {
             gpsLocation = PositionUtilities.getGpsLocationFromPreferences(preferences);
             // if (GPLog.LOG_HEAVY)
@@ -154,6 +161,30 @@ public class FredDataActivity extends Activity {
                 togglePositionTypeButtonGps.setChecked(true);
             }
         }
+        **/
+
+        broadcastReceiver = new BroadcastReceiver(){
+            public void onReceive( Context context, Intent intent ) {
+                GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
+                if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
+                    gpsLocation = GpsServiceUtilities.getPosition(intent);
+                    boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
+                    if (useMapCenterPosition) {
+                        togglePositionTypeButtonGps.setChecked(false);
+                    } else {
+                        togglePositionTypeButtonGps.setChecked(true);
+                    }
+                } else {
+                    togglePositionTypeButtonGps.setChecked(false);
+                    togglePositionTypeButtonGps.setEnabled(false);
+                    Editor edit = preferences.edit();
+                    edit.putBoolean(USE_MAPCENTER_POSITION, true);
+                    edit.commit();
+                }
+            }
+        };
+        GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
+        GpsServiceUtilities.triggerBroadcast(this);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
