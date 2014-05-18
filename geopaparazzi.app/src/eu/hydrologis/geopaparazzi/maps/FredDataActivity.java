@@ -120,7 +120,9 @@ public class FredDataActivity extends Activity {
         if (GPLog.LOG_HEAVY)
             GPLog.addLogEntry(this, "prefs DB val: " + externalDB); //$NON-NLS-1$
         if (GPLog.LOG_HEAVY)
-            GPLog.addLogEntry(this, "prefs parent table: " + parentTable); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "prefs child table: " + childTable); //$NON-NLS-1$
+        if (GPLog.LOG_HEAVY)
+            GPLog.addLogEntry(this, "prefs have parent table: " + haveParentTable); //$NON-NLS-1$
 
         // position type toggle button
         togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
