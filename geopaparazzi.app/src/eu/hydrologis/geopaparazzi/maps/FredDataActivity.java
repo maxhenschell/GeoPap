@@ -79,6 +79,7 @@ public class FredDataActivity extends Activity {
     private List<String> firstIDs; // first level information -- e.g. surveysite
     private List<String> secondIDs; // second level information -- e.g. obspoint
     private static String EXTERNAL_DB = "EXTERNAL_DB";
+    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";
     private static String FIRST_LEVEL_TABLE = "FIRST_LEVEL_TABLE";
     private static String COLUMN_FIRST_LEVEL_ID = "COLUMN_FIRST_LEVEL_ID";
     private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";
@@ -292,13 +293,14 @@ public class FredDataActivity extends Activity {
         });
         // TODO improve THIS BUTTON
         Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
+        returnButton.setText(EXTERNAL_DB_NAME);
         returnButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
                 Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
                 intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
                 // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.putExtra("parameter", "FRED"); //$NON-NLS-1$  //$NON-NLS-2$
+                intent.putExtra("parameter", EXTERNAL_DB_NAME); //$NON-NLS-1$  //$NON-NLS-2$
                 startActivity(intent);
             }
         });
@@ -449,11 +451,13 @@ public class FredDataActivity extends Activity {
             c.moveToFirst();
             List<String> NmIdTsList = new ArrayList<String>(count);
             while( !c.isAfterLast() ) {
-                int fID = c.getInt(1);
+                String fID = c.getString(1); // to handle non-int IDs
+                // int fID = c.getInt(1);
                 String fName = c.getString(0);
                 String tStamp = c.getString(2);
                 try {
-                    String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    //String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    String row = fName + " (" + fID + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     NmIdTsList.add(row);
                 } catch (Exception e) {
                     // ignore invalid rows
