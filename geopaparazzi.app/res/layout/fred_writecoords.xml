@@ -120,8 +120,8 @@
 	        android:layout_alignParentLeft="true"
 	        android:layout_alignParentRight="true"
 	        android:layout_marginLeft="5dp"
+	        android:layout_marginRight="5dp"
 	        android:layout_below="@+id/fredfrm_noteslabel"
-	        android:ems="10"
 	        android:inputType="textMultiLine"
 	        android:text="notes on location..." />
 
@@ -162,9 +162,9 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
-	        android:layout_marginLeft="5dp"
+	        android:layout_alignRight="@+id/fredfrm_notes"
 	        android:layout_below="@+id/fredfrm_subtitleconfirmdestination"
-	        android:ems="10"
+	        android:layout_marginLeft="5dp"
 	        android:text="/sdcard/FRED/FRED.db" />
 
 	    <TextView
@@ -175,7 +175,7 @@
 	        android:layout_alignParentLeft="true"
 	        android:layout_below="@+id/fredfrm_destinationDB"
 	        android:layout_marginTop="5dp"
-	        android:text="Surveysite"
+	        android:text="Table info"
 	        android:textColor="@color/formcolor" />
 
 	    <Spinner

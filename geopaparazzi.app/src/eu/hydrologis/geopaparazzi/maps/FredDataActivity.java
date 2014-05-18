@@ -103,6 +103,7 @@ public class FredDataActivity extends Activity {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
+        final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
         final Boolean haveParentTable = preferences.getBoolean(TABLES_TWO_LEVELS, true); //$NON-NLS-1$
         final String parentTable = preferences.getString(FIRST_LEVEL_TABLE, "default1"); //$NON-NLS-1$  //$NON-NLS-2$
         final String parentID = preferences.getString(COLUMN_FIRST_LEVEL_ID, "default2"); //$NON-NLS-1$  //$NON-NLS-2$
@@ -114,8 +115,8 @@ public class FredDataActivity extends Activity {
 
         final String parentDescriptorField = preferences.getString(COLUMN_FIRST_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
         final String parentTimeStamp = preferences.getString(COLUMN_FIRST_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
-        final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
-        final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
+        final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default10"); //$NON-NLS-1$
+        final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default11"); //$NON-NLS-1$
 
         // debug some of the defaults in case of problems
         if (GPLog.LOG_HEAVY)
@@ -293,14 +294,14 @@ public class FredDataActivity extends Activity {
         });
         // TODO improve THIS BUTTON
         Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
-        returnButton.setText(EXTERNAL_DB_NAME);
+        returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
         returnButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
                 Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
                 intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
                 // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.putExtra("parameter", EXTERNAL_DB_NAME); //$NON-NLS-1$  //$NON-NLS-2$
+                intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
                 startActivity(intent);
             }
         });
