@@ -17,7 +17,7 @@
  */
 package eu.hydrologis.geopaparazzi.preferences;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -44,7 +44,7 @@ public class FredQuickSets extends DialogPreference {
     // private EditText editView;
     private String quicksetChoice = ""; //$NON-NLS-1$
     private Spinner quicksetChoicesSpinner;
-    private List<String> quicksetChoicesList;
+    // private List<String> quicksetChoicesList;
     /**
      * @param ctxt  the context to use.
      * @param attrs attributes.
@@ -78,6 +78,8 @@ public class FredQuickSets extends DialogPreference {
         mainLayout.addView(quicksetChoicesSpinner);
 
         //quicksetChoicesList.add(0, ""); //$NON-NLS-1$
+        ArrayList<String> quicksetChoicesList = new ArrayList<String>();
+        // List<String> quicksetChoicesList = new List<String>();
         quicksetChoicesList.add(1, "iMap FDCT"); //$NON-NLS-1$
         quicksetChoicesList.add(2, "Fred-Ecology"); //$NON-NLS-1$
         quicksetChoicesList.add(3, "Fred-Bot,Zool"); //$NON-NLS-1$
