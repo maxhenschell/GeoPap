@@ -246,6 +246,9 @@
     <string name="fred_column_Lon">Longitude column name</string>
     <string name="fred_column_note">Notes column name</string>
     <string name="fred_tables_two_levels">Parent-Child table structure</string>
+    <string name="fred_quick_sets_summary">Change all preferences at once here with quick-sets.</string>
+    <string name="fred_quick_sets">Quick-sets</string>
+    <string name="fred_choose_settings">Choose a group of predefined settings</string>
     <!-- Fred default values: change these to change defaults-->    
     <string name="fred_defval_external_db_path">/mnt/FRED/FRED.db</string>
     <string name="fred_defval_external_db_name">FRED</string>

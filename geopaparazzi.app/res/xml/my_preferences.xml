@@ -161,17 +161,23 @@
     <PreferenceScreen 
         android:title="@string/fred_preferences" 
         android:order="300">
+	    <eu.hydrologis.geopaparazzi.preferences.FredQuickSets
+			android:defaultValue=""
+			android:key="PREFS_KEY_FRED_QUICK_SET"
+			android:order="301"
+			android:summary="@string/fred_quick_sets_summary"
+			android:title="@string/fred_quick_sets" />
         <EditTextPreference 
             android:key="EXTERNAL_DB" 
             android:title="@string/fred_external_db_path"
             android:defaultValue="@string/fred_defval_external_db_path" 
-            android:order="301">
+            android:order="302">
         </EditTextPreference> 
         <EditTextPreference 
             android:key="EXTERNAL_DB_NAME" 
             android:title="@string/fred_external_db_name"
             android:defaultValue="@string/fred_defval_external_db_name" 
-            android:order="302">
+            android:order="303">
         </EditTextPreference> 
         <PreferenceScreen
 	       	android:title="@string/child_table_info" 

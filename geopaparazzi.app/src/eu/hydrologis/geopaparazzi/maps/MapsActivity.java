@@ -562,6 +562,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener {
             dataOverlay.clearItems();
             dataOverlay.clearWays();
 
+            /* gps tracks */
             List<OverlayWay> logOverlaysList = DaoGpsLog.getGpslogOverlays();
             dataOverlay.addWays(logOverlaysList);
 
