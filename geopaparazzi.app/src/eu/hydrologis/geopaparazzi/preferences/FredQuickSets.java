@@ -26,7 +26,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -42,7 +41,7 @@ import eu.hydrologis.geopaparazzi.R;
  */
 public class FredQuickSets extends DialogPreference {
     private Context context;
-    private EditText editView;
+    // private EditText editView;
     private String quicksetChoice = ""; //$NON-NLS-1$
     private Spinner quicksetChoicesSpinner;
     private List<String> quicksetChoicesList;
@@ -98,6 +97,7 @@ public class FredQuickSets extends DialogPreference {
 
         return mainLayout;
     }
+    /*
     @Override
     protected void onBindDialogView( View v ) {
         super.onBindDialogView(v);
@@ -128,7 +128,7 @@ public class FredQuickSets extends DialogPreference {
             }
         }
     }
-
+    */
     @Override
     protected Object onGetDefaultValue( TypedArray a, int index ) {
         return (a.getString(index));
