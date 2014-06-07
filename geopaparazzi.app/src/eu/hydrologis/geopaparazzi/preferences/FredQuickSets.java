@@ -17,19 +17,7 @@
  */
 package eu.hydrologis.geopaparazzi.preferences;
 
-import java.util.List;
-
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.preference.DialogPreference;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.support.v4.view.ViewPager.LayoutParams;
 import eu.hydrologis.geopaparazzi.R;
 
 /**
@@ -78,7 +66,7 @@ public class FredQuickSets extends DialogPreference {
         quicksetChoicesSpinner.setPadding(15, 5, 15, 5);
         mainLayout.addView(quicksetChoicesSpinner);
 
-        quicksetChoicesList.add(0, ""); //$NON-NLS-1$
+        //quicksetChoicesList.add(0, ""); //$NON-NLS-1$
         quicksetChoicesList.add(1, "iMap FDCT"); //$NON-NLS-1$
         quicksetChoicesList.add(2, "Fred-Ecology"); //$NON-NLS-1$
         quicksetChoicesList.add(3, "Fred-Bot,Zool"); //$NON-NLS-1$
