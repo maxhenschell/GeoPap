@@ -17,7 +17,19 @@
  */
 package eu.hydrologis.geopaparazzi.preferences;
 
-import android.support.v4.view.ViewPager.LayoutParams;
+import java.util.List;
+
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.preference.DialogPreference;
+import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
 import eu.hydrologis.geopaparazzi.R;
 
 /**
