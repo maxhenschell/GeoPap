@@ -33,9 +33,11 @@ import android.widget.TextView;
 import eu.hydrologis.geopaparazzi.R;
 
 /**
- * A custom sdcard path chooser.
+ * A spinner within preferences, modified from
+ * Andrea Antonello's custom sdcard path chooser.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * 
+ * @author Tim Howard
  *
  */
 public class FredQuickSets extends DialogPreference {
@@ -77,9 +79,9 @@ public class FredQuickSets extends DialogPreference {
         mainLayout.addView(quicksetChoicesSpinner);
 
         quicksetChoicesList.add(0, ""); //$NON-NLS-1$
-        quicksetChoicesList.add(0, "iMap FDCT"); //$NON-NLS-1$
-        quicksetChoicesList.add(0, "Fred-Ecology"); //$NON-NLS-1$
-        quicksetChoicesList.add(0, "Fred-Bot,Zool"); //$NON-NLS-1$
+        quicksetChoicesList.add(1, "iMap FDCT"); //$NON-NLS-1$
+        quicksetChoicesList.add(2, "Fred-Ecology"); //$NON-NLS-1$
+        quicksetChoicesList.add(3, "Fred-Bot,Zool"); //$NON-NLS-1$
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
                 quicksetChoicesList);
