@@ -42,10 +42,24 @@ import eu.hydrologis.geopaparazzi.R;
  */
 public class FredQuickSets extends DialogPreference {
     private Context context;
-    // private EditText editView;
     private String quicksetChoice = ""; //$NON-NLS-1$
     private Spinner quicksetChoicesSpinner;
-    // private List<String> quicksetChoicesList;
+
+    private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
+    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
+    private static String FIRST_LEVEL_TABLE = "FIRST_LEVEL_TABLE";//$NON-NLS-1$
+    private static String COLUMN_FIRST_LEVEL_ID = "COLUMN_FIRST_LEVEL_ID";//$NON-NLS-1$
+    private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";//$NON-NLS-1$
+    private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";//$NON-NLS-1$
+    private static String TABLES_TWO_LEVELS = "TABLES_TWO_LEVELS";//$NON-NLS-1$
+    private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
+    private static String COLUMN_LON = "COLUMN_LON";//$NON-NLS-1$
+    private static String COLUMN_NOTE = "COLUMN_NOTE";//$NON-NLS-1$
+    private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";//$NON-NLS-1$
+    private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
+    private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
+    private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
+
     /**
      * @param ctxt  the context to use.
      * @param attrs attributes.
@@ -127,8 +141,8 @@ public class FredQuickSets extends DialogPreference {
             persistString(quicksetChoice);
         }
 
+        // TODO figure out getDir or some variant to get the base path
         String externalDB = "one"; //$NON-NLS-1$
-        /*
         String externalDBname = "two"; //$NON-NLS-1$
         Boolean haveParentTable = true;
         String parentTable = "three"; //$NON-NLS-1$  
@@ -142,25 +156,74 @@ public class FredQuickSets extends DialogPreference {
         String parentTimeStamp = "eleven"; //$NON-NLS-1$
         String childDescriptorField = "twelve"; //$NON-NLS-1$
         String childTimeStamp = "thirteen"; //$NON-NLS-1$
-        */
+
         if (quicksetChoice == "iMap FDCT") {
-            // do something here
-            externalDB = "iMapDB";
+            externalDB = "/mnt/FDCT/FDCT.db"; //$NON-NLS-1$
+            externalDBname = "FDCT"; //$NON-NLS-1$
+            haveParentTable = false;
+            parentTable = "three"; //$NON-NLS-1$  
+            parentID = "four"; //$NON-NLS-1$  
+            childTable = "five"; //$NON-NLS-1$  
+            childID = "six"; //$NON-NLS-1$  
+            colLat = "seven"; //$NON-NLS-1$  
+            colLon = "eight"; //$NON-NLS-1$  
+            colNote = "nine"; //$NON-NLS-1$  
+            parentDescriptorField = "ten"; //$NON-NLS-1$
+            parentTimeStamp = "eleven"; //$NON-NLS-1$
+            childDescriptorField = "twelve"; //$NON-NLS-1$
+            childTimeStamp = "thirteen"; //$NON-NLS-1$
         } else if (quicksetChoice == "Fred-Ecology") {
-            // do more stuff
-            externalDB = "EcologyDB";
+            externalDB = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
+            externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
+            haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));
+            parentTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_first_level_table);
+            parentID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_first_level_ID);
+            childTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_table);
+            childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_ID);
+            colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_Lat);
+            colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_Lon);
+            colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_note);
+            parentDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_first_level_descriptor);
+            parentTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_first_level_timestamp);
+            childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
+            childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
         } else if (quicksetChoice == "Fred-Bot,Zool") {
-            // do more stuff
-            externalDB = "BotanyDB";
+            externalDB = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
+            externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
+            haveParentTable = false;
+            parentTable = "three"; //$NON-NLS-1$  
+            parentID = "four"; //$NON-NLS-1$  
+            childTable = "five"; //$NON-NLS-1$  
+            childID = "six"; //$NON-NLS-1$  
+            colLat = "seven"; //$NON-NLS-1$  
+            colLon = "eight"; //$NON-NLS-1$  
+            colNote = "nine"; //$NON-NLS-1$  
+            parentDescriptorField = "ten"; //$NON-NLS-1$
+            parentTimeStamp = "eleven"; //$NON-NLS-1$
+            childDescriptorField = "twelve"; //$NON-NLS-1$
+            childTimeStamp = "thirteen"; //$NON-NLS-1$
         } else {
-            // get out
+            // don't change anything
         }
 
         // SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences prefs = this.getSharedPreferences();
         // SharedPreferences prefs = getSharedPreferences(String n, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("EXTERNAL_DB", externalDB);
+        editor.putString(EXTERNAL_DB, externalDB);
+        editor.putString(EXTERNAL_DB_NAME, externalDBname);
+        editor.putBoolean(TABLES_TWO_LEVELS, haveParentTable);
+        editor.putString(FIRST_LEVEL_TABLE, parentTable);
+        editor.putString(COLUMN_FIRST_LEVEL_ID, parentID);
+        editor.putString(SECOND_LEVEL_TABLE, childTable);
+        editor.putString(COLUMN_SECOND_LEVEL_ID, childID);
+        editor.putString(COLUMN_LAT, colLat);
+        editor.putString(COLUMN_LON, colLon);
+        editor.putString(COLUMN_NOTE, colNote);
+        editor.putString(COLUMN_FIRST_LEVEL_DESCRIPTOR, parentDescriptorField);
+        editor.putString(COLUMN_FIRST_LEVEL_TIMESTAMP, parentTimeStamp);
+        editor.putString(COLUMN_SECOND_LEVEL_DESCRIPTOR, childDescriptorField);
+        editor.putString(COLUMN_SECOND_LEVEL_TIMESTAMP, childTimeStamp);
         editor.commit();
 
         /*
@@ -182,7 +245,6 @@ public class FredQuickSets extends DialogPreference {
         */
 
     }
-
     @Override
     protected Object onGetDefaultValue( TypedArray a, int index ) {
         return (a.getString(index));
