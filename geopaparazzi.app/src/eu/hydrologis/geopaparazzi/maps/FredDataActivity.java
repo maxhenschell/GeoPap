@@ -78,20 +78,20 @@ public class FredDataActivity extends Activity {
 
     private List<String> firstIDs; // first level information -- e.g. surveysite
     private List<String> secondIDs; // second level information -- e.g. obspoint
-    private static String EXTERNAL_DB = "EXTERNAL_DB";
-    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";
-    private static String FIRST_LEVEL_TABLE = "FIRST_LEVEL_TABLE";
-    private static String COLUMN_FIRST_LEVEL_ID = "COLUMN_FIRST_LEVEL_ID";
-    private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";
-    private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";
-    private static String TABLES_TWO_LEVELS = "TABLES_TWO_LEVELS";
-    private static String COLUMN_LAT = "COLUMN_LAT";
-    private static String COLUMN_LON = "COLUMN_LON";
-    private static String COLUMN_NOTE = "COLUMN_NOTE";
-    private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";
-    private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";
-    private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";
-    private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";
+    private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
+    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
+    private static String FIRST_LEVEL_TABLE = "FIRST_LEVEL_TABLE";//$NON-NLS-1$
+    private static String COLUMN_FIRST_LEVEL_ID = "COLUMN_FIRST_LEVEL_ID";//$NON-NLS-1$
+    private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";//$NON-NLS-1$
+    private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";//$NON-NLS-1$
+    private static String TABLES_TWO_LEVELS = "TABLES_TWO_LEVELS";//$NON-NLS-1$
+    private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
+    private static String COLUMN_LON = "COLUMN_LON";//$NON-NLS-1$
+    private static String COLUMN_NOTE = "COLUMN_NOTE";//$NON-NLS-1$
+    private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";//$NON-NLS-1$
+    private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
+    private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
+    private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -104,14 +104,14 @@ public class FredDataActivity extends Activity {
 
         final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
         final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-        final Boolean haveParentTable = preferences.getBoolean(TABLES_TWO_LEVELS, true); //$NON-NLS-1$
-        final String parentTable = preferences.getString(FIRST_LEVEL_TABLE, "default1"); //$NON-NLS-1$  //$NON-NLS-2$
-        final String parentID = preferences.getString(COLUMN_FIRST_LEVEL_ID, "default2"); //$NON-NLS-1$  //$NON-NLS-2$
-        final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$  //$NON-NLS-2$
-        final String childID = preferences.getString(COLUMN_SECOND_LEVEL_ID, "default4"); //$NON-NLS-1$  //$NON-NLS-2$
-        final String colLat = preferences.getString(COLUMN_LAT, "default5"); //$NON-NLS-1$  //$NON-NLS-2$
-        final String colLon = preferences.getString(COLUMN_LON, "default6"); //$NON-NLS-1$  //$NON-NLS-2$
-        final String colNote = preferences.getString(COLUMN_NOTE, "default7"); //$NON-NLS-1$  //$NON-NLS-2$
+        final Boolean haveParentTable = preferences.getBoolean(TABLES_TWO_LEVELS, true);
+        final String parentTable = preferences.getString(FIRST_LEVEL_TABLE, "default1"); //$NON-NLS-1$  
+        final String parentID = preferences.getString(COLUMN_FIRST_LEVEL_ID, "default2"); //$NON-NLS-1$  
+        final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$  
+        final String childID = preferences.getString(COLUMN_SECOND_LEVEL_ID, "default4"); //$NON-NLS-1$  
+        final String colLat = preferences.getString(COLUMN_LAT, "default5"); //$NON-NLS-1$  
+        final String colLon = preferences.getString(COLUMN_LON, "default6"); //$NON-NLS-1$  
+        final String colNote = preferences.getString(COLUMN_NOTE, "default7"); //$NON-NLS-1$  
 
         final String parentDescriptorField = preferences.getString(COLUMN_FIRST_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
         final String parentTimeStamp = preferences.getString(COLUMN_FIRST_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
