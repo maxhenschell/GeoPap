@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.os.Environment;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
@@ -142,6 +143,8 @@ public class FredQuickSets extends DialogPreference {
         }
 
         // TODO figure out getDir or some variant to get the base path
+        String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
         String externalDB = "one"; //$NON-NLS-1$
         String externalDBname = "two"; //$NON-NLS-1$
         Boolean haveParentTable = true;
@@ -189,7 +192,7 @@ public class FredQuickSets extends DialogPreference {
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
         } else if (quicksetChoice == "Fred-Bot,Zool") {
             externalDB = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
-            externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
+            externalDBname = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = false;
             parentTable = "three"; //$NON-NLS-1$  
             parentID = "four"; //$NON-NLS-1$  
