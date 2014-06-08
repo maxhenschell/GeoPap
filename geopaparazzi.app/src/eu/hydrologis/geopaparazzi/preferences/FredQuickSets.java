@@ -161,7 +161,7 @@ public class FredQuickSets extends DialogPreference {
         String childTimeStamp = "thirteen"; //$NON-NLS-1$
 
         if (quicksetChoice == "iMap FDCT") {
-            externalDB = "/mnt/FDCT/FDCT.db"; //$NON-NLS-1$
+            externalDB = baseDir + "/FDCT/FDCT.db"; //$NON-NLS-1$
             externalDBname = "FDCT"; //$NON-NLS-1$
             haveParentTable = false;
             parentTable = "three"; //$NON-NLS-1$  
@@ -176,7 +176,7 @@ public class FredQuickSets extends DialogPreference {
             childDescriptorField = "twelve"; //$NON-NLS-1$
             childTimeStamp = "thirteen"; //$NON-NLS-1$
         } else if (quicksetChoice == "Fred-Ecology") {
-            externalDB = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
+            externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));
             parentTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_first_level_table);
@@ -191,8 +191,8 @@ public class FredQuickSets extends DialogPreference {
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
         } else if (quicksetChoice == "Fred-Bot,Zool") {
-            externalDB = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
-            externalDBname = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
+            externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
+            externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = false;
             parentTable = "three"; //$NON-NLS-1$  
             parentID = "four"; //$NON-NLS-1$  

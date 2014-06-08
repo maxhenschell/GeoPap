@@ -250,7 +250,7 @@
     <string name="fred_quick_sets">Quick-sets</string>
     <string name="fred_choose_settings">Choose a group of predefined settings</string>
     <!-- Fred default values: change these to change defaults-->    
-    <string name="fred_defval_external_db_path">/mnt/FRED/FRED.db</string>
+    <string name="fred_defval_external_db_path">/FRED/FRED.db</string>
     <string name="fred_defval_external_db_name">FRED</string>
     <string name="fred_defval_first_level_table">IPAQ_surveysite</string>
     <string name="fred_defval_second_level_table">IPAQ_Obspts</string>
