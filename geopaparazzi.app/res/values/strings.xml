@@ -264,21 +264,21 @@
     <string name="fred_defval_two_levels">true</string>
     <string name="fred_defval_second_level_descriptor">Obspt</string>    
     <string name="fred_defval_second_level_timestamp">TIMESTAMP</string>
-    
+    <!-- Two other quick-sets: Botany/zoology and iMap -->
     <string name="fred_BotZoo_external_db_path">/FRED/FRED.db</string>
     <string name="fred_BotZoo_external_db_name">FRED</string>
-    <string name="fred_BotZoo_two_levels">false</string>      
-    <string name="fred_BotZoo_first_level_table">IPAQ_surveysite</string>
-    <string name="fred_BotZoo_first_level_ID">Site_ID</string>
-    <string name="fred_BotZoo_first_level_descriptor">Surveysite</string>
-    <string name="fred_BotZoo_first_level_timestamp">TIMESTAMP</string>              
-    <string name="fred_BotZoo_second_level_table">IPAQ_Area</string>
-    <string name="fred_BotZoo_second_level_ID">Area_ID</string>
-    <string name="fred_BotZoo_column_Lat">latitude</string>
-    <string name="fred_BotZoo_column_Lon">longitude</string>
-    <string name="fred_BotZoo_column_note">Comments</string>
-    <string name="fred_BotZoo_second_level_descriptor">Area</string>
-    <string name="fred_BotZoo_second_level_timestamp">TIMESTAMP</string>
+    <string name="fred_BotZoo_two_levels">true</string>      
+    <string name="fred_BotZoo_first_level_table">IPAQ_SppSurvArea</string>
+    <string name="fred_BotZoo_first_level_ID">intArea_id</string>
+    <string name="fred_BotZoo_first_level_descriptor">strAreaComment</string>
+    <string name="fred_BotZoo_first_level_timestamp">TimeStamp</string>              
+    <string name="fred_BotZoo_second_level_table">IPAQ_SppSurvUtmList</string>
+    <string name="fred_BotZoo_second_level_ID">intUtm_ID</string>
+    <string name="fred_BotZoo_column_Lat">intlatitude</string>
+    <string name="fred_BotZoo_column_Lon">intlongitude</string>
+    <string name="fred_BotZoo_column_note">StrComment</string>
+    <string name="fred_BotZoo_second_level_descriptor">strPointName</string>
+    <string name="fred_BotZoo_second_level_timestamp">Timestamp</string>
     
     <string name="fred_iMap_external_db_path">/ImapInvasivesField/ImapInvasivesField.db</string>
     <string name="fred_iMap_external_db_name">iMapInvasivesField</string>
