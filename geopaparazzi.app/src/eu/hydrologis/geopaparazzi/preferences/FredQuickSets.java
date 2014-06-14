@@ -144,23 +144,23 @@ public class FredQuickSets extends DialogPreference {
 
         // get the base path
         String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        // set defaults to something real
+        String externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
+        String externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
+        Boolean haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
+        String parentTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_table);
+        String parentID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_ID);
+        String parentDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_descriptor);
+        String parentTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_timestamp);
+        String childTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_table);
+        String childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_ID);
+        String colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lat);
+        String colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lon);
+        String colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
+        String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
+        String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
 
-        String externalDB = "one"; //$NON-NLS-1$
-        String externalDBname = "two"; //$NON-NLS-1$
-        Boolean haveParentTable = true;
-        String parentTable = "three"; //$NON-NLS-1$  
-        String parentID = "four"; //$NON-NLS-1$  
-        String childTable = "five"; //$NON-NLS-1$  
-        String childID = "six"; //$NON-NLS-1$  
-        String colLat = "seven"; //$NON-NLS-1$  
-        String colLon = "eight"; //$NON-NLS-1$  
-        String colNote = "nine"; //$NON-NLS-1$  
-        String parentDescriptorField = "ten"; //$NON-NLS-1$
-        String parentTimeStamp = "eleven"; //$NON-NLS-1$
-        String childDescriptorField = "twelve"; //$NON-NLS-1$
-        String childTimeStamp = "thirteen"; //$NON-NLS-1$
-
-        if (quicksetChoice == "iMap FDCT") {
+        if (quicksetChoice == "iMap FDCT") { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
@@ -175,7 +175,7 @@ public class FredQuickSets extends DialogPreference {
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
-        } else if (quicksetChoice == "Fred-Ecology") {
+        } else if (quicksetChoice == "Fred-Ecology") { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));
@@ -190,7 +190,7 @@ public class FredQuickSets extends DialogPreference {
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
-        } else if (quicksetChoice == "Fred-Bot,Zool") {
+        } else if (quicksetChoice == "Fred-Bot,Zool") { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_two_levels));
@@ -209,9 +209,7 @@ public class FredQuickSets extends DialogPreference {
             // don't change anything
         }
 
-        // SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences prefs = this.getSharedPreferences();
-        // SharedPreferences prefs = getSharedPreferences(String n, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(EXTERNAL_DB, externalDB);
         editor.putString(EXTERNAL_DB_NAME, externalDBname);
@@ -228,24 +226,6 @@ public class FredQuickSets extends DialogPreference {
         editor.putString(COLUMN_SECOND_LEVEL_DESCRIPTOR, childDescriptorField);
         editor.putString(COLUMN_SECOND_LEVEL_TIMESTAMP, childTimeStamp);
         editor.commit();
-
-        /*
-        final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
-        final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-        final Boolean haveParentTable = preferences.getBoolean(TABLES_TWO_LEVELS, true);
-        final String parentTable = preferences.getString(FIRST_LEVEL_TABLE, "default1"); //$NON-NLS-1$  
-        final String parentID = preferences.getString(COLUMN_FIRST_LEVEL_ID, "default2"); //$NON-NLS-1$  
-        final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$  
-        final String childID = preferences.getString(COLUMN_SECOND_LEVEL_ID, "default4"); //$NON-NLS-1$  
-        final String colLat = preferences.getString(COLUMN_LAT, "default5"); //$NON-NLS-1$  
-        final String colLon = preferences.getString(COLUMN_LON, "default6"); //$NON-NLS-1$  
-        final String colNote = preferences.getString(COLUMN_NOTE, "default7"); //$NON-NLS-1$  
-
-        final String parentDescriptorField = preferences.getString(COLUMN_FIRST_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
-        final String parentTimeStamp = preferences.getString(COLUMN_FIRST_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
-        final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default10"); //$NON-NLS-1$
-        final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default11"); //$NON-NLS-1$
-        */
 
     }
     @Override

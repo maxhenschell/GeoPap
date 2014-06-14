@@ -271,14 +271,14 @@
     <string name="fred_BotZoo_first_level_table">IPAQ_SppSurvArea</string>
     <string name="fred_BotZoo_first_level_ID">intArea_id</string>
     <string name="fred_BotZoo_first_level_descriptor">strAreaComment</string>
-    <string name="fred_BotZoo_first_level_timestamp">TimeStamp</string>              
+    <string name="fred_BotZoo_first_level_timestamp">TIMESTAMP</string>              
     <string name="fred_BotZoo_second_level_table">IPAQ_SppSurvUtmList</string>
     <string name="fred_BotZoo_second_level_ID">intUtm_ID</string>
     <string name="fred_BotZoo_column_Lat">intlatitude</string>
     <string name="fred_BotZoo_column_Lon">intlongitude</string>
     <string name="fred_BotZoo_column_note">StrComment</string>
     <string name="fred_BotZoo_second_level_descriptor">strPointName</string>
-    <string name="fred_BotZoo_second_level_timestamp">Timestamp</string>
+    <string name="fred_BotZoo_second_level_timestamp">TIMESTAMP</string>
     
     <string name="fred_iMap_external_db_path">/ImapInvasivesField/ImapInvasivesField.db</string>
     <string name="fred_iMap_external_db_name">iMapInvasivesField</string>
