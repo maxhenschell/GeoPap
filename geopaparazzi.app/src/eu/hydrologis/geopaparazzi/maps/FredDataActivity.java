@@ -61,7 +61,7 @@ import eu.hydrologis.geopaparazzi.database.DatabaseManager;
  */
 public class FredDataActivity extends Activity {
 
-    private static final String USE_MAPCENTER_POSITION = "USE_MAPCENTER_POSITION";
+    private static final String USE_MAPCENTER_POSITION = "USE_MAPCENTER_POSITION"; //$NON-NLS-1$
     private double latitude;
     private double longitude;
     private double elevation;
@@ -204,8 +204,8 @@ public class FredDataActivity extends Activity {
             }
             try {
                 String firstIDsArrayFirstRow = firstIDs.get(0);
-                int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second
-                String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", "));
+                int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second //$NON-NLS-1$
+                String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", ")); //$NON-NLS-1$
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID, firstIDsID);
             } catch (IOException e) {
@@ -293,8 +293,10 @@ public class FredDataActivity extends Activity {
             }
         });
         // TODO improve THIS BUTTON
+        // disable for now
         Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
         returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
+        returnButton.setEnabled(false); // disable for now
         returnButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick( View v ) {
                 Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
