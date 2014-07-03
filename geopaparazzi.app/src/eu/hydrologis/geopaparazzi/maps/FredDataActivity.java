@@ -44,6 +44,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
@@ -200,7 +201,8 @@ public class FredDataActivity extends Activity {
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
             } catch (IOException e) {
-                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                // e.printStackTrace();
             }
             try {
                 String firstIDsArrayFirstRow = firstIDs.get(0);
@@ -209,7 +211,8 @@ public class FredDataActivity extends Activity {
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID, firstIDsID);
             } catch (IOException e) {
-                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                // e.printStackTrace();
             }
 
         } else {
@@ -217,7 +220,8 @@ public class FredDataActivity extends Activity {
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
                 secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
             } catch (IOException e) {
-                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                // e.printStackTrace();
             }
         }
 
@@ -287,7 +291,8 @@ public class FredDataActivity extends Activity {
                     IsWritten = writeGpsData(childTable, colLat, colLon, colNote, parentID, firstIDsID, haveParentTable, childID,
                             SecondIDsID, lat, lon, note, sqlDB);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
                 }
                 writeDataButton.setChecked(IsWritten);
             }
@@ -357,7 +362,8 @@ public class FredDataActivity extends Activity {
                         lvlTwoSpinner.setAdapter(lvlTwoAdapter);
                         lvlTwoSpinner.setSelection(0);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
                     }
                 }
                 public void onNothingSelected( AdapterView< ? > adapterView ) {
@@ -391,7 +397,8 @@ public class FredDataActivity extends Activity {
                     edittextNote.setText(existingNoteData);
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
                 }
             }
             public void onNothingSelected( AdapterView< ? > adapterView ) {
