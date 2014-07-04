@@ -133,245 +133,286 @@ public class FredDataActivity extends Activity {
         if (!dbExists) {
             Toast.makeText(getApplicationContext(), "No DB, check settings", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             finish();
-        }
-
-        // position type toggle button
-        togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
-        togglePositionTypeButtonGps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-            public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ) {
-                Editor edit = preferences.edit();
-                edit.putBoolean(USE_MAPCENTER_POSITION, !isChecked);
-                edit.commit();
-            }
-        });
-
-        boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
-        if (GPLog.LOG_HEAVY)
-            GPLog.addLogEntry(this, "position button set to: " + useMapCenterPosition); //$NON-NLS-1$
-
-        double[] mapCenter = PositionUtilities.getMapCenterFromPreferences(preferences, true, true);
-        mapCenterLatitude = mapCenter[1];
-        mapCenterLongitude = mapCenter[0];
-        // mapCenterElevation = 0.0;
-
-        /**
-        if (GpsManager.getInstance(this).hasFix()) {
-            gpsLocation = PositionUtilities.getGpsLocationFromPreferences(preferences);
-            // if (GPLog.LOG_HEAVY)
-            //    GPLog.addLogEntry(this, "gpsLoc_lat: " + gpsLocation[1]); //$NON-NLS-1$
-        }
-        if (gpsLocation == null) {
-            // no gps, can use only map center
-            togglePositionTypeButtonGps.setChecked(false);
-            togglePositionTypeButtonGps.setEnabled(false);
-            Editor edit = preferences.edit();
-            edit.putBoolean(USE_MAPCENTER_POSITION, false);
-            edit.commit();
         } else {
-            if (useMapCenterPosition) {
-                togglePositionTypeButtonGps.setChecked(false);
-            } else {
-                togglePositionTypeButtonGps.setChecked(true);
-            }
-        }
-        **/
 
-        broadcastReceiver = new BroadcastReceiver(){
-            public void onReceive( Context context, Intent intent ) {
-                GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
-                if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
-                    gpsLocation = GpsServiceUtilities.getPosition(intent);
-                    boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
-                    if (useMapCenterPosition) {
-                        togglePositionTypeButtonGps.setChecked(false);
-                    } else {
-                        togglePositionTypeButtonGps.setChecked(true);
-                    }
-                } else {
-                    togglePositionTypeButtonGps.setChecked(false);
-                    togglePositionTypeButtonGps.setEnabled(false);
+            // position type toggle button
+            togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
+            togglePositionTypeButtonGps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+                public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ) {
                     Editor edit = preferences.edit();
-                    edit.putBoolean(USE_MAPCENTER_POSITION, true);
+                    edit.putBoolean(USE_MAPCENTER_POSITION, !isChecked);
                     edit.commit();
                 }
+            });
+
+            boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
+            if (GPLog.LOG_HEAVY)
+                GPLog.addLogEntry(this, "position button set to: " + useMapCenterPosition); //$NON-NLS-1$
+
+            double[] mapCenter = PositionUtilities.getMapCenterFromPreferences(preferences, true, true);
+            mapCenterLatitude = mapCenter[1];
+            mapCenterLongitude = mapCenter[0];
+            // mapCenterElevation = 0.0;
+
+            /**
+            if (GpsManager.getInstance(this).hasFix()) {
+                gpsLocation = PositionUtilities.getGpsLocationFromPreferences(preferences);
+                // if (GPLog.LOG_HEAVY)
+                //    GPLog.addLogEntry(this, "gpsLoc_lat: " + gpsLocation[1]); //$NON-NLS-1$
             }
-        };
-        GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
-        GpsServiceUtilities.triggerBroadcast(this);
-
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-        firstIDs = new ArrayList<String>();
-        secondIDs = new ArrayList<String>();
-        // filter child records by parent only if we have a parent table
-        if (haveParentTable) {
-            try {
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
-                firstIDs = getTableIDs(getApplicationContext(), sqlDB, parentTable, parentID, parentDescriptorField,
-                        parentTimeStamp, null, null);
-            } catch (IOException e) {
-                Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
-                // e.printStackTrace();
-            }
-            try {
-                String firstIDsArrayFirstRow = firstIDs.get(0);
-                int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second //$NON-NLS-1$
-                String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", ")); //$NON-NLS-1$
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
-                secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
-                        childTimeStamp, parentID, firstIDsID);
-            } catch (IOException e) {
-                Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
-                // e.printStackTrace();
-            }
-
-        } else {
-            try {
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
-                secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
-                        childTimeStamp, null, null);
-            } catch (IOException e) {
-                Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
-                // e.printStackTrace();
-            }
-        }
-
-        final TextView fredLocTextView = (TextView) findViewById(R.id.fredfrm_location);
-        String locText = fredLocTextView.getText().toString();
-        checkPositionCoordinates();
-        locText = "Lat:" + latitude + ", Lon:" + longitude; //$NON-NLS-1$ //$NON-NLS-2$
-        fredLocTextView.setText(locText);
-
-        final TextView fredElevTextView = (TextView) findViewById(R.id.fredfrm_elevation);
-        String elevText = fredElevTextView.getText().toString();
-        elevText = "Elev:" + String.format("%.2f", elevation) + "m"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        fredElevTextView.setText(elevText);
-
-        final EditText fredDestinationDB = (EditText) findViewById(R.id.fredfrm_destinationDB);
-        fredDestinationDB.setText(externalDB);
-
-        Button refreshButton = (Button) findViewById(R.id.refreshPosition);
-        refreshButton.setOnClickListener(new Button.OnClickListener(){
-            public void onClick( View v ) {
-                checkPositionCoordinates();
-                String loc = "Lat:" + latitude + ", Lon:" + longitude; //$NON-NLS-1$ //$NON-NLS-2$
-                fredLocTextView.setText(loc);
-                String elev = "Elev:" + String.format("%.2f", elevation) + "m"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                fredElevTextView.setText(elev);
-            }
-        });
-
-        Button avgButton = (Button) findViewById(R.id.fredfrm_avgbutton);
-        avgButton.setEnabled(false);
-
-        Button avgStopButton = (Button) findViewById(R.id.fredfrm_avgstopbutton);
-        avgStopButton.setEnabled(false);
-
-        writeDataButton = (ToggleButton) findViewById(R.id.fredfrm_writedataToggle);
-        writeDataButton.setOnClickListener(new ToggleButton.OnClickListener(){
-            public void onClick( View v ) {
-
-                boolean IsWritten = false;
-                writeDataButton.setChecked(IsWritten);
-
-                final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
-                String note = edittextNote.getText().toString();
-                // edittextNote.setText(fullDBPath);
-
-                String firstIDsID = null;
-                String spinDat = null;
-                int start = 0;
-
-                if (haveParentTable) {
-                    spinDat = (String) lvlOneSpinner.getSelectedItem();
-                    start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
-                    firstIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
+            if (gpsLocation == null) {
+                // no gps, can use only map center
+                togglePositionTypeButtonGps.setChecked(false);
+                togglePositionTypeButtonGps.setEnabled(false);
+                Editor edit = preferences.edit();
+                edit.putBoolean(USE_MAPCENTER_POSITION, false);
+                edit.commit();
+            } else {
+                if (useMapCenterPosition) {
+                    togglePositionTypeButtonGps.setChecked(false);
+                } else {
+                    togglePositionTypeButtonGps.setChecked(true);
                 }
+            }
+            **/
 
-                String SecondIDsID = null;
-                spinDat = (String) lvlTwoSpinner.getSelectedItem();
-                start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
-                SecondIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
+            broadcastReceiver = new BroadcastReceiver(){
+                public void onReceive( Context context, Intent intent ) {
+                    GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
+                    if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
+                        gpsLocation = GpsServiceUtilities.getPosition(intent);
+                        boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
+                        if (useMapCenterPosition) {
+                            togglePositionTypeButtonGps.setChecked(false);
+                        } else {
+                            togglePositionTypeButtonGps.setChecked(true);
+                        }
+                    } else {
+                        togglePositionTypeButtonGps.setChecked(false);
+                        togglePositionTypeButtonGps.setEnabled(false);
+                        Editor edit = preferences.edit();
+                        edit.putBoolean(USE_MAPCENTER_POSITION, true);
+                        edit.commit();
+                    }
+                }
+            };
+            GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
+            GpsServiceUtilities.triggerBroadcast(this);
 
-                String lat = String.format(Locale.getDefault(), "%.6f", latitude); //$NON-NLS-1$
-                String lon = String.format(Locale.getDefault(), "%.6f", longitude); //$NON-NLS-1$
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-                final SQLiteDatabase sqlDB;
+            firstIDs = new ArrayList<String>();
+            secondIDs = new ArrayList<String>();
+            // filter child records by parent only if we have a parent table
+            if (haveParentTable) {
                 try {
-                    sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this).openDatabase(externalDB, null, 2);
-                    IsWritten = writeGpsData(childTable, colLat, colLon, colNote, parentID, firstIDsID, haveParentTable, childID,
-                            SecondIDsID, lat, lon, note, sqlDB);
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
+                            .openDatabase(externalDB, null, 2);
+                    firstIDs = getTableIDs(getApplicationContext(), sqlDB, parentTable, parentID, parentDescriptorField,
+                            parentTimeStamp, null, null);
                 } catch (IOException e) {
-                    // e.printStackTrace();
                     Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                    // e.printStackTrace();
                 }
-                writeDataButton.setChecked(IsWritten);
+                try {
+                    String firstIDsArrayFirstRow = firstIDs.get(0);
+                    int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second //$NON-NLS-1$
+                    String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", ")); //$NON-NLS-1$
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
+                            .openDatabase(externalDB, null, 2);
+                    secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
+                            childTimeStamp, parentID, firstIDsID);
+                } catch (IOException e) {
+                    Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                    // e.printStackTrace();
+                }
+
+            } else {
+                try {
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
+                            .openDatabase(externalDB, null, 2);
+                    secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
+                            childTimeStamp, null, null);
+                } catch (IOException e) {
+                    Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                    // e.printStackTrace();
+                }
             }
-        });
-        // TODO improve THIS BUTTON
-        // disable for now until it is seamless
-        Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
-        returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
-        returnButton.setEnabled(false); // disable for now
-        returnButton.setOnClickListener(new Button.OnClickListener(){
-            public void onClick( View v ) {
-                Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
-                // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
-                startActivity(intent);
+
+            final TextView fredLocTextView = (TextView) findViewById(R.id.fredfrm_location);
+            String locText = fredLocTextView.getText().toString();
+            checkPositionCoordinates();
+            locText = "Lat:" + latitude + ", Lon:" + longitude; //$NON-NLS-1$ //$NON-NLS-2$
+            fredLocTextView.setText(locText);
+
+            final TextView fredElevTextView = (TextView) findViewById(R.id.fredfrm_elevation);
+            String elevText = fredElevTextView.getText().toString();
+            elevText = "Elev:" + String.format("%.2f", elevation) + "m"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            fredElevTextView.setText(elevText);
+
+            final EditText fredDestinationDB = (EditText) findViewById(R.id.fredfrm_destinationDB);
+            fredDestinationDB.setText(externalDB);
+
+            Button refreshButton = (Button) findViewById(R.id.refreshPosition);
+            refreshButton.setOnClickListener(new Button.OnClickListener(){
+                public void onClick( View v ) {
+                    checkPositionCoordinates();
+                    String loc = "Lat:" + latitude + ", Lon:" + longitude; //$NON-NLS-1$ //$NON-NLS-2$
+                    fredLocTextView.setText(loc);
+                    String elev = "Elev:" + String.format("%.2f", elevation) + "m"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    fredElevTextView.setText(elev);
+                }
+            });
+
+            Button avgButton = (Button) findViewById(R.id.fredfrm_avgbutton);
+            avgButton.setEnabled(false);
+
+            Button avgStopButton = (Button) findViewById(R.id.fredfrm_avgstopbutton);
+            avgStopButton.setEnabled(false);
+
+            writeDataButton = (ToggleButton) findViewById(R.id.fredfrm_writedataToggle);
+            writeDataButton.setOnClickListener(new ToggleButton.OnClickListener(){
+                public void onClick( View v ) {
+
+                    boolean IsWritten = false;
+                    writeDataButton.setChecked(IsWritten);
+
+                    final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
+                    String note = edittextNote.getText().toString();
+                    // edittextNote.setText(fullDBPath);
+
+                    String firstIDsID = null;
+                    String spinDat = null;
+                    int start = 0;
+
+                    if (haveParentTable) {
+                        spinDat = (String) lvlOneSpinner.getSelectedItem();
+                        start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
+                        firstIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
+                    }
+
+                    String SecondIDsID = null;
+                    spinDat = (String) lvlTwoSpinner.getSelectedItem();
+                    start = spinDat.indexOf("(") + 1; // the ID should be the second  //$NON-NLS-1$
+                    SecondIDsID = spinDat.substring(start, spinDat.indexOf(", ")); //$NON-NLS-1$
+
+                    String lat = String.format(Locale.getDefault(), "%.6f", latitude); //$NON-NLS-1$
+                    String lon = String.format(Locale.getDefault(), "%.6f", longitude); //$NON-NLS-1$
+
+                    final SQLiteDatabase sqlDB;
+                    try {
+                        sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
+                                .openDatabase(externalDB, null, 2);
+                        IsWritten = writeGpsData(childTable, colLat, colLon, colNote, parentID, firstIDsID, haveParentTable,
+                                childID, SecondIDsID, lat, lon, note, sqlDB);
+                    } catch (IOException e) {
+                        // e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                    }
+                    writeDataButton.setChecked(IsWritten);
+                }
+            });
+            // TODO improve THIS BUTTON
+            // disable for now until it is seamless
+            Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
+            returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
+            returnButton.setEnabled(false); // disable for now
+            returnButton.setOnClickListener(new Button.OnClickListener(){
+                public void onClick( View v ) {
+                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
+                    startActivity(intent);
+                }
+            });
+
+            lvlOneSpinner = (Spinner) findViewById(R.id.fredfrm_levelonespinner);
+
+            if (haveParentTable) {
+                ArrayAdapter<String> lvlOneAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+                        firstIDs);
+                lvlOneAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                lvlOneSpinner.setAdapter(lvlOneAdapter);
+                lvlOneSpinner.setSelection(0);
+            } else {
+                lvlOneSpinner.setEnabled(false);
             }
-        });
 
-        lvlOneSpinner = (Spinner) findViewById(R.id.fredfrm_levelonespinner);
+            lvlTwoSpinner = (Spinner) findViewById(R.id.fredfrm_leveltwospinner);
 
-        if (haveParentTable) {
-            ArrayAdapter<String> lvlOneAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, firstIDs);
-            lvlOneAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            lvlOneSpinner.setAdapter(lvlOneAdapter);
-            lvlOneSpinner.setSelection(0);
-        } else {
-            lvlOneSpinner.setEnabled(false);
-        }
+            ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, secondIDs);
+            lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            lvlTwoSpinner.setAdapter(lvlTwoAdapter);
+            lvlTwoSpinner.setSelection(0);
 
-        lvlTwoSpinner = (Spinner) findViewById(R.id.fredfrm_leveltwospinner);
+            // filter child spinner only if parent table and spinner present
+            if (haveParentTable) {
+                lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+                    public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
+                        try {
+                            // refresh data for second level spinner
+                            String firstIDsArrayChosenRow = firstIDs.get(itemPosition);
 
-        ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, secondIDs);
-        lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        lvlTwoSpinner.setAdapter(lvlTwoAdapter);
-        lvlTwoSpinner.setSelection(0);
+                            if (GPLog.LOG_HEAVY)
+                                GPLog.addLogEntry(this, "FirstLevel is " + firstIDsArrayChosenRow); //$NON-NLS-1$
 
-        // filter child spinner only if parent table and spinner present
-        if (haveParentTable) {
-            lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+                            int start = firstIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
+                            String firstIDsID = firstIDsArrayChosenRow.substring(start, firstIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
+
+                            if (GPLog.LOG_HEAVY)
+                                GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
+
+                            final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
+                                    .openDatabase(externalDB, null, 2);
+                            secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
+                                    childTimeStamp, parentID, firstIDsID);
+
+                            if (GPLog.LOG_HEAVY)
+                                GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
+
+                            ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(FredDataActivity.this,
+                                    android.R.layout.simple_spinner_item, secondIDs);
+                            lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            lvlTwoSpinner.setAdapter(lvlTwoAdapter);
+                            lvlTwoSpinner.setSelection(0);
+                        } catch (IOException e) {
+                            // e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    public void onNothingSelected( AdapterView< ? > adapterView ) {
+                        return;
+                    }
+                });
+            }
+
+            // get level two data to grab proper comment field
+            lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
                 public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
                     try {
                         // refresh data for second level spinner
-                        String firstIDsArrayChosenRow = firstIDs.get(itemPosition);
+                        String SecondIDsArrayChosenRow = secondIDs.get(itemPosition);
 
                         if (GPLog.LOG_HEAVY)
-                            GPLog.addLogEntry(this, "FirstLevel is " + firstIDsArrayChosenRow); //$NON-NLS-1$
+                            GPLog.addLogEntry(this, "SecondLevel is " + SecondIDsArrayChosenRow); //$NON-NLS-1$
 
-                        int start = firstIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
-                        String firstIDsID = firstIDsArrayChosenRow.substring(start, firstIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
+                        int start = SecondIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
+                        String SecondIDsID = SecondIDsArrayChosenRow.substring(start, SecondIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
 
                         if (GPLog.LOG_HEAVY)
-                            GPLog.addLogEntry(this, "FirstLevel ID is " + firstIDsID); //$NON-NLS-1$
+                            GPLog.addLogEntry(this, "SecondLevel ID is " + SecondIDsID); //$NON-NLS-1$
 
                         final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                                 .openDatabase(externalDB, null, 2);
-                        secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
-                                childTimeStamp, parentID, firstIDsID);
+                        String existingNoteData = getCommentData(getApplicationContext(), sqlDB, childTable, childID, colNote,
+                                SecondIDsID);
 
-                        if (GPLog.LOG_HEAVY)
-                            GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
+                        final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
+                        // String note = edittextNote.getText().toString();
+                        edittextNote.setText(existingNoteData);
 
-                        ArrayAdapter<String> lvlTwoAdapter = new ArrayAdapter<String>(FredDataActivity.this,
-                                android.R.layout.simple_spinner_item, secondIDs);
-                        lvlTwoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        lvlTwoSpinner.setAdapter(lvlTwoAdapter);
-                        lvlTwoSpinner.setSelection(0);
                     } catch (IOException e) {
                         // e.printStackTrace();
                         Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
@@ -381,43 +422,8 @@ public class FredDataActivity extends Activity {
                     return;
                 }
             });
+
         }
-
-        // get level two data to grab proper comment field
-        lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
-                try {
-                    // refresh data for second level spinner
-                    String SecondIDsArrayChosenRow = secondIDs.get(itemPosition);
-
-                    if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "SecondLevel is " + SecondIDsArrayChosenRow); //$NON-NLS-1$
-
-                    int start = SecondIDsArrayChosenRow.indexOf("(") + 1; //$NON-NLS-1$
-                    String SecondIDsID = SecondIDsArrayChosenRow.substring(start, SecondIDsArrayChosenRow.indexOf(", ")); //$NON-NLS-1$
-
-                    if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "SecondLevel ID is " + SecondIDsID); //$NON-NLS-1$
-
-                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
-                            .openDatabase(externalDB, null, 2);
-                    String existingNoteData = getCommentData(getApplicationContext(), sqlDB, childTable, childID, colNote,
-                            SecondIDsID);
-
-                    final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
-                    // String note = edittextNote.getText().toString();
-                    edittextNote.setText(existingNoteData);
-
-                } catch (IOException e) {
-                    // e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
-                }
-            }
-            public void onNothingSelected( AdapterView< ? > adapterView ) {
-                return;
-            }
-        });
-
     }
     // TODO need an onStart() for this activity!!!
     // TODO need an onPause() for this activity!!!
