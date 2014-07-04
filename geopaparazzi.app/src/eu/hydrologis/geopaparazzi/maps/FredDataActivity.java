@@ -199,7 +199,8 @@ public class FredDataActivity extends Activity {
         if (haveParentTable) {
             try {
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
-                firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
+                firstIDs = getTableIDs(getApplicationContext(), sqlDB, parentTable, parentID, parentDescriptorField,
+                        parentTimeStamp, null, null);
             } catch (IOException e) {
                 Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
                 // e.printStackTrace();
@@ -209,7 +210,8 @@ public class FredDataActivity extends Activity {
                 int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second //$NON-NLS-1$
                 String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", ")); //$NON-NLS-1$
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
-                secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID, firstIDsID);
+                secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
+                        childTimeStamp, parentID, firstIDsID);
             } catch (IOException e) {
                 Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
                 // e.printStackTrace();
@@ -218,7 +220,8 @@ public class FredDataActivity extends Activity {
         } else {
             try {
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this).openDatabase(externalDB, null, 2);
-                secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
+                secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
+                        childTimeStamp, null, null);
             } catch (IOException e) {
                 Toast.makeText(getApplicationContext(), "DB error, check settings", Toast.LENGTH_LONG).show();
                 // e.printStackTrace();
@@ -298,7 +301,7 @@ public class FredDataActivity extends Activity {
             }
         });
         // TODO improve THIS BUTTON
-        // disable for now
+        // disable for now until it is seamless
         Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
         returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
         returnButton.setEnabled(false); // disable for now
@@ -350,8 +353,8 @@ public class FredDataActivity extends Activity {
 
                         final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                                 .openDatabase(externalDB, null, 2);
-                        secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
-                                firstIDsID);
+                        secondIDs = getTableIDs(getApplicationContext(), sqlDB, childTable, childID, childDescriptorField,
+                                childTimeStamp, parentID, firstIDsID);
 
                         if (GPLog.LOG_HEAVY)
                             GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
@@ -390,7 +393,8 @@ public class FredDataActivity extends Activity {
 
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                             .openDatabase(externalDB, null, 2);
-                    String existingNoteData = getCommentData(sqlDB, childTable, childID, colNote, SecondIDsID);
+                    String existingNoteData = getCommentData(getApplicationContext(), sqlDB, childTable, childID, colNote,
+                            SecondIDsID);
 
                     final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
                     // String note = edittextNote.getText().toString();
@@ -444,8 +448,8 @@ public class FredDataActivity extends Activity {
      * 
      * @throws IOException if a problem
      */
-    private static List<String> getTableIDs( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
-            String tsCol, String filterID, String strWhere ) throws IOException {
+    private static List<String> getTableIDs( Context context, SQLiteDatabase sqliteDatabase, String tableName, String IdCol,
+            String NameCol, String tsCol, String filterID, String strWhere ) throws IOException {
 
         String asColumnsToReturn[] = {NameCol, IdCol, tsCol};
         String strSortOrder = tsCol + " DESC"; //$NON-NLS-1$
@@ -479,6 +483,11 @@ public class FredDataActivity extends Activity {
                 }
             }
             return NmIdTsList;
+        } catch (Exception e) {
+            GPLog.error("FredReadQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
+            Toast msg = Toast.makeText(context, "DB error, check settings", Toast.LENGTH_LONG); //$NON-NLS-1$
+            msg.show();
+            throw new IOException(e.getLocalizedMessage());
         } finally {
             if (c != null)
                 c.close();
@@ -496,8 +505,8 @@ public class FredDataActivity extends Activity {
      * 
      * @throws IOException if a problem
      */
-    private static String getCommentData( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NoteCol,
-            String strWhere ) throws IOException {
+    private static String getCommentData( Context context, SQLiteDatabase sqliteDatabase, String tableName, String IdCol,
+            String NoteCol, String strWhere ) throws IOException {
 
         String asColumnsToReturn[] = {NoteCol};
         if (strWhere != null) {
@@ -510,6 +519,11 @@ public class FredDataActivity extends Activity {
             c.moveToFirst();
             String note = c.getString(0);
             return note;
+        } catch (Exception e) {
+            GPLog.error("FredReadQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
+            Toast msg = Toast.makeText(context, "DB error, check settings", Toast.LENGTH_LONG); //$NON-NLS-1$
+            msg.show();
+            throw new IOException(e.getLocalizedMessage());
         } finally {
             if (c != null)
                 c.close();
