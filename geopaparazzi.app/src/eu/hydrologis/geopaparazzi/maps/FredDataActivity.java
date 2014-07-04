@@ -19,6 +19,7 @@
  */
 package eu.hydrologis.geopaparazzi.maps;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,6 +127,13 @@ public class FredDataActivity extends Activity {
             GPLog.addLogEntry(this, "prefs child table: " + childTable); //$NON-NLS-1$
         if (GPLog.LOG_HEAVY)
             GPLog.addLogEntry(this, "prefs have parent table: " + haveParentTable); //$NON-NLS-1$
+
+        // first off, check to see if dB exists
+        final boolean dbExists = doesDatabaseExist(this, externalDB);
+        if (!dbExists) {
+            Toast.makeText(getApplicationContext(), "No DB, check settings", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+            finish();
+        }
 
         // position type toggle button
         togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
@@ -589,4 +597,16 @@ public class FredDataActivity extends Activity {
         return true;
     }
 
+    /**
+     * Check to see if DB exists
+     * 
+     * @param ContextWrapper is the context
+     * @param dbName is the name of the database to check
+     * 
+     */
+
+    private static boolean doesDatabaseExist( Context context, String dbName ) {
+        File dbFile = context.getDatabasePath(dbName);
+        return dbFile.exists();
+    }
 }
