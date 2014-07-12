@@ -113,6 +113,7 @@ import eu.geopaparazzi.spatialite.database.spatial.core.SpatialVectorTable;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.dashboard.ActionBar;
 import eu.hydrologis.geopaparazzi.database.DaoBookmarks;
+import eu.hydrologis.geopaparazzi.database.DaoFredPts;
 import eu.hydrologis.geopaparazzi.database.DaoGpsLog;
 import eu.hydrologis.geopaparazzi.database.DaoImages;
 import eu.hydrologis.geopaparazzi.database.DaoNotes;
@@ -565,6 +566,14 @@ public class MapsActivity extends MapActivity implements OnTouchListener {
             /* gps tracks */
             List<OverlayWay> logOverlaysList = DaoGpsLog.getGpslogOverlays();
             dataOverlay.addWays(logOverlaysList);
+
+            // TODO add fred points here
+            /* fred points (obs points, plots, zool or bot points,imap observations) */
+            Drawable fredPt = getResources().getDrawable(R.drawable.bookmark);
+            Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPt);
+            Context fredContext = getApplicationContext();
+            List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
+            dataOverlay.addItems(fredPtOverlays);
 
             /* images */
             if (DataManager.getInstance().areImagesVisible()) {
