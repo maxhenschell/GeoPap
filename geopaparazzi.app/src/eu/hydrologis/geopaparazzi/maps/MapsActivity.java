@@ -567,9 +567,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener {
             List<OverlayWay> logOverlaysList = DaoGpsLog.getGpslogOverlays();
             dataOverlay.addWays(logOverlaysList);
 
-            // TODO add fred points here
             /* fred points (obs points, plots, zool or bot points,imap observations) */
-            Drawable fredPt = getResources().getDrawable(R.drawable.bookmark);
+            Drawable fredPt = getResources().getDrawable(R.drawable.trianglept);
             Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPt);
             Context fredContext = getApplicationContext();
             List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
