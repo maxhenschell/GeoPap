@@ -34,7 +34,8 @@ import android.widget.ExpandableListView;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.mapsforge.R;
 import eu.geopaparazzi.mapsforge.mapsdirmanager.MapsDirManager;
-import eu.geopaparazzi.spatialite.util.SpatialDataType;
+import eu.geopaparazzi.spatialite.database.spatial.core.daos.SPL_Rasterlite;
+import eu.geopaparazzi.spatialite.database.spatial.core.enums.SpatialDataType;
 
 /**
  * Activity for tile source visualisation.
@@ -83,7 +84,7 @@ public class SourcesTreeListActivity extends Activity implements OnClickListener
         mbtilesToggleButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_background_drawable_selected));
 
         rasterLite2ToggleButton = (Button) findViewById(R.id.toggleRasterLite2Button);
-        if (!eu.geopaparazzi.spatialite.util.DaoSpatialite.Rasterlite2Version_CPU.equals("")) { //$NON-NLS-1$
+        if (!SPL_Rasterlite.Rasterlite2Version_CPU.equals("")) { //$NON-NLS-1$
             // show this only if the driver is installed and active
             rasterLite2ToggleButton.setOnClickListener(this);
             rasterLite2ToggleButton.setText(SpatialDataType.RASTERLITE2.getTypeName());
@@ -111,9 +112,9 @@ public class SourcesTreeListActivity extends Activity implements OnClickListener
     }
 
     private void refreshData() throws Exception {
-        LinkedHashMap<String, List<String[]>> fodler2TablesMap = MapsDirManager.getInstance().getFolder2TablesMap();
+        LinkedHashMap<String, List<String[]>> folder2TablesMap = MapsDirManager.getInstance().getFolder2TablesMap();
         final LinkedHashMap<String, List<String[]>> newMap = new LinkedHashMap<String, List<String[]>>();
-        for( Entry<String, List<String[]>> item : fodler2TablesMap.entrySet() ) {
+        for( Entry<String, List<String[]>> item : folder2TablesMap.entrySet() ) {
             String key = item.getKey();
             ArrayList<String[]> newValues = new ArrayList<String[]>();
 
@@ -132,10 +133,13 @@ public class SourcesTreeListActivity extends Activity implements OnClickListener
 
                 if (textToFilter.length() > 0) {
                     // filter text
-                    String valueString = value[0].toLowerCase();
                     String filterString = textToFilter.toLowerCase();
+                    String valueString = value[0].toLowerCase();
                     if (!valueString.contains(filterString)) {
-                        doAdd = false;
+                        valueString = value[2].toLowerCase();
+                        if (!valueString.contains(filterString)) {
+                            doAdd = false;
+                        }
                     }
                 }
                 if (doAdd)
@@ -208,7 +212,7 @@ public class SourcesTreeListActivity extends Activity implements OnClickListener
             showMbtiles = !showMbtiles;
         }
 
-        if (!eu.geopaparazzi.spatialite.util.DaoSpatialite.Rasterlite2Version_CPU.equals(""))
+        if (!SPL_Rasterlite.Rasterlite2Version_CPU.equals(""))
             if (view == rasterLite2ToggleButton) {
                 if (!showRasterLite2) {
                     rasterLite2ToggleButton.setBackgroundDrawable(getResources().getDrawable(
