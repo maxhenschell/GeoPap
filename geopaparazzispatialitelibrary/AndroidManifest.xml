@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="10"
-        android:targetSdkVersion="19" >
+        android:targetSdkVersion="20" >
     </uses-sdk>
 
     <!--
@@ -30,7 +30,7 @@
 
     -->
 
-    <application android:label="GeopaparazziSpatialiteLibrary" >
+    <application  >
         <activity android:name="eu.geopaparazzi.spatialite.database.spatial.activities.LinesDataPropertiesActivity" >
         </activity>
         <activity android:name="eu.geopaparazzi.spatialite.database.spatial.activities.PolygonsDataPropertiesActivity" >
