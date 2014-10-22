@@ -355,7 +355,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         LinearLayout editingToolsLayout = (LinearLayout) findViewById(R.id.editingToolsLayout);
         EditManager.INSTANCE.setEditingView(editingView, editingToolsLayout);
 
-        // if after rotation a toolgroup is there, enable ti with its icons
+        // if after rotation a toolgroup is there, enable it with its icons
         ToolGroup activeToolGroup = EditManager.INSTANCE.getActiveToolGroup();
         if (activeToolGroup != null) {
             toggleEditingButton.setBackgroundResource(R.drawable.ic_toggle_editing_on);
@@ -1462,18 +1462,21 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     }
 
     private void setLeftButtoonsEnablement( boolean enable ) {
+        ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         ImageButton listNotesButton = (ImageButton) findViewById(R.id.listnotesbutton);
         ImageButton listBookmarksButton = (ImageButton) findViewById(R.id.bookmarkslistbutton);
         ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         if (enable) {
+            addfreddataButton.setVisibility(View.VISIBLE);
             addnotebytagButton.setVisibility(View.VISIBLE);
             addBookmarkButton.setVisibility(View.VISIBLE);
             listNotesButton.setVisibility(View.VISIBLE);
             listBookmarksButton.setVisibility(View.VISIBLE);
             toggleMeasuremodeButton.setVisibility(View.VISIBLE);
         } else {
+            addfreddataButton.setVisibility(View.GONE);
             addnotebytagButton.setVisibility(View.GONE);
             addBookmarkButton.setVisibility(View.GONE);
             listNotesButton.setVisibility(View.GONE);
@@ -1483,6 +1486,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     }
 
     private void setAllButtoonsEnablement( boolean enable ) {
+        ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         ImageButton listNotesButton = (ImageButton) findViewById(R.id.listnotesbutton);
@@ -1497,6 +1501,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         if (!enable) {
             visibility = View.GONE;
         }
+        addfreddataButton.setVisibility(visibility);
         addnotebytagButton.setVisibility(visibility);
         addBookmarkButton.setVisibility(visibility);
         listNotesButton.setVisibility(visibility);
