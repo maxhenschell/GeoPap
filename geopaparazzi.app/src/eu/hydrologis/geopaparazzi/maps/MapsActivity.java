@@ -1021,39 +1021,20 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         // }
         // }
         // break;
-        case (INSERTCOORD_RETURN_CODE): {
-            if (resultCode == Activity.RESULT_OK) {
-
-                float[] routePoints = data.getFloatArrayExtra(LibraryConstants.ROUTE);
-                if (routePoints != null) {
-                    // it is a routing request
-                    try {
-                        String name = data.getStringExtra(LibraryConstants.NAME);
-                        if (name == null) {
-                            name = "ROUTE_" + TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date()); //$NON-NLS-1$
-                        }
-                        DaoGpsLog logDumper = new DaoGpsLog();
-                        SQLiteDatabase sqliteDatabase = logDumper.getDatabase();
-                        java.sql.Date now = new java.sql.Date(new java.util.Date().getTime());
-                        long newLogId = logDumper.addGpsLog(now, now, 0, name, 3, "blue", true); //$NON-NLS-1$
-
-                        sqliteDatabase.beginTransaction();
+            case (INSERTCOORD_RETURN_CODE): {
+                if (resultCode == Activity.RESULT_OK) {
+                    float[] routePoints = data.getFloatArrayExtra(LibraryConstants.ROUTE);
+                    if (routePoints != null) {
+                        // it is a routing request
                         try {
-                            java.sql.Date nowPlus10Secs = now;
-                            for( int i = 0; i < routePoints.length; i = i + 2 ) {
-                                double lon = routePoints[i];
-                                double lat = routePoints[i + 1];
-                                double altim = -1;
-
-                                // dummy time increment
-                                nowPlus10Secs = new java.sql.Date(nowPlus10Secs.getTime() + 10000);
-                                logDumper.addGpsLogDataPoint(sqliteDatabase, newLogId, lon, lat, altim, nowPlus10Secs);
+                            String name = data.getStringExtra(LibraryConstants.NAME);
+                            if (name == null) {
+                                name = "ROUTE_" + TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date()); //$NON-NLS-1$
                             }
                             DaoGpsLog logDumper = new DaoGpsLog();
                             SQLiteDatabase sqliteDatabase = logDumper.getDatabase();
                             long now = new java.util.Date().getTime();
                             long newLogId = logDumper.addGpsLog(now, now, 0, name, 3, "blue", true); //$NON-NLS-1$
-
                             sqliteDatabase.beginTransaction();
                             try {
                                 long nowPlus10Secs = now;
@@ -1061,30 +1042,28 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                                     double lon = routePoints[i];
                                     double lat = routePoints[i + 1];
                                     double altim = -1;
-
                                     // dummy time increment
                                     nowPlus10Secs = nowPlus10Secs + 10000;
                                     logDumper.addGpsLogDataPoint(sqliteDatabase, newLogId, lon, lat, altim, nowPlus10Secs);
                                 }
-
-                            sqliteDatabase.setTransactionSuccessful();
-                        } finally {
-                            sqliteDatabase.endTransaction();
+                                sqliteDatabase.setTransactionSuccessful();
+                            } finally {
+                                sqliteDatabase.endTransaction();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            GPLog.error(this, "Cannot draw route.", e); //$NON-NLS-1$
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        GPLog.error(this, "Cannot draw route.", e); //$NON-NLS-1$
+                    } else {
+                        // it is a single point geocoding request
+                        double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
+                        double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, 0d);
+                        setCenterAndZoomForMapWindowFocus(lon, lat, null);
                     }
-
-                } else {
-                    // it is a single point geocoding request
-                    double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
-                    double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, 0d);
-                    setCenterAndZoomForMapWindowFocus(lon, lat, null);
                 }
+                break;
             }
-            break;
-        }
+
         case (ZOOM_RETURN_CODE): {
             if (resultCode == Activity.RESULT_OK) {
                 double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
@@ -1145,7 +1124,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
                     if (number != null) {
                         int count = 1;
-                        for( String sms : smsString ) {
+                        for (String sms : smsString) {
                             sms = sms.replaceAll("\\s+", "_"); //$NON-NLS-1$//$NON-NLS-2$
                             SmsUtilities.sendSMS(MapsActivity.this, number, sms, false);
                             String msg = getString(R.string.sent_sms) + count++;
@@ -1154,36 +1133,33 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     }
                 }
             }
-            case (FORMUPDATE_RETURN_CODE): {
-                if (resultCode == Activity.RESULT_OK) {
-                    String[] formArray = data.getStringArrayExtra(LibraryConstants.PREFS_KEY_FORM);
-                    if (formArray != null) {
-                        try {
-                            long noteId = Long.parseLong(formArray[0]);
-                            //                        double lon = Double.parseDouble(formArray[1]);
-                            //                        double lat = Double.parseDouble(formArray[2]);
-                            //                        double elev = Double.parseDouble(formArray[3]);
-                            //                        String dateStr = formArray[4];
-                            String nameStr = formArray[5];
-                            //                        String catStr = formArray[6];
-                            String jsonStr = formArray[7];
+        }
+        case (FORMUPDATE_RETURN_CODE): {
+            if (resultCode == Activity.RESULT_OK) {
+                String[] formArray = data.getStringArrayExtra(LibraryConstants.PREFS_KEY_FORM);
+                if (formArray != null) {
+                    try {
+                        long noteId = Long.parseLong(formArray[0]);
+                        //                        double lon = Double.parseDouble(formArray[1]);
+                        //                        double lat = Double.parseDouble(formArray[2]);
+                        //                        double elev = Double.parseDouble(formArray[3]);
+                        //                        String dateStr = formArray[4];
+                        String nameStr = formArray[5];
+                        //                        String catStr = formArray[6];
+                        String jsonStr = formArray[7];
 
-                            DaoNotes.updateForm(noteId, nameStr, jsonStr);
-                        } catch (Exception e) {
-                            GPLog.error(this, null, e);
-                            Utilities.messageDialog(this, eu.geopaparazzi.library.R.string.notenonsaved, null);
-                        }
-
+                        DaoNotes.updateForm(noteId, nameStr, jsonStr);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        GPLog.error(this, null, e);
                         Utilities.messageDialog(this, eu.geopaparazzi.library.R.string.notenonsaved, null);
                     }
                 }
             }
-            break;
+        }
+        break;
         }
         }
-    }
+
 
     private void addBookmark() {
         GeoPoint mapCenter = mapView.getMapPosition().getMapCenter();
