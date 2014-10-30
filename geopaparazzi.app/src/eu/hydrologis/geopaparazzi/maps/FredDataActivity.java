@@ -311,12 +311,12 @@ public class FredDataActivity extends Activity {
             // disable for now until it is seamless
             Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
             returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
-            returnButton.setEnabled(false); // disable for now
+            //returnButton.setEnabled(false); // disable for now
             returnButton.setOnClickListener(new Button.OnClickListener(){
                 public void onClick( View v ) {
                     Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    //intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
                     // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
                     startActivity(intent);
