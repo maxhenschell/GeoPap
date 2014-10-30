@@ -315,10 +315,12 @@ public class FredDataActivity extends Activity {
             returnButton.setOnClickListener(new Button.OnClickListener(){
                 public void onClick( View v ) {
                     Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     //intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
                     // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
+                    // can I put form name as a parameter?
                     startActivity(intent);
                 }
             });
