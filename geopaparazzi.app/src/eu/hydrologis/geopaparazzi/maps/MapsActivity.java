@@ -315,7 +315,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
                 mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
                 mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-
+                mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
                 startActivity(mapFredIntent);
             }
         });

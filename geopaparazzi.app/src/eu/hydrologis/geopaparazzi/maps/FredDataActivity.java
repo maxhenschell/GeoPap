@@ -307,8 +307,6 @@ public class FredDataActivity extends Activity {
                     writeDataButton.setChecked(IsWritten);
                 }
             });
-            // TODO improve THIS BUTTON
-            // disable for now until it is seamless
             Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
             returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
             //returnButton.setEnabled(false); // disable for now
@@ -316,11 +314,9 @@ public class FredDataActivity extends Activity {
                 public void onClick( View v ) {
                     Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
                     intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                    //intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    //intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    // intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    // don't use the following as it resets you to start screen
+                    // of DB. We want the last screen we used.
                     //intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
-                    // can I put form name as a parameter?
                     startActivity(intent);
                 }
             });
