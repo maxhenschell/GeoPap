@@ -71,7 +71,7 @@ public class FredDataActivity extends Activity {
     private double mapCenterLongitude;
     private double mapCenterElevation;
     private double[] gpsLocation;
-    private BroadcastReceiver broadcastReceiver;
+    private BroadcastReceiver gpsBroadcastReceiver;
 
     private ToggleButton togglePositionTypeButtonGps;
     private ToggleButton writeDataButton;
@@ -153,7 +153,7 @@ public class FredDataActivity extends Activity {
             double[] mapCenter = PositionUtilities.getMapCenterFromPreferences(preferences, true, true);
             mapCenterLatitude = mapCenter[1];
             mapCenterLongitude = mapCenter[0];
-            // mapCenterElevation = 0.0;
+            mapCenterElevation = 0.0;
 
             /**
             if (GpsManager.getInstance(this).hasFix()) {
@@ -177,7 +177,7 @@ public class FredDataActivity extends Activity {
             }
             **/
 
-            broadcastReceiver = new BroadcastReceiver(){
+            gpsBroadcastReceiver = new BroadcastReceiver(){
                 public void onReceive( Context context, Intent intent ) {
                     GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
                     if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
@@ -197,7 +197,7 @@ public class FredDataActivity extends Activity {
                     }
                 }
             };
-            GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
+            GpsServiceUtilities.registerForBroadcasts(this, gpsBroadcastReceiver);
             GpsServiceUtilities.triggerBroadcast(this);
 
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -210,6 +210,7 @@ public class FredDataActivity extends Activity {
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
                             .openDatabase(externalDB, null, 2);
                     firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
+                    sqlDB.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -221,6 +222,7 @@ public class FredDataActivity extends Activity {
                             .openDatabase(externalDB, null, 2);
                     secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
                             firstIDsID);
+                    sqlDB.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -230,6 +232,7 @@ public class FredDataActivity extends Activity {
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
                             .openDatabase(externalDB, null, 2);
                     secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
+                    sqlDB.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -295,12 +298,13 @@ public class FredDataActivity extends Activity {
                     String lat = String.format(Locale.getDefault(), "%.6f", latitude); //$NON-NLS-1$
                     String lon = String.format(Locale.getDefault(), "%.6f", longitude); //$NON-NLS-1$
 
-                    final SQLiteDatabase sqlDB;
                     try {
+                        final SQLiteDatabase sqlDB;
                         sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                                 .openDatabase(externalDB, null, 2);
                         IsWritten = writeGpsData(childTable, colLat, colLon, colNote, parentID, firstIDsID, haveParentTable,
                                 childID, SecondIDsID, lat, lon, note, sqlDB);
+                        sqlDB.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -361,6 +365,7 @@ public class FredDataActivity extends Activity {
                                     .openDatabase(externalDB, null, 2);
                             secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
                                     firstIDsID);
+                            sqlDB.close();
 
                             if (GPLog.LOG_HEAVY)
                                 GPLog.addLogEntry(this, "second IDs are " + secondIDs); //$NON-NLS-1$
@@ -399,7 +404,7 @@ public class FredDataActivity extends Activity {
                         final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                                 .openDatabase(externalDB, null, 2);
                         String existingNoteData = getCommentData(sqlDB, childTable, childID, colNote, SecondIDsID);
-
+                        sqlDB.close();
                         final EditText edittextNote = (EditText) findViewById(R.id.fredfrm_notes);
                         // String note = edittextNote.getText().toString();
                         edittextNote.setText(existingNoteData);
@@ -408,17 +413,24 @@ public class FredDataActivity extends Activity {
                         e.printStackTrace();
                     }
                 }
-                public void onNothingSelected( AdapterView< ? > adapterView ) {
-                    return;
-                }
+                public void onNothingSelected( AdapterView< ? > adapterView ){}
             });
 
         }
     }
     // TODO need an onStart() for this activity!!!
     // TODO need an onPause() for this activity!!!
-    // TODO need an onStop() for this activity!!!
     // TODO need an onResume() for this activity!!!
+    // TODO need an onStop() for this activity!!!
+
+    @Override
+    protected void onDestroy(){
+
+        if (gpsBroadcastReceiver != null)
+            GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
+
+        super.onDestroy();
+    }
 
     /**
      * Checks to see whether to draw position from map or from GPS
@@ -519,8 +531,7 @@ public class FredDataActivity extends Activity {
         try {
             c = sqliteDatabase.query(tableName, asColumnsToReturn, strWhere, null, null, null, null);
             c.moveToFirst();
-            String note = c.getString(0);
-            return note;
+            return c.getString(0);
         } catch (Exception e) {
             GPLog.error("FredReadQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
             throw new IOException(e.getLocalizedMessage());
@@ -553,12 +564,9 @@ public class FredDataActivity extends Activity {
             SQLiteDatabase sqlDB ) throws IOException {
 
         try {
-            // final SQLiteDatabase sqlDB =
-            // DatabaseManager.getInstance().getDatabase().openDatabase(sqlDatB, null, 2);
             sqlDB.beginTransaction();
 
             StringBuilder sb = new StringBuilder();
-            sb = new StringBuilder();
             sb.append("UPDATE "); //$NON-NLS-1$
             sb.append(tbl);
             sb.append(" SET "); //$NON-NLS-1$
@@ -585,6 +593,7 @@ public class FredDataActivity extends Activity {
             throw new IOException(e.getLocalizedMessage());
         } finally {
             sqlDB.endTransaction();
+            sqlDB.close();
         }
         return true;
     }
@@ -592,7 +601,7 @@ public class FredDataActivity extends Activity {
     /**
      * Check to see if DB exists
      * 
-     * @param Context is the context
+     * @param context is the context
      * @param dbName is the name of the database to check
      * 
      */
