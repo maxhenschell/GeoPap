@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -61,6 +63,9 @@ import eu.hydrologis.geopaparazzi.database.DatabaseManager;
  * @author Andrea Antonello (hydrologis.eu)
  * @author Tim Howard (nynhp.org)
  */
+
+@TargetApi(11)
+
 public class FredDataActivity extends Activity {
 
     private static final String USE_MAPCENTER_POSITION = "USE_MAPCENTER_POSITION"; //$NON-NLS-1$
@@ -142,7 +147,7 @@ public class FredDataActivity extends Activity {
                 public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ) {
                     Editor edit = preferences.edit();
                     edit.putBoolean(USE_MAPCENTER_POSITION, !isChecked);
-                    edit.commit();
+                    edit.apply();
                 }
             });
 
@@ -313,15 +318,36 @@ public class FredDataActivity extends Activity {
             });
             Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
             returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
-            //returnButton.setEnabled(false); // disable for now
             returnButton.setOnClickListener(new Button.OnClickListener(){
                 public void onClick( View v ) {
-                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                    // don't use the following as it resets you to start screen
-                    // of DB. We want the last screen we used.
-                    //intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
-                    startActivity(intent);
+                    // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.RunningTaskInfo> tasklist =am.getRunningTasks(10); // Number of tasks you want to get
+                    if(!tasklist.isEmpty())
+                    {
+                        int nSize = tasklist.size();
+                        boolean appFound = false;
+                        for(int i = 0; i < nSize;  i++)
+                        {
+                           ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+                           if (GPLog.LOG_HEAVY)
+                                GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+                           if(taskinfo.topActivity.getPackageName().equals("com.syware.droiddb"))
+                               {
+                                   appFound = true;
+                                   am.moveTaskToFront(taskinfo.id, 0);
+                               }
+                        }
+                        if (!appFound) {
+                            Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                            intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
+                            startActivity(intent);
+                        }
+
+                    }
+
+
                 }
             });
 
