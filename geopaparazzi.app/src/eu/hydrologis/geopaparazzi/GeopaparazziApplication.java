@@ -55,6 +55,7 @@ public class GeopaparazziApplication extends GPApplication {
 
         ACRA.init(getInstance());
         Log.i("GEOPAPARAZZIAPPLICATION", "ACRA Initialized."); //$NON-NLS-1$//$NON-NLS-2$
+
     }
 
     @Override

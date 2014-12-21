@@ -100,7 +100,7 @@ public class FredDataActivity extends Activity {
     private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
 
-    public void onCreate( Bundle icicle ) {
+    public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
         setContentView(R.layout.fred_writecoords);
@@ -126,12 +126,31 @@ public class FredDataActivity extends Activity {
         final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default11"); //$NON-NLS-1$
 
         // debug some of the defaults in case of problems
-        if (GPLog.LOG_HEAVY)
+        if (GPLog.LOG_HEAVY) {
             GPLog.addLogEntry(this, "prefs DB val: " + externalDB); //$NON-NLS-1$
-        if (GPLog.LOG_HEAVY)
             GPLog.addLogEntry(this, "prefs child table: " + childTable); //$NON-NLS-1$
-        if (GPLog.LOG_HEAVY)
             GPLog.addLogEntry(this, "prefs have parent table: " + haveParentTable); //$NON-NLS-1$
+        }
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (GPLog.LOG_HEAVY){
+            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+        }
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                handleSendText(intent); // Handle text being sent
+            }
+
+        } else {
+            // Handle other intents, such as being started from the home screen
+        }
+
 
         // first off, check to see if dB exists
         final boolean dbExists = doesDatabaseExist(this, externalDB);
@@ -143,8 +162,8 @@ public class FredDataActivity extends Activity {
 
             // position type toggle button
             togglePositionTypeButtonGps = (ToggleButton) findViewById(R.id.togglePositionTypeGps);
-            togglePositionTypeButtonGps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-                public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ) {
+            togglePositionTypeButtonGps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Editor edit = preferences.edit();
                     edit.putBoolean(USE_MAPCENTER_POSITION, !isChecked);
                     edit.apply();
@@ -161,29 +180,29 @@ public class FredDataActivity extends Activity {
             mapCenterElevation = 0.0;
 
             /**
-            if (GpsManager.getInstance(this).hasFix()) {
-                gpsLocation = PositionUtilities.getGpsLocationFromPreferences(preferences);
-                // if (GPLog.LOG_HEAVY)
-                //    GPLog.addLogEntry(this, "gpsLoc_lat: " + gpsLocation[1]); //$NON-NLS-1$
-            }
-            if (gpsLocation == null) {
-                // no gps, can use only map center
-                togglePositionTypeButtonGps.setChecked(false);
-                togglePositionTypeButtonGps.setEnabled(false);
-                Editor edit = preferences.edit();
-                edit.putBoolean(USE_MAPCENTER_POSITION, false);
-                edit.commit();
-            } else {
-                if (useMapCenterPosition) {
-                    togglePositionTypeButtonGps.setChecked(false);
-                } else {
-                    togglePositionTypeButtonGps.setChecked(true);
-                }
-            }
-            **/
+             if (GpsManager.getInstance(this).hasFix()) {
+             gpsLocation = PositionUtilities.getGpsLocationFromPreferences(preferences);
+             // if (GPLog.LOG_HEAVY)
+             //    GPLog.addLogEntry(this, "gpsLoc_lat: " + gpsLocation[1]); //$NON-NLS-1$
+             }
+             if (gpsLocation == null) {
+             // no gps, can use only map center
+             togglePositionTypeButtonGps.setChecked(false);
+             togglePositionTypeButtonGps.setEnabled(false);
+             Editor edit = preferences.edit();
+             edit.putBoolean(USE_MAPCENTER_POSITION, false);
+             edit.commit();
+             } else {
+             if (useMapCenterPosition) {
+             togglePositionTypeButtonGps.setChecked(false);
+             } else {
+             togglePositionTypeButtonGps.setChecked(true);
+             }
+             }
+             **/
 
-            gpsBroadcastReceiver = new BroadcastReceiver(){
-                public void onReceive( Context context, Intent intent ) {
+            gpsBroadcastReceiver = new BroadcastReceiver() {
+                public void onReceive(Context context, Intent intent) {
                     GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
                     if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
                         gpsLocation = GpsServiceUtilities.getPosition(intent);
@@ -258,8 +277,8 @@ public class FredDataActivity extends Activity {
             fredDestinationDB.setText(externalDB);
 
             Button refreshButton = (Button) findViewById(R.id.refreshPosition);
-            refreshButton.setOnClickListener(new Button.OnClickListener(){
-                public void onClick( View v ) {
+            refreshButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
                     checkPositionCoordinates();
                     String loc = "Lat:" + latitude + ", Lon:" + longitude; //$NON-NLS-1$ //$NON-NLS-2$
                     fredLocTextView.setText(loc);
@@ -275,8 +294,8 @@ public class FredDataActivity extends Activity {
             avgStopButton.setEnabled(false);
 
             writeDataButton = (ToggleButton) findViewById(R.id.fredfrm_writedataToggle);
-            writeDataButton.setOnClickListener(new ToggleButton.OnClickListener(){
-                public void onClick( View v ) {
+            writeDataButton.setOnClickListener(new ToggleButton.OnClickListener() {
+                public void onClick(View v) {
 
                     boolean IsWritten = false;
                     writeDataButton.setChecked(IsWritten);
@@ -318,25 +337,22 @@ public class FredDataActivity extends Activity {
             });
             Button returnButton = (Button) findViewById(R.id.fredfrm_returntofred);
             returnButton.setText("Return to " + externalDBname); //$NON-NLS-1$
-            returnButton.setOnClickListener(new Button.OnClickListener(){
-                public void onClick( View v ) {
+            returnButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
                     // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.RunningTaskInfo> tasklist =am.getRunningTasks(10); // Number of tasks you want to get
-                    if(!tasklist.isEmpty())
-                    {
+                    List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+                    if (!tasklist.isEmpty()) {
                         int nSize = tasklist.size();
                         boolean appFound = false;
-                        for(int i = 0; i < nSize;  i++)
-                        {
-                           ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-                           if (GPLog.LOG_HEAVY)
+                        for (int i = 0; i < nSize; i++) {
+                            ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+                            if (GPLog.LOG_HEAVY)
                                 GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-                           if(taskinfo.topActivity.getPackageName().equals("com.syware.droiddb"))
-                               {
-                                   appFound = true;
-                                   am.moveTaskToFront(taskinfo.id, 0);
-                               }
+                            if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+                                appFound = true;
+                                am.moveTaskToFront(taskinfo.id, 0);
+                            }
                         }
                         if (!appFound) {
                             Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
@@ -372,8 +388,8 @@ public class FredDataActivity extends Activity {
 
             // filter child spinner only if parent table and spinner present
             if (haveParentTable) {
-                lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-                    public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
+                lvlOneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int itemPosition, long itemSelected) {
                         try {
                             // refresh data for second level spinner
                             String firstIDsArrayChosenRow = firstIDs.get(itemPosition);
@@ -405,15 +421,16 @@ public class FredDataActivity extends Activity {
                             e.printStackTrace();
                         }
                     }
-                    public void onNothingSelected( AdapterView< ? > adapterView ) {
+
+                    public void onNothingSelected(AdapterView<?> adapterView) {
                         return;
                     }
                 });
             }
 
             // get level two data to grab proper comment field
-            lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-                public void onItemSelected( AdapterView< ? > adapterView, View view, int itemPosition, long itemSelected ) {
+            lvlTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public void onItemSelected(AdapterView<?> adapterView, View view, int itemPosition, long itemSelected) {
                     try {
                         // refresh data for second level spinner
                         String SecondIDsArrayChosenRow = secondIDs.get(itemPosition);
@@ -439,7 +456,9 @@ public class FredDataActivity extends Activity {
                         e.printStackTrace();
                     }
                 }
-                public void onNothingSelected( AdapterView< ? > adapterView ){}
+
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                }
             });
 
         }
@@ -450,7 +469,7 @@ public class FredDataActivity extends Activity {
     // TODO need an onStop() for this activity!!!
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
 
         if (gpsBroadcastReceiver != null)
             GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
@@ -460,7 +479,6 @@ public class FredDataActivity extends Activity {
 
     /**
      * Checks to see whether to draw position from map or from GPS
-     * 
      */
     private void checkPositionCoordinates() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -479,19 +497,18 @@ public class FredDataActivity extends Activity {
     /**
      * Gets a list of values from a table. This sorts descending
      * by time so the most recently created record appears first
-     * 
+     *
      * @param sqliteDatabase the DB to query
-     * @param tableName the table to query
-     * @param IdCol the ID column to grab
-     * @param NameCol the name column to grab (site name, or other text field)
-     * @param tsCol the time/date column 
-     * @param filterID the column name on which to filter the list (parent table ID) using strWhere
-     * @param strWhere if selecting a row, which ID value to select on
-     * 
+     * @param tableName      the table to query
+     * @param IdCol          the ID column to grab
+     * @param NameCol        the name column to grab (site name, or other text field)
+     * @param tsCol          the time/date column
+     * @param filterID       the column name on which to filter the list (parent table ID) using strWhere
+     * @param strWhere       if selecting a row, which ID value to select on
      * @throws IOException if a problem
      */
-    private static List<String> getTableIDs( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
-            String tsCol, String filterID, String strWhere ) throws IOException {
+    private static List<String> getTableIDs(SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
+                                            String tsCol, String filterID, String strWhere) throws IOException {
 
         String asColumnsToReturn[] = {NameCol, IdCol, tsCol};
         String strSortOrder = tsCol + " DESC"; //$NON-NLS-1$
@@ -506,7 +523,7 @@ public class FredDataActivity extends Activity {
 
             c.moveToFirst();
             List<String> NmIdTsList = new ArrayList<String>(count);
-            while( !c.isAfterLast() ) {
+            while (!c.isAfterLast()) {
                 String fID = c.getString(1); // to handle non-int IDs
                 // int fID = c.getInt(1);
                 String fName = c.getString(0);
@@ -536,17 +553,16 @@ public class FredDataActivity extends Activity {
 
     /**
      * Gets data from a comments field to prevent overwriting
-     * 
+     *
      * @param sqliteDatabase the DB to query
-     * @param tableName the table to query
-     * @param IdCol the ID column to query on
-     * @param NoteCol the comments field to grab
-     * @param strWhere which ID value to select on
-     * 
+     * @param tableName      the table to query
+     * @param IdCol          the ID column to query on
+     * @param NoteCol        the comments field to grab
+     * @param strWhere       which ID value to select on
      * @throws IOException if a problem
      */
-    private static String getCommentData( SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NoteCol,
-            String strWhere ) throws IOException {
+    private static String getCommentData(SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NoteCol,
+                                         String strWhere) throws IOException {
 
         String asColumnsToReturn[] = {NoteCol};
         if (strWhere != null) {
@@ -569,25 +585,25 @@ public class FredDataActivity extends Activity {
 
     /**
      * Writes GPS data to an external database
-     * 
-     * @param tbl is the name of the table to write to
-     * @param colLat is the column name for Latitude
-     * @param colLon is the column name for Longitude
-     * @param colNot is the column name for a Notes/comments field
-     * @param colFirstID is the column name for the parent table ID column
-     * @param lvlOneID the parent ID for the record to update
-     * @param hasParent is there a parent table (are there two levels?).
+     *
+     * @param tbl         is the name of the table to write to
+     * @param colLat      is the column name for Latitude
+     * @param colLon      is the column name for Longitude
+     * @param colNot      is the column name for a Notes/comments field
+     * @param colFirstID  is the column name for the parent table ID column
+     * @param lvlOneID    the parent ID for the record to update
+     * @param hasParent   is there a parent table (are there two levels?).
      * @param colSecondID is the column name for the child ID column
-     * @param lvlTwoID the child ID for the record to update
-     * @param ddLon  decimal degrees longitude
-     * @param ddLat decimal degrees latitude
-     * @param note comments field to write to DB
-     * @param sqlDB the DB to write to
+     * @param lvlTwoID    the child ID for the record to update
+     * @param ddLon       decimal degrees longitude
+     * @param ddLat       decimal degrees latitude
+     * @param note        comments field to write to DB
+     * @param sqlDB       the DB to write to
      * @throws IOException if a problem
      */
-    private static boolean writeGpsData( String tbl, String colLat, String colLon, String colNot, String colFirstID,
-            String lvlOneID, Boolean hasParent, String colSecondID, String lvlTwoID, String ddLon, String ddLat, String note,
-            SQLiteDatabase sqlDB ) throws IOException {
+    private static boolean writeGpsData(String tbl, String colLat, String colLon, String colNot, String colFirstID,
+                                        String lvlOneID, Boolean hasParent, String colSecondID, String lvlTwoID, String ddLon, String ddLat, String note,
+                                        SQLiteDatabase sqlDB) throws IOException {
 
         try {
             sqlDB.beginTransaction();
@@ -626,14 +642,28 @@ public class FredDataActivity extends Activity {
 
     /**
      * Check to see if DB exists
-     * 
+     *
      * @param context is the context
-     * @param dbName is the name of the database to check
-     * 
+     * @param dbName  is the name of the database to check
      */
 
-    private static boolean doesDatabaseExist( Context context, String dbName ) {
+    private static boolean doesDatabaseExist(Context context, String dbName) {
         File dbFile = context.getDatabasePath(dbName);
         return dbFile.exists();
     }
+
+    /**
+     * string handling for receiving the intent
+     *
+     * @param intent is the intent received
+     */
+    void handleSendText(Intent intent) {
+        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+        if (sharedText != null) {
+            // Update UI to reflect text being shared
+            if (GPLog.LOG_HEAVY)
+                GPLog.addLogEntry("Intent extra text ", sharedText); //$NON-NLS-1$
+        }
+    }
+
 }

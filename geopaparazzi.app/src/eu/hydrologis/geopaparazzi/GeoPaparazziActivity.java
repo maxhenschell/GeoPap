@@ -158,6 +158,23 @@ public class GeoPaparazziActivity extends Activity {
         }
         checkIncomingGeosms();
         checkIncomingSmsData();
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+        String dataString = intent.getDataString();
+        //int intentFlags = intent.getFlags();
+        String fullIntent = intent.toString();
+        String intentPackage = intent.getPackage();
+
+        if (GPLog.LOG_HEAVY){
+            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
+        }
     }
 
     private void checkMockLocations() {

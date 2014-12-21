@@ -59,17 +59,18 @@
             android:label="@string/app_name">
             <intent-filter
                 android:icon="@drawable/ic_launcher"
-                android:priority="1">
+                android:priority= "1" >
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="eu.hydrologis.geopaparazzi.GeoPaparazziActivity" />
+                <action android:name="JUMP_TO_GEOPAP" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter
                 android:icon="@drawable/ic_launcher"
                 android:label="@string/app_file_name"
                 android:priority="1">
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -111,7 +112,8 @@
             </intent-filter>
         </activity>
 
-        <activity 	android:name=".maps.FredDataActivity">
+        <activity 	android:name=".maps.FredDataActivity"
+                    android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDS" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -160,10 +162,13 @@
         <activity android:name="eu.geopaparazzi.spatialite.database.spatial.activities.EditableLayersListActivity" />
         <activity android:name="eu.hydrologis.geopaparazzi.maptools.CopyToLayersListActivity" />
         <activity android:name=".maps.MapsActivity">
-            <intent-filter>
+            <intent-filter
+                android:label="GeoPap map view">
                 <action android:name="eu.hydrologis.geopaparazzi.maps.MAP_VIEW" />
+                <action android:name="JUMP_TO_GEOPAP" />
 
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.ALTERNATIVE" />
             </intent-filter>
         </activity>
         <activity android:name="eu.geopaparazzi.library.util.activities.AboutActivity">

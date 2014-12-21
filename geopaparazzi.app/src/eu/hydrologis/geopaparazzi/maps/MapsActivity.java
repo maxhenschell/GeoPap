@@ -195,6 +195,17 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         super.onCreate(icicle);
         setContentView(R.layout.mapsview);
 
+        // Get intent, action
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (GPLog.LOG_HEAVY){
+            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+        }
+
+
         mapsSupportBroadcastReceiver = new BroadcastReceiver(){
             public void onReceive( Context context, Intent intent ) {
                 if (intent.hasExtra(MapsSupportService.REREAD_MAP_REQUEST)) {
