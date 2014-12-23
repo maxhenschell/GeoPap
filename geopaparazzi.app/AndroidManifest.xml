@@ -56,14 +56,21 @@
             android:name=".GeoPaparazziActivity"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/ic_launcher"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:launchMode="singleTop">
             <intent-filter
                 android:icon="@drawable/ic_launcher"
                 android:priority= "1" >
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="eu.hydrologis.geopaparazzi.GeoPaparazziActivity" />
-                <action android:name="JUMP_TO_GEOPAP" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter
+                android:icon="@drawable/ic_launcher">
+                <action android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb" />
+                <action android:name="eu.hydrologis.geopaparazzi"/>
+                <action android:name="JUMP_TO_GEOPAP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter
@@ -161,14 +168,14 @@
         <activity android:name="eu.hydrologis.geopaparazzi.maptools.FeaturePagerActivity" />
         <activity android:name="eu.geopaparazzi.spatialite.database.spatial.activities.EditableLayersListActivity" />
         <activity android:name="eu.hydrologis.geopaparazzi.maptools.CopyToLayersListActivity" />
-        <activity android:name=".maps.MapsActivity">
-            <intent-filter
-                android:label="GeoPap map view">
+
+        <activity android:name=".maps.MapsActivity"
+            android:priority= "1"
+            android:launchMode="singleTop">
+            <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.MAP_VIEW" />
-                <action android:name="JUMP_TO_GEOPAP" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.ALTERNATIVE" />
             </intent-filter>
         </activity>
         <activity android:name="eu.geopaparazzi.library.util.activities.AboutActivity">

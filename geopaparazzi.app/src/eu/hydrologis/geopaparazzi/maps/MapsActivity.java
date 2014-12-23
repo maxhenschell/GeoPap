@@ -191,20 +191,30 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     private Button batteryButton;
     private BroadcastReceiver mapsSupportBroadcastReceiver;
 
+    public static boolean created = false;
+
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
         setContentView(R.layout.mapsview);
+
+        created = true;
 
         // Get intent, action
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
+        String dataString = intent.getDataString();
+        //int intentFlags = intent.getFlags();
+        String fullIntent = intent.toString();
+        String intentPackage = intent.getPackage();
 
         if (GPLog.LOG_HEAVY){
             GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
         }
-
 
         mapsSupportBroadcastReceiver = new BroadcastReceiver(){
             public void onReceive( Context context, Intent intent ) {
@@ -383,6 +393,23 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
     @Override
     protected void onResume() {
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+        String dataString = intent.getDataString();
+        //int intentFlags = intent.getFlags();
+        String fullIntent = intent.toString();
+        String intentPackage = intent.getPackage();
+
+        if (GPLog.LOG_HEAVY){
+            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
+        }
 
         // notes type
         boolean doCustom = preferences.getBoolean(Constants.PREFS_KEY_NOTES_CHECK, false);
@@ -1555,5 +1582,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             }
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        created = false;
     }
 }
