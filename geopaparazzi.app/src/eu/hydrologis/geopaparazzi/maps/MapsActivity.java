@@ -800,35 +800,6 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare).setIcon(R.drawable.icon_datasource);
     }
 
-<<<<<<< HEAD
-    public boolean onContextItemSelected( MenuItem item ) {
-        switch( item.getItemId() ) {
-        // THIS IS CURRENTLY DISABLED
-        //
-        // case MENU_TILE_SOURCE_ID:
-        // startMapsDirTreeViewList();
-        // return true;
-        case MENU_GPSDATA:
-            Intent gpsDatalistIntent = new Intent(this, GpsDataListActivity.class);
-            startActivityForResult(gpsDatalistIntent, GPSDATAPROPERTIES_RETURN_CODE);
-            return true;
-        case MENU_DATA:
-            Intent datalistIntent = new Intent(this, DataListActivity.class);
-            startActivityForResult(datalistIntent, DATAPROPERTIES_RETURN_CODE);
-            return true;
-        case MENU_SCALE_ID:
-            MapScaleBar mapScaleBar = mapView.getMapScaleBar();
-            boolean showMapScaleBar = mapScaleBar.isShowMapScaleBar();
-            mapScaleBar.setShowMapScaleBar(!showMapScaleBar);
-            return true;
-        case MENU_COMPASS_ID:
-            ActionBar.openCompass(this);
-            return true;
-        case MENU_MIXARE_ID:
-            if (!MixareHandler.isMixareInstalled(this)) {
-                MixareHandler.installMixareFromMarket(this);
-                return true;
-=======
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             // THIS IS CURRENTLY DISABLED
@@ -881,28 +852,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 }
             case MENU_GO_TO: {
                 return goTo();
->>>>>>> master
             }
-            float[] nswe = getMapWorldBounds();
 
-            try {
-                MixareUtilities.runRegionOnMixare(this, nswe[0], nswe[1], nswe[2], nswe[3]);
-                return true;
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                return false;
-            }
-        case MENU_SENDDATA_ID:
-            try {
-                sendData();
-                return true;
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                return false;
-            }
-        case MENU_GO_TO: {
-            return goTo();
-        }
         case MENU_CENTER_ON_MAP: {
             MapsDirManager.getInstance().setMapViewCenter(mapView, null, MapsDirManager.ZOOMTYPE.DEFAULT);
             saveCenterPref();
@@ -944,88 +895,6 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     // }
     // }
 
-<<<<<<< HEAD
-    private void sendData() throws IOException {
-        float[] nswe = getMapWorldBounds();
-        List<SmsData> smsData = new ArrayList<SmsData>();
-        List<Bookmark> bookmarksList = DaoBookmarks.getBookmarksInWorldBounds(nswe[0], nswe[1], nswe[2], nswe[3]);
-        for( Bookmark bookmark : bookmarksList ) {
-            double lat = bookmark.getLat();
-            double lon = bookmark.getLon();
-            String title = bookmark.getName();
-
-            SmsData data = new SmsData();
-            data.TYPE = SmsData.BOOKMARK;
-            data.x = (float) lon;
-            data.y = (float) lat;
-            data.z = 16f;
-            data.text = title;
-            smsData.add(data);
-        }
-
-        List<Note> notesList = DaoNotes.getNotesList(nswe, false);
-        for (Note note : notesList) {
-            double lat = note.getLat();
-            double lon = note.getLon();
-            double elevation = note.getAltim();
-            String title = note.getName();
-
-            SmsData data = new SmsData();
-            data.TYPE = SmsData.NOTE;
-            data.x = (float) lon;
-            data.y = (float) lat;
-            data.z = (float) elevation;
-            data.text = title;
-            smsData.add(data);
-        }
-
-        smsString = new ArrayList<String>();
-        String schemaHost = SmsUtilities.SMSHOST + "/"; //$NON-NLS-1$
-        StringBuilder sb = new StringBuilder(schemaHost);
-        int limit = 160;
-        for( SmsData data : smsData ) {
-            String smsDataString = data.toSmsDataString();
-            String tmp = sb.toString() + ";" + smsDataString; //$NON-NLS-1$
-            if (tmp.length() <= limit) {
-                if (sb.length() > schemaHost.length())
-                    sb.append(";"); //$NON-NLS-1$
-            } else {
-                smsString.add(sb.toString());
-                sb = new StringBuilder(schemaHost);
-            }
-            sb.append(smsDataString);
-        }
-
-        if (sb.length() > schemaHost.length()) {
-            smsString.add(sb.toString());
-        }
-
-        if (smsString.size() == 0) {
-            Utilities.messageDialog(this, R.string.found_no_data_to_send, null);
-        } else {
-
-            String message = smsString.size() + getString(R.string.insert_phone_to_send);
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(message).setCancelable(false)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener(){
-                        public void onClick( DialogInterface dialog, int id ) {
-                            for( String smsMsg : smsString ) {
-                                SmsUtilities.sendSMSViaApp(MapsActivity.this, "", smsMsg); //$NON-NLS-1$
-                            }
-                        }
-                    }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener(){
-                        public void onClick( DialogInterface dialog, int id ) {
-                            // ignore
-                        }
-                    });
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
-
-        }
-
-    }
-=======
 //    private void sendData() throws IOException {
 //        float[] nswe = getMapWorldBounds();
 //        List<SmsData> smsData = new ArrayList<SmsData>();
@@ -1106,7 +975,6 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 //        }
 //
 //    }
->>>>>>> master
 
     private boolean goTo() {
         String[] items = new String[]{getString(R.string.goto_coordinate), getString(R.string.geocoding)};
@@ -1250,29 +1118,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 int zoom = data.getIntExtra(LibraryConstants.ZOOMLEVEL, 1);
                 setCenterAndZoomForMapWindowFocus(lon, lat, zoom);
             }
-<<<<<<< HEAD
-            break;
         }
-        case (GPSDATAPROPERTIES_RETURN_CODE): {
-            if (resultCode == Activity.RESULT_OK) {
-                double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
-                double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, 0d);
-                setCenterAndZoomForMapWindowFocus(lon, lat, null);
-            }
-            break;
-        }
-        case (DATAPROPERTIES_RETURN_CODE): {
-            if (resultCode == Activity.RESULT_OK) {
-                try {
-                    double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, -9999d);
-                    double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, -9999d);
-                    if (lon < -9000d) {
-                        // no coordinate passed
-                        // re-read
-                        SpatialDatabasesManager.getInstance().getSpatialVectorTables(true);
-                    } else {
-                        setCenterAndZoomForMapWindowFocus(lon, lat, null);
-=======
 //            case (GPSDATAPROPERTIES_RETURN_CODE): {
 //                if (resultCode == Activity.RESULT_OK) {
 //                    double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
@@ -1295,12 +1141,9 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                         }
                     } catch (jsqlite.Exception e) {
                         GPLog.error(this, null, e); //$NON-NLS-1$
->>>>>>> master
                     }
-                } catch (jsqlite.Exception e) {
-                    e.printStackTrace();
                 }
-            }
+
             break;
         }
         case (CONTACT_RETURN_CODE): {
@@ -1381,28 +1224,6 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     public void onClick( DialogInterface dialog, int whichButton ) {
                         // ignore
                     }
-<<<<<<< HEAD
-                }).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener(){
-                    public void onClick( DialogInterface dialog, int whichButton ) {
-                        try {
-                            Editable value = input.getText();
-                            String newName = value.toString();
-                            if (newName == null || newName.length() < 1) {
-                                newName = proposedName;;
-                            }
-
-                            int zoom = mapView.getMapPosition().getZoomLevel();
-                            float[] nswe = getMapWorldBounds();
-                            DaoBookmarks.addBookmark(centerLon, centerLat, newName, zoom, nswe[0], nswe[1], nswe[2], nswe[3]);
-                            mapView.invalidateOnUiThread();
-                        } catch (IOException e) {
-                            GPLog.error(this, e.getLocalizedMessage(), e);
-                            e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }).setCancelable(false).show();
-=======
                 }).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 try {
@@ -1422,7 +1243,6 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 }
             }
         }).setCancelable(false).show();
->>>>>>> master
     }
 
     /**
