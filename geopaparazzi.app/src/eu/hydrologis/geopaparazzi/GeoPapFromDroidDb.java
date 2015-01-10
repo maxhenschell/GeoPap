@@ -75,7 +75,7 @@ public class GeoPapFromDroidDb extends Activity{
                 GPLog.addLogEntry(this, "GPFDDB starting main"); //$NON-NLS-1$
             }
 
-            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TASK);
             this.startActivity(intent);
         }
 
@@ -88,16 +88,10 @@ public class GeoPapFromDroidDb extends Activity{
     }
 
     @Override
-    protected void onResume() {
-
-        super.onResume();
-    }
+    protected void onResume() { super.onResume(); }
 
     @Override
-    protected void onStop() {
-
-        super.onStop();
-    }
+    protected void onStop() { super.onStop(); }
     @Override
     protected void onDestroy(){
         super.onDestroy();

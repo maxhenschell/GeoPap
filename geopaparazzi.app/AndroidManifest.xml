@@ -112,16 +112,10 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <intent-filter
-            android:icon="@drawable/ic_launcher">
-            <action android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb" />
-            <action android:name="eu.hydrologis.geopaparazzi"/>
-            <action android:name="JUMP_TO_GEOPAP" />
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent-filter>
 
         <activity
-            android:name=".GeoPapFromDroidDb">
+            android:name=".GeoPapFromDroidDb"
+            android:noHistory="true">
         <intent-filter
             android:icon="@drawable/ic_launcher">
             <action android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb" />
