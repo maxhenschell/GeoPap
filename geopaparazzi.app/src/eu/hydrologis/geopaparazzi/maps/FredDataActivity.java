@@ -464,15 +464,35 @@ public class FredDataActivity extends Activity {
         }
     }
     // TODO need an onStart() for this activity!!!
-    // TODO need an onPause() for this activity!!!
     // TODO need an onResume() for this activity!!!
-    // TODO need an onStop() for this activity!!!
+
+    @Override
+    public void onPause() {
+        //maintain this boolean
+        MapsActivity.created = true;
+        GPLog.addLogEntry(this, "Pausing Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
+
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        //maintain this boolean
+        MapsActivity.created = true;
+        GPLog.addLogEntry(this, "Stopping Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
+
+        super.onStop();
+    }
 
     @Override
     protected void onDestroy() {
 
         if (gpsBroadcastReceiver != null)
             GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
+
+        //maintain this boolean
+        MapsActivity.created = true;
+        GPLog.addLogEntry(this, "Destroying Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
 
         super.onDestroy();
     }

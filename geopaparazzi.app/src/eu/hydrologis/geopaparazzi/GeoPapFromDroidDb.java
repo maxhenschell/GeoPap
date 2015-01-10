@@ -2,12 +2,15 @@ package eu.hydrologis.geopaparazzi;
 
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import java.util.List;
 
 import eu.geopaparazzi.library.database.GPLog;
 import eu.hydrologis.geopaparazzi.maps.MapsActivity;
@@ -26,10 +29,8 @@ public class GeoPapFromDroidDb extends Activity{
 
     private static boolean mapsActivityRunning = false;
 
-    public void onCreate(Bundle savedInstanceState) {
-
-
-
+    public void onCreate( Bundle icicle ) {
+        super.onCreate(icicle);
         // Get intent, action
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -57,14 +58,29 @@ public class GeoPapFromDroidDb extends Activity{
 
         if (MapsActivity.created) {
             //run maps activity here
-            Intent intent = new Intent("eu.hydrologis.geopaparazzi.maps.MAP_VIEW");
+            Intent intent = new Intent(this, MapsActivity.class);
+
+            if (GPLog.LOG_HEAVY){
+                GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
+                GPLog.addLogEntry(this, "GPFDDB starting maps"); //$NON-NLS-1$
+            }
+
+            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
         } else {
-            Intent intent = new Intent("eu.hydrologis.geopaparazzi.GeoPaparazziActivity");
+            Intent intent = new Intent(this, GeoPaparazziActivity.class);
+            //Intent intent = new Intent(".GeoPaparazziActivity");
+            if (GPLog.LOG_HEAVY){
+                GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
+                GPLog.addLogEntry(this, "GPFDDB starting main"); //$NON-NLS-1$
+            }
+
+            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
         }
 
     }
+
 
     @Override
     protected void onPause() {
@@ -72,13 +88,8 @@ public class GeoPapFromDroidDb extends Activity{
     }
 
     protected void onResume() {
+
         super.onResume();
     }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        // avoid oncreate call when rotating device
-        super.onConfigurationChanged(newConfig);
-    }
-
+    
 }

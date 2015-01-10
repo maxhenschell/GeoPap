@@ -214,6 +214,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "MapsActivity.created =  " + created); //$NON-NLS-1$
         }
 
         mapsSupportBroadcastReceiver = new BroadcastReceiver(){
@@ -388,11 +389,15 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     @Override
     protected void onPause() {
         Utilities.dismissProgressDialog(syncProgressDialog);
+        //debugging
+        GPLog.addLogEntry(this, "Pausing ... MapsActivity.created =  " + created); //$NON-NLS-1$
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+
+        created = true;
 
         // Get intent, action
         Intent intent = getIntent();
@@ -409,6 +414,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Resuming ... MapsActivity.created =  " + created); //$NON-NLS-1$
         }
 
         // notes type
@@ -479,6 +485,9 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 mapGenerator.cleanup();
             }
         }
+
+        created = false;
+        GPLog.addLogEntry(this, "Destroying MapsActivity.. MapsActivity.created =  " + created); //$NON-NLS-1$
 
         super.onDestroy();
     }
@@ -867,13 +876,13 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     // *
     // * <p>
     // * MapDirManager creates a static-list of maps and sends it to the MapsDirTreeViewList class
-    // * - when first called this list will build a diretory/file list AND a map-type/Diretory/File
+    // * - when first called this list will build a directory/file list AND a map-type/Directory/File
     // list
     // * - once created, this list will be retained during the Application
     // * - the user can switch from a sorted list as Directory/File OR Map-Type/Diretory/File view
     // * </p>
     // * result will be sent to MapDirManager and saved there and stored to preferences
-    // * - when the MapView is created, this stroed value will be read and loaded
+    // * - when the MapView is created, this stored value will be read and loaded
     // */
     // private void startMapsDirTreeViewList() {
     // try {
@@ -1586,7 +1595,9 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
     @Override
     public void onStop() {
-        super.onStop();
         created = false;
+        GPLog.addLogEntry(this, "Stopping ... MapsActivity.created =  " + created); //$NON-NLS-1$
+
+        super.onStop();
     }
 }
