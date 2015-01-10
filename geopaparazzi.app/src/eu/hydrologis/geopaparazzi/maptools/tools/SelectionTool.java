@@ -20,7 +20,6 @@ package eu.hydrologis.geopaparazzi.maptools.tools;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -37,6 +36,7 @@ import org.mapsforge.core.model.GeoPoint;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.features.EditManager;
 import eu.geopaparazzi.library.features.Feature;
 import eu.geopaparazzi.library.features.ILayer;
@@ -46,6 +46,7 @@ import eu.geopaparazzi.library.util.Utilities;
 import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
 import eu.geopaparazzi.spatialite.database.spatial.core.layers.SpatialVectorTableLayer;
 import eu.geopaparazzi.spatialite.database.spatial.util.SpatialiteUtilities;
+import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.maps.overlays.SliderDrawProjection;
 import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
 import eu.hydrologis.geopaparazzi.maptools.core.MapTool;
@@ -213,6 +214,7 @@ public class SelectionTool extends MapTool {
 
                     return "";
                 } catch (Exception e) {
+                    GPLog.error(this, null, e); //$NON-NLS-1$
                     return "ERROR: " + e.getLocalizedMessage();
                 }
 
@@ -238,10 +240,9 @@ public class SelectionTool extends MapTool {
                                 if(geometry!=null)
                                     geomsCount = geomsCount + geometry.getNumGeometries();
                             }
-                            Utilities.toast(context, "Selected " + features.size() + " features with " + geomsCount
-                                    + " polygons.", Toast.LENGTH_SHORT);
+                            Utilities.toast(context, String.format(context.getString(R.string.selected_features_in_layer), features.size(), geomsCount), Toast.LENGTH_SHORT);
                         } catch (java.lang.Exception e) {
-                            e.printStackTrace();
+                            GPLog.error(this, null, e); //$NON-NLS-1$
                         }
                         OnSelectionToolGroup selectionGroup = new OnSelectionToolGroup(mapView, features);
                         EditManager.INSTANCE.setActiveToolGroup(selectionGroup);

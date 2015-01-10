@@ -20,7 +20,6 @@ package eu.hydrologis.geopaparazzi.maptools.tools;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff.Mode;
@@ -69,7 +68,7 @@ import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
  */
 public class OnSelectionToolGroup implements ToolGroup, OnClickListener, OnTouchListener {
 
-    private MapView mapView;
+    private final MapView mapView;
 
     private int buttonSelectionColor;
     private List<Feature> selectedFeatures = new ArrayList<Feature>();
@@ -348,7 +347,7 @@ public class OnSelectionToolGroup implements ToolGroup, OnClickListener, OnTouch
                             Geometry geometry = wkbReader.read(defaultGeometry);
                             FeatureUtilities.drawGeometry(geometry, canvas, shapeWriter, geometryPaintFill, geometryPaintStroke);
                         } catch (Exception e) {
-                            // ignore and try to go on
+                            GPLog.error(this, null, e); //$NON-NLS-1$
                         }
                     }
                 }

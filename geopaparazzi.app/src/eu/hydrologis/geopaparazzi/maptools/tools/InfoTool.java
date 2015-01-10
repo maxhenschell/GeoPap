@@ -21,7 +21,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -46,6 +45,7 @@ import eu.geopaparazzi.library.util.Utilities;
 import eu.geopaparazzi.spatialite.database.spatial.SpatialDatabasesManager;
 import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
 import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.SpatialiteDatabaseHandler;
+import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.maps.overlays.SliderDrawProjection;
 import eu.hydrologis.geopaparazzi.maptools.FeaturePagerActivity;
 import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
@@ -204,8 +204,8 @@ public class InfoTool extends MapTool {
             final Context context = EditManager.INSTANCE.getEditingView().getContext();
             infoProgressDialog = new ProgressDialog(context);
             infoProgressDialog.setCancelable(true);
-            infoProgressDialog.setTitle("INFO");
-            infoProgressDialog.setMessage("Extracting information...");
+            infoProgressDialog.setTitle(R.string.info_uppercase);
+            infoProgressDialog.setMessage(context.getString(R.string.extracting_info));
             infoProgressDialog.setCancelable(true);
             infoProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             infoProgressDialog.setProgress(0);
@@ -246,6 +246,7 @@ public class InfoTool extends MapTool {
                         }
                         return "";
                     } catch (Exception e) {
+                        GPLog.error(this, null, e); //$NON-NLS-1$
                         return "ERROR: " + e.getLocalizedMessage();
                     }
 
@@ -277,7 +278,7 @@ public class InfoTool extends MapTool {
             }.execute((String) null);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            GPLog.error(this, null, ex); //$NON-NLS-1$
         }
     }
 

@@ -182,9 +182,7 @@ public class SmsUtilities {
                     Intent sendIntent = new Intent(Intent.ACTION_SEND);
                     sendIntent.setType("text/plain");
                     sendIntent.putExtra(Intent.EXTRA_TEXT, msg);
-                    if (defaultSmsPackageName != null) {
-                        sendIntent.setPackage(defaultSmsPackageName);
-                    }
+                    sendIntent.setPackage(defaultSmsPackageName);
                     context.startActivity(sendIntent);
                 }
             } catch (Exception e) {
@@ -254,6 +252,7 @@ public class SmsUtilities {
 
                             } catch (Exception e) {
                                 // ignore the param, it was not a coordinate block
+                                GPLog.error("SmsUtilities", null, e);
                             }
 
                         }

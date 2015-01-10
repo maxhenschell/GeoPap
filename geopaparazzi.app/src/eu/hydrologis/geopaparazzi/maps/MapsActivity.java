@@ -99,6 +99,7 @@ import eu.geopaparazzi.library.gps.GpsServiceStatus;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.mixare.MixareHandler;
 import eu.geopaparazzi.library.network.NetworkUtilities;
+import eu.geopaparazzi.library.share.ShareUtilities;
 import eu.geopaparazzi.library.sms.SmsData;
 import eu.geopaparazzi.library.sms.SmsUtilities;
 import eu.geopaparazzi.library.util.ColorUtilities;
@@ -266,7 +267,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         if (keepScreenOn) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-        boolean areButtonsVisible = preferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, false);
+        boolean areButtonsVisible = preferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, true);
 
         /*
          * create main mapview
@@ -364,15 +365,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         try {
             handleOsmSliderView();
         } catch (Exception e) {
-            e.printStackTrace();
+            GPLog.error(this, null, e); //$NON-NLS-1$
         }
         saveCenterPref();
 
-        if (areButtonsVisible) {
-            setAllButtoonsEnablement(true);
-        } else {
-            setAllButtoonsEnablement(false);
-        }
+        setAllButtoonsEnablement(areButtonsVisible);
         EditingView editingView = (EditingView) findViewById(R.id.editingview);
         LinearLayout editingToolsLayout = (LinearLayout) findViewById(R.id.editingToolsLayout);
         EditManager.INSTANCE.setEditingView(editingView, editingToolsLayout);
@@ -537,7 +534,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             }
             // dataOverlay.requestRedraw();
         } catch (IOException e1) {
-            e1.printStackTrace();
+            GPLog.error(this, null, e1); //$NON-NLS-1$
         }
     }
 
@@ -799,12 +796,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
         menu.add(Menu.NONE, MENU_CENTER_ON_MAP, 7, R.string.center_on_map).setIcon(android.R.drawable.ic_menu_mylocation);
         menu.add(Menu.NONE, MENU_GO_TO, 8, R.string.go_to).setIcon(android.R.drawable.ic_menu_myplaces);
-        if (SmsUtilities.hasPhone(this)) {
-            menu.add(Menu.NONE, MENU_SENDDATA_ID, 8, R.string.send_data).setIcon(android.R.drawable.ic_menu_send);
-        }
+        menu.add(Menu.NONE, MENU_SENDDATA_ID, 8, R.string.share_position).setIcon(android.R.drawable.ic_menu_send);
         menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare).setIcon(R.drawable.icon_datasource);
     }
 
+<<<<<<< HEAD
     public boolean onContextItemSelected( MenuItem item ) {
         switch( item.getItemId() ) {
         // THIS IS CURRENTLY DISABLED
@@ -832,6 +828,60 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             if (!MixareHandler.isMixareInstalled(this)) {
                 MixareHandler.installMixareFromMarket(this);
                 return true;
+=======
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // THIS IS CURRENTLY DISABLED
+            //
+            // case MENU_TILE_SOURCE_ID:
+            // startMapsDirTreeViewList();
+            // return true;
+            case MENU_GPSDATA:
+                Intent gpsDatalistIntent = new Intent(this, GpsDataListActivity.class);
+                startActivity(gpsDatalistIntent);
+                return true;
+            case MENU_DATA:
+                Intent datalistIntent = new Intent(this, DataListActivity.class);
+                startActivityForResult(datalistIntent, DATAPROPERTIES_RETURN_CODE);
+                return true;
+            case MENU_SCALE_ID:
+                MapScaleBar mapScaleBar = mapView.getMapScaleBar();
+                boolean showMapScaleBar = mapScaleBar.isShowMapScaleBar();
+                mapScaleBar.setShowMapScaleBar(!showMapScaleBar);
+                return true;
+            case MENU_COMPASS_ID:
+                ActionBar.openCompass(this);
+                return true;
+            case MENU_MIXARE_ID:
+                if (!MixareHandler.isMixareInstalled(this)) {
+                    MixareHandler.installMixareFromMarket(this);
+                    return true;
+                }
+                float[] nswe = getMapWorldBounds();
+
+                try {
+                    MixareUtilities.runRegionOnMixare(this, nswe[0], nswe[1], nswe[2], nswe[3]);
+                    return true;
+                } catch (Exception e1) {
+                    GPLog.error(this, null, e1); //$NON-NLS-1$
+                    return false;
+                }
+            case MENU_SENDDATA_ID:
+                try {
+                    if (!NetworkUtilities.isNetworkAvailable(this)) {
+                        Utilities.messageDialog(this, R.string.available_only_with_network, null);
+                    } else {
+                        // sendData();
+                        ShareUtilities.sharePositionUrl(this);
+                    }
+                    return true;
+                } catch (Exception e1) {
+                    GPLog.error(this, null, e1); //$NON-NLS-1$
+                    return false;
+                }
+            case MENU_GO_TO: {
+                return goTo();
+>>>>>>> master
             }
             float[] nswe = getMapWorldBounds();
 
@@ -894,6 +944,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     // }
     // }
 
+<<<<<<< HEAD
     private void sendData() throws IOException {
         float[] nswe = getMapWorldBounds();
         List<SmsData> smsData = new ArrayList<SmsData>();
@@ -974,6 +1025,88 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         }
 
     }
+=======
+//    private void sendData() throws IOException {
+//        float[] nswe = getMapWorldBounds();
+//        List<SmsData> smsData = new ArrayList<SmsData>();
+//        List<Bookmark> bookmarksList = DaoBookmarks.getBookmarksInWorldBounds(nswe[0], nswe[1], nswe[2], nswe[3]);
+//        for (Bookmark bookmark : bookmarksList) {
+//            double lat = bookmark.getLat();
+//            double lon = bookmark.getLon();
+//            String title = bookmark.getName();
+//
+//            SmsData data = new SmsData();
+//            data.TYPE = SmsData.BOOKMARK;
+//            data.x = (float) lon;
+//            data.y = (float) lat;
+//            data.z = 16f;
+//            data.text = title;
+//            smsData.add(data);
+//        }
+//
+//        List<Note> notesList = DaoNotes.getNotesList(nswe, false);
+//        for (Note note : notesList) {
+//            double lat = note.getLat();
+//            double lon = note.getLon();
+//            double elevation = note.getAltim();
+//            String title = note.getName();
+//
+//            SmsData data = new SmsData();
+//            data.TYPE = SmsData.NOTE;
+//            data.x = (float) lon;
+//            data.y = (float) lat;
+//            data.z = (float) elevation;
+//            data.text = title;
+//            smsData.add(data);
+//        }
+//
+//        smsString = new ArrayList<String>();
+//        String schemaHost = SmsUtilities.SMSHOST + "/"; //$NON-NLS-1$
+//        StringBuilder sb = new StringBuilder(schemaHost);
+//        int limit = 160;
+//        for (SmsData data : smsData) {
+//            String smsDataString = data.toSmsDataString();
+//            String tmp = sb.toString() + ";" + smsDataString; //$NON-NLS-1$
+//            if (tmp.length() <= limit) {
+//                if (sb.length() > schemaHost.length())
+//                    sb.append(";"); //$NON-NLS-1$
+//            } else {
+//                smsString.add(sb.toString());
+//                sb = new StringBuilder(schemaHost);
+//            }
+//            sb.append(smsDataString);
+//        }
+//
+//        if (sb.length() > schemaHost.length()) {
+//            smsString.add(sb.toString());
+//        }
+//
+//        if (smsString.size() == 0) {
+//            Utilities.messageDialog(this, R.string.found_no_data_to_send, null);
+//        } else {
+//
+//            String message = smsString.size() + getString(R.string.insert_phone_to_send);
+//
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setMessage(message).setCancelable(false)
+//                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int id) {
+//                            for (String smsMsg : smsString) {
+//                                SmsUtilities.sendSMSViaApp(MapsActivity.this, "", smsMsg); //$NON-NLS-1$
+//                            }
+//                        }
+//                    }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+//                public void onClick(DialogInterface dialog, int id) {
+//                    // ignore
+//                }
+//            });
+//            AlertDialog alertDialog = builder.create();
+//            alertDialog.show();
+//
+//        }
+//
+//    }
+>>>>>>> master
 
     private boolean goTo() {
         String[] items = new String[]{getString(R.string.goto_coordinate), getString(R.string.geocoding)};
@@ -1098,7 +1231,6 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                                 sqliteDatabase.endTransaction();
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
                             GPLog.error(this, "Cannot draw route.", e); //$NON-NLS-1$
                         }
                     } else {
@@ -1118,6 +1250,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 int zoom = data.getIntExtra(LibraryConstants.ZOOMLEVEL, 1);
                 setCenterAndZoomForMapWindowFocus(lon, lat, zoom);
             }
+<<<<<<< HEAD
             break;
         }
         case (GPSDATAPROPERTIES_RETURN_CODE): {
@@ -1139,6 +1272,30 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                         SpatialDatabasesManager.getInstance().getSpatialVectorTables(true);
                     } else {
                         setCenterAndZoomForMapWindowFocus(lon, lat, null);
+=======
+//            case (GPSDATAPROPERTIES_RETURN_CODE): {
+//                if (resultCode == Activity.RESULT_OK) {
+//                    double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
+//                    double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, 0d);
+//                    setCenterAndZoomForMapWindowFocus(lon, lat, null);
+//                }
+//                break;
+//            }
+            case (DATAPROPERTIES_RETURN_CODE): {
+                if (resultCode == Activity.RESULT_OK) {
+                    try {
+                        double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, -9999d);
+                        double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, -9999d);
+                        if (lon < -9000d) {
+                            // no coordinate passed
+                            // re-read
+                            SpatialDatabasesManager.getInstance().getSpatialVectorTables(true);
+                        } else {
+                            setCenterAndZoomForMapWindowFocus(lon, lat, null);
+                        }
+                    } catch (jsqlite.Exception e) {
+                        GPLog.error(this, null, e); //$NON-NLS-1$
+>>>>>>> master
                     }
                 } catch (jsqlite.Exception e) {
                     e.printStackTrace();
@@ -1224,6 +1381,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     public void onClick( DialogInterface dialog, int whichButton ) {
                         // ignore
                     }
+<<<<<<< HEAD
                 }).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener(){
                     public void onClick( DialogInterface dialog, int whichButton ) {
                         try {
@@ -1244,6 +1402,27 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                         }
                     }
                 }).setCancelable(false).show();
+=======
+                }).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                try {
+                    Editable value = input.getText();
+                    String newName = value.toString();
+                    if (newName == null || newName.length() < 1) {
+                        newName = proposedName;
+                    }
+
+                    int zoom = mapView.getMapPosition().getZoomLevel();
+                    float[] nswe = getMapWorldBounds();
+                    DaoBookmarks.addBookmark(centerLon, centerLat, newName, zoom, nswe[0], nswe[1], nswe[2], nswe[3]);
+                    mapView.invalidateOnUiThread();
+                } catch (IOException e) {
+                    GPLog.error(this, e.getLocalizedMessage(), e);
+                    Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }).setCancelable(false).show();
+>>>>>>> master
     }
 
     /**
@@ -1445,7 +1624,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                                 bufferedBitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
                                 out.close();
                             } catch (Exception e) {
-                                // ignore
+                                GPLog.error(this, null, e); //$NON-NLS-1$
                             }
                         }
                     }).start();

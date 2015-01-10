@@ -162,7 +162,7 @@
     <string name="proximity_radius">Proximity Radius</string>
     <string name="add_proximity_radius">Add proximity alert radius in meters.</string>
     <string name="sent_sms">Sent sms : </string>
-    <string name="send_data">Send data</string>
+    <string name="share_position">Share position</string>
     <string name="found_no_data_to_send">Found no data to send in the current visible map.</string>
     <string name="insert_phone_to_send">" sms will be sent to transfer the selected data.\nPlease insert a valid phone number to send the data to."</string>
     <string name="no_message_sent">No message sent.</string>
@@ -232,15 +232,16 @@
     <string name="spatialite_recovery_mode">Spatialite Recovery Mode</string>
     <string name="spatialite_recover_mode_tooltip">If on, on next startup an attempt will be made to correct faulty tables.</string>
     <string name="map">Map</string>
-    <string name="name">name</string>
+    <string name="name_lc">name</string>
+    <string name="name_uc">Name</string>
     <string name="bounds">bounds</string>
     <string name="maps_loading_not_finished_yet">Maps loading has not finished yet. Please wait a few moments and try again.</string>
     <string name="save">save</string>
     <string name="goto_feature">go to</string>
-    <string name="cancel">cancel</string>
-    <string name="project_info">project info</string>
-    <string name="description">description</string>
-    <string name="notes">notes</string>
+    <string name="cancel">Cancel</string>
+    <string name="project_info">Project Info</string>
+    <string name="description">Description</string>
+    <string name="notes">Notes</string>
     <string name="last_closing_date">Last closing date</string>
     <string name="creation_date">Creation date</string>
     <string name="creation_user">Project creation user</string>
@@ -248,6 +249,7 @@
     <string name="mapsfolder">Maps folder</string>
     <string name="preview_mode_save_warning">Preview mode. Once the save button is tapped, the geometry will be saved into the database</string>
     <string name="reset_string">reset</string>
+
     <!-- Fred strings -->
     <string name="fred_preferences">FRED preferences</string>
     <string name="fred_external_db_path">External database path</string>
@@ -316,6 +318,28 @@
     <string name="fred_iMap_column_note">obscomments_long</string>
     <string name="fred_iMap_second_level_descriptor">projectid</string>
     <string name="fred_iMap_second_level_timestamp">obsdate</string>
+    <!-- More Geopap strings -->
+    <string name="avaiable_layers">Available layers</string>
+    <string name="geometry_saved">Geometry saved.</string>
+    <string name="unique_constraint_violation_message">A unique constraint violation occurred. Databases with unique constraints are not supported.</string>
+    <string name="selfintersection_message">The added vertex has created a selfintersection of the polygon and your layer doesn\'t support it.</string>
+    <string name="no_gps_coordinate_acquired_yet">No GPS coordinate has been acquired yet.</string>
+    <string name="info_uppercase">INFO</string>
+    <string name="extracting_info">Extracting information...</string>
+    <string name="geom_incompatible_with_layer">The resulting geometry is not compatible with the destination layer.</string>
+    <string name="selected_features_in_layer">Selected %1$d features with %2$d polygons.</string>
+    <string name="no_compatible_layers_found">No compatible layers found</string>
+    <string name="copied_features_to_layer">Copied %1$d geometries to layer: %2$s</string>
+    <string name="area_colon">Area: </string>
+    <string name="length_colon">Length: </string>
+    <string name="save_uppercase">SAVE</string>
+    <string name="saving_to_database">Saving data to database...</string>
+    <string name="downloading">Downloading...</string>
+    <string name="requesting_available_services">Requesting available services</string>
+    <string name="custommapfolder_summary">Change the folder from which maps are loaded. Needs a restart of Geopaparazzi</string>
+    <string name="custommapfolder_title">Current used maps folder</string>
+    <string name="enable_mock_locations_for_demo">To use the demo mode you need to enable Androids mock locations in the developer settings. Disabling demo mode.</string>
+    <string name="could_not_open_geosms">Could not open the passed URI. Geopaparazzi is able to open only GeoSMS URIs that contain a part like:</string>
 </resources>
 
 

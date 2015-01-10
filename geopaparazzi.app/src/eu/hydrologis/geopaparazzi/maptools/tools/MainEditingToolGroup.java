@@ -262,7 +262,7 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
                                     intent.putExtra(MapsSupportService.REREAD_MAP_REQUEST, true);
                                     context.startService(intent);
                                 } else {
-                                    Utilities.messageDialog(v.getContext(), "The resulting geometry is not compatible with the destination layer.", null);
+                                    Utilities.messageDialog(v.getContext(), R.string.geom_incompatible_with_layer, null);
                                     return;
                                 }
                                 break;
@@ -275,7 +275,7 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
                     undoButton.setVisibility(View.GONE);
                     EditManager.INSTANCE.invalidateEditingView();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    GPLog.error(this, null, e); //$NON-NLS-1$
                 }
             }
         } else if (v == undoButton) {

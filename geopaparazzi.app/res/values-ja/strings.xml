@@ -3,7 +3,8 @@
   <string name="yes">はい</string>
   <string name="no">いいえ</string>
   <string name="app_name">Geopaparazzi</string>
-  <string name="notesvisibilityToggle">ノートを表示する</string>
+  <string name="app_file_name">Geopaparazziプロジェクトデータベース</string>
+  <string name="notesvisibilityToggle">ノートを表示する。</string>
   <string name="kmlsaved">正常にエクスポートされました:</string>
   <string name="kmlnonsaved">データのエクスポート中にエラーが発生しました ！</string>
   <string name="loggingoff">すべてのセンサーが停止しました。</string>
@@ -16,9 +17,9 @@
   <string name="lon">経度: </string>
   <string name="azimuth">方位角: </string>
   <string name="go_to">目的地</string>
-  <string name="goto_coordinate">座標系へ</string>
+  <string name="goto_coordinate">座標へ</string>
   <string name="geocoding">地理座標検索</string>
-  <string name="prompt_gpsenable">GPSを起動してください!</string>
+  <string name="prompt_gpsenable">GPSが無効になっています！有効にしますか？</string>
   <string name="width_label">幅</string>
   <string name="color_label">色</string>
   <string name="mainmenu_kmlexport">エクスポート</string>
@@ -37,14 +38,15 @@
   <string name="gps_logging_distance">GPSログ取得の最小距離区間</string>
   <string name="gps_logging_interval">GPSログ取得の最小時間区間</string>
   <string name="gps_use_android_level">省電力利用 (バッテリ節約, 再起動後に有効)</string>
-  <string name="gps_use_android_level_summary">チェックした場合、gps の設定は、オペレーティング システム レベルでバッテリーを節約することができますが、大きな間隔を選択すると信号の安定性が低くなります（gps の接続に問題がある場合は、チェックしないように)。gps は100 秒以内の間隔で電力が供給されます。バッテリー寿命を良くするには大きな間隔を選択してください。\n</string>
+  <string name="gps_use_android_level_summary">チェックした場合、gps の設定は、オペレーティング システム レベルでバッテリーを節約することができますが、大きな間隔を選択すると信号の安定性が低くなります（gps の接続に問題がある場合は、チェックしないように)。gps は100 秒以内の間隔で電力が供給されます。バッテリー寿命を良くするには大きな間隔を選択してください。
+</string>
   <string name="sms_preferences">SMS設定</string>
   <string name="sms_catcher">SMS受信を有効にする</string>
-  <string name="databaseError">データベース接続中にエラーが発生しました。</string>
+  <string name="databaseError">データベース接続中にエラーが発生しました</string>
   <string name="chart_profile_view">プロフィール</string>
   <string name="gpx_import_processing">gpx をインポートしています...</string>
-  <string name="osm_additionalinfo">タグに情報を追加してください。</string>
-  <string name="osm_tagsgrid">挿入するタグを選択してください。</string>
+  <string name="osm_additionalinfo">タグに情報を追加</string>
+  <string name="osm_tagsgrid">挿入するタグを選択</string>
   <string name="text_show_position_on_map">地図画面</string>
   <string name="text_take_a_gps_note">ノート</string>
   <string name="text_undo_a_gps_note">最新ノート削除</string>
@@ -55,12 +57,12 @@
   <string name="panic">パニック通知！</string>
   <string name="panic_number">パニック通知番号</string>
   <string name="panic_number_notset">有効なパニック通知番号が利用できません. パニック通知番号をセットしましたか？</string>
-  <string name="panic_upper">  パニックメッセージ送信  </string>
+  <string name="panic_upper">  パニック！</string>
   <string name="send_status_update">位置情報を送信する</string>
   <string name="help_needed">Help needed!</string>
   <string name="message_sent">メッセージを送信する</string>
-  <string name="last_note_deleted">最新のノートを削除しました。</string>
-  <string name="last_note_not_deleted">最新のノートを削除出来ませんでした。</string>
+  <string name="last_note_deleted">最新のノートを削除しました</string>
+  <string name="last_note_not_deleted">最新のノートを削除出来ませんでした</string>
   <string name="text_logging">GPSロギング</string>
   <string name="text_gpson">GPS起動</string>
   <string name="debug">デバッグ設定</string>
@@ -71,8 +73,8 @@
   <string name="installgpsstatus_message">GeoPaparazziはコンパス機能やGPS情報の閲覧にGps Statusを使います。Gps Statusをインストールしてもよろしいですか？</string>
   <!--added after 2.1.2-->
   <string name="reset">新しいプロジェクト</string>
-  <string name="load">既存プロジェクトの読み込む</string>
-  <string name="phonenumber_hint">カンマで区切られた電話番号を入力します。</string>
+  <string name="load">既存プロジェクトの読込み</string>
+  <string name="phonenumber_hint">カンマで区切られた電話番号を入力します...</string>
   <string name="pick_phonenumber_label">…</string>
   <!--added after 2.1.4-->
   <string name="select_all">全選択</string>
@@ -80,8 +82,8 @@
   <string name="delete_visible_notes_title">ノートの削除</string>
   <string name="delete_visible_notes_prompt">本当に表示中の全てのノートを削除しますか？ 削除されたデータは元に戻せません。</string>
   <string name="delete_visible_bookmarks_title">ブックマークの削除</string>
-  <string name="delete_visible_bookmarks_prompt">本当に表示中の全てのノートを削除しますか？ 削除されたデータは元に戻せません。</string>
-  <string name="gps_searching_fix">位置を取得しています</string>
+  <string name="delete_visible_bookmarks_prompt">本当に表示中の全てのブックマークを削除しますか？ 削除されたデータは元に戻せません。</string>
+  <string name="gps_searching_fix">GPS FIXを取得中です。</string>
   <string name="bookmarks_list_rename">ブックマーク名変更</string>
   <string name="mapsactivity_menu_toggle_scalebar">スケールバー表示</string>
   <string name="mapsactivity_menu_tilesource">タイルソース選択</string>
@@ -89,14 +91,14 @@
   <string name="mapsactivity_delete_notes">{0} 個のノートを削除しています...</string>
   <string name="mapsactivity_new_bookmark">新しいブックマーク</string>
   <string name="mapsactivity_enter_bookmark_name">新しいブックマーク名を入力してください。(オプション)</string>
-  <string name="maptagsactivity_error_reading_tags">タグの読み込みに失敗しました。</string>
+  <string name="maptagsactivity_error_reading_tags">タグの読み込みに失敗しました</string>
   <!--added after 2.3.1-->
   <string name="mapsactivity_menu_toggle_compass">コンパスを開く</string>
   <!--added after 2.4.3-->
   <string name="imagesvisibilityToggle">画像表示の切替</string>
   <string name="imagefromgps">地図の中心へ画像</string>
   <string name="notefromgps">地図の中心へノート</string>
-  <string name="quicknotes">MAP CENTER NOTES</string>
+  <string name="quicknotes">地図の中心へノート</string>
   <string name="formnotes">フォームノート</string>
   <!--added after 2.5.0-->
   <string name="an_error_occurred_while_creating_the_chart_">グラフの作成中にエラーが発生しました。</string>
@@ -105,7 +107,9 @@
   <string name="osm_user_label">ユーザー名</string>
   <string name="osm_password_label">パスワード</string>
   <string name="osm_server_label">接続サーバ</string>
-  <string name="osm_notes_properly_uploaded">OSMノートが正しくアップロードされました\n\nアップロードされたノートをデバイスから削除しますか？</string>
+  <string name="osm_notes_properly_uploaded">OSMノートが正しくアップロードされました
+
+アップロードされたノートをデバイスから削除しますか？</string>
   <string name="an_error_occurred_while_uploading_osm_tags">OSM タグのアップロード中にエラーが発生しました。</string>
   <string name="enable_automatic_center_on_gps">地図中心をGPS座標へ</string>
   <string name="enable_center_on_gps">GPS座標を常に中心にする</string>
@@ -132,17 +136,18 @@
   <string name="project_succesfully_uploaded_to_cloud">プロジェクトが正常にGeopap-cloudにアップロードされました。</string>
   <string name="exporting_data_to_kmz">KMZ へのデータのエクスポート</string>
   <string name="exporting_data_to_gpx">GPX へのデータのエクスポート</string>
-  <string name="media_upload">MEDIA UPLOAD</string>
+  <string name="media_upload">メディアアップロード</string>
   <string name="osm_insert_a_changeset_description">変更セットの説明を挿入します。</string>
   <string name="set_description">説明の入力</string>
   <string name="loaded_project_in">読み込まれているプロジェクト:</string>
   <string name="no_sdcard_use_internal_memory">利用可能なSDカードがありません(PCにマウントされていないか確認してください) 。デバイスの内部メモリを代わりに使用しますか。この場合、マップ ビューのスペース上の理由から任意のマップ表示されないことに注意してください。</string>
-  <string name="add_message">追加メッセージ</string>
+  <string name="add_message">メッセージの追加</string>
   <string name="insert_an_optional_text_to_send_with_the_geosms">GeoSMS で送信するオプションのテキストを挿入します。</string>
-  <string name="enter_a_name_for_the_new_project">新しいプロジェクトの名前を入力します。</string>
+  <string name="enter_a_name_for_the_new_project">新しいプロジェクトの名前を入力してください。</string>
   <string name="chosen_project_exists">選択したプロジェクトの名前は既に存在します、別の名前を選んでください。</string>
   <string name="no_external_sdcard_for_db_renderer">データベースのレンダリングは、外部ストレージからのみサポートされています。外部ストレージが見つかりませんでした、外部ストレージは利用可能ですか？</string>
-  <string name="no_map_files_found_go_online">/Sdcard/maps フォルダー内にマップ ファイルが見つかりませんでした。オンライン マップへ切り替えます。\nMaps はここからダウンロードすることができます: http://download.mapsforge.org</string>
+  <string name="no_map_files_found_go_online">/Sdcard/maps フォルダー内にマップ ファイルが見つかりませんでした。オンライン マップへ切り替えます。
+マップはここからダウンロードすることができます: http://download.mapsforge.org</string>
   <string name="select_map_to_use">使用するマップを選択します。</string>
   <string name="no_map_file_found_going_to_mapnik">マップ ファイルが見つかりませんでした。MAPNIK タイル ソースを切替えます。</string>
   <string name="enter_project_description">プロジェクトの説明を入力します</string>
@@ -155,9 +160,9 @@
   <string name="proximity_radius">近接半径</string>
   <string name="add_proximity_radius">近接アラートの半径をメートルで追加します。</string>
   <string name="sent_sms">SMS送信 : </string>
-  <string name="send_data">データ送信</string>
   <string name="found_no_data_to_send">現在の表示マップに送信するデータが見つかりません。</string>
-  <string name="insert_phone_to_send"> SMS は選択されたデータを送信します。\nデータの送信先電話番号を入力してください。</string>
+  <string name="insert_phone_to_send"> SMS は選択されたデータを送信します。
+データの送信先電話番号を入力してください。</string>
   <string name="no_message_sent">送信メッセージがありません。</string>
   <string name="logs_will_be_merged">ログがこの操作で一緒にマージされます。続行しますか?</string>
   <string name="distance">距離: </string>
@@ -180,7 +185,7 @@
   <string name="notes_properties">ノートプロパティ</string>
   <string name="visibility">表示/非表示</string>
   <string name="custom_icon_properties">カスタムアイコンプロパティ</string>
-  <string name="use_custom">カスタム使用</string>
+  <string name="use_custom">カスタムを使用</string>
   <string name="labels">ラベル</string>
   <string name="show_labels">ラベルを表示します。</string>
   <string name="halo">輪郭</string>
@@ -192,8 +197,9 @@
   <string name="prompt_delete_bookmark">ブックマークを削除してもよろしいですか？この操作は取り消しできません。</string>
   <string name="keep_use_imperial">インペリアル単位を使用する</string>
   <string name="keep_use_imperial_sum">可能であればメートルの代わりにインペリアルを使用する</string>
+  <string name="high_density_display">高解像度ディスプレイ</string>
+  <string name="high_density_display_sum">オンにするとOSMマップがより見やすくなります。</string>
   <string name="satellites">衛星数</string>
-  <string name="crash_toast_text">アプリケーションに重大なエラーが発生しました。問題解決のために有用なクラッシュ情報が収集されています。もしよろしければ、開発チームにクラッシュ情報をお送りください。</string>
   <string name="start">開始</string>
   <string name="end">終了</string>
   <string name="other">その他</string>
@@ -219,4 +225,48 @@
   <string name="tanto_service_query">クエリ</string>
   <string name="tanto_disclaimer">よくお読みください：Geopaparazziは、ダウンロードされたデータの法的な意味のいかなる責任も負いません。任意のWMSのmapurl定義をダウンロードする前に、利用者はサービスのライセンスをチェックし、参照することが可能であることを確認する必要があります。Geopaparazzi著作者達は、決してすべてのサービスの悪用に関連するライセンス権侵害の責任を負いません。</string>
   <string name="service_name_propmt">サービス名を入力。空白の場合サービス名はサービスから取得されます。</string>
+  <string name="info">情報</string>
+  <string name="calculate_length">距離計算...</string>
+  <string name="spatialite_preferences">Spatialite設定</string>
+  <string name="spatialite_recovery_mode">Spatialite復元モード</string>
+  <string name="spatialite_recover_mode_tooltip">オンにした場合、次の起動の際に不良のあるテーブルの修正が試みられます。</string>
+  <string name="map">地図</string>
+  <string name="name_lc">名称</string>
+  <string name="name_uc">名称</string>
+  <string name="bounds">境界</string>
+  <string name="maps_loading_not_finished_yet">マップのロードがまだ終了していません。少し待ってからもう一度試してください。</string>
+  <string name="save">保存</string>
+  <string name="goto_feature">目的地</string>
+  <string name="cancel">キャンセル</string>
+  <string name="project_info">プロジェクト情報</string>
+  <string name="description">説明</string>
+  <string name="notes">ノート</string>
+  <string name="last_closing_date">変更日</string>
+  <string name="creation_date">作成日</string>
+  <string name="creation_user">プロジェクト作成者</string>
+  <string name="last_modification_user">プロジェクト変更者</string>
+  <string name="mapsfolder">マップフォルダ</string>
+  <string name="preview_mode_save_warning">プレビューモード。保存ボタンをタップすると、ジオメトリはデータベースに保存されます。</string>
+  <string name="reset_string">リセット</string>
+  <string name="avaiable_layers">利用可能なレイヤー</string>
+  <string name="geometry_saved">ジオメトリが保存されました</string>
+  <string name="unique_constraint_violation_message">一意制約違反が発生しました。ユニーク制約を持つデータベースがサポートされていません。</string>
+  <string name="selfintersection_message">追加された頂点は、ポリゴンの自己交差が作成されており、レイヤーは自己交差をサポートしていません。</string>
+  <string name="no_gps_coordinate_acquired_yet">GPS座標はまだ取得されていません。</string>
+  <string name="info_uppercase">INFO</string>
+  <string name="extracting_info">情報抽出...</string>
+  <string name="geom_incompatible_with_layer">結果のジオメトリは追加先のレイヤーと互換性がありません。</string>
+  <string name="selected_features_in_layer">%2$d ポリゴンの %1$d 地物が選択されました。</string>
+  <string name="no_compatible_layers_found">互換性のあるレイヤーがありません</string>
+  <string name="copied_features_to_layer">%1$d のジオメトリがレイヤ: %2$s にコピーされました</string>
+  <string name="area_colon">面積: </string>
+  <string name="length_colon">距離: </string>
+  <string name="save_uppercase">保存</string>
+  <string name="saving_to_database">データベースへ保存中...</string>
+  <string name="downloading">ダウンロード中...</string>
+  <string name="requesting_available_services">利用可能なサービスをリクエスト中</string>
+  <string name="custommapfolder_summary">マップがロードされているフォルダを変更します。Geopaparazziの再起動が必要です。</string>
+  <string name="custommapfolder_title">マップフォルダの変更</string>
+  <string name="enable_mock_locations_for_demo">デモモードを有効にするには開発者向けオプションの疑似ロケーションを許可するを有効にします。デモモードを無効にしています。</string>
+  <string name="could_not_open_geosms">指定のURIをオープンできません。GeopaparazziのオープンできるGeoSMS URIは次のようなものです:</string>
 </resources>

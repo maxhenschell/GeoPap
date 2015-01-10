@@ -42,7 +42,6 @@ import android.widget.ToggleButton;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.sql.Date;
 import java.util.Set;
 
 import eu.geopaparazzi.library.camera.CameraActivity;
@@ -300,7 +299,7 @@ public class MapTagsActivity extends Activity {
                         DaoNotes.addNote(lon, lat, elev, Long.parseLong(noteArray[3]), noteArray[4], noteArray[5], noteArray[6],
                                 null);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        GPLog.error(this, null, e); //$NON-NLS-1$
 
                         Utilities.messageDialog(this, eu.geopaparazzi.library.R.string.notenonsaved, null);
                     }
@@ -335,7 +334,7 @@ public class MapTagsActivity extends Activity {
                         // delete the file after insertion in db
                         imgFile.delete();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        GPLog.error(this, null, e); //$NON-NLS-1$
 
                         Utilities.messageDialog(this, eu.geopaparazzi.library.R.string.notenonsaved, null);
                     }

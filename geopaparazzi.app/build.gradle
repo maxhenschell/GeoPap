@@ -100,7 +100,8 @@ android {
             signingConfig signingConfigs.release
             applicationVariants.all { variant ->
                 variant.outputs.each { output ->
-                    output.outputFile = new File(output.outputFile.parent, output.outputFile.name.replace("geopaparazzi.app-release.apk", "GeoPaparazzi_" + geopaparazziVersion + ".apk"))
+                    def file = output.outputFile
+                    output.outputFile = new File(file.parent, file.name.replace("geopaparazzi.app-release.apk", "GeoPaparazzi_" + geopaparazziVersion + ".apk"))
                 }
             }
         }

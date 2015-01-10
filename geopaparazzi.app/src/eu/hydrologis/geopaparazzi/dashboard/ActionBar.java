@@ -26,6 +26,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -92,7 +93,7 @@ public class ActionBar {
         try {
             mapsDir = ResourcesManager.getInstance(actionBarView.getContext()).getMapsDir();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("ActionBar", "error", e);
         }
 
         initVars();
@@ -140,7 +141,7 @@ public class ActionBar {
         gpsStatusString = context.getString(R.string.gps_status);
         mapString = context.getString(R.string.map);
         mapsFolderString = context.getString(R.string.mapsfolder);
-        nameString = context.getString(R.string.name);
+        nameString = context.getString(R.string.name_lc);
         boundsString = context.getString(R.string.bounds);
     }
 

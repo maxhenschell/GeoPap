@@ -50,7 +50,6 @@ import eu.hydrologis.geopaparazzi.util.Line;
 
 import static eu.hydrologis.geopaparazzi.database.TableDescriptions.*;
 import static eu.hydrologis.geopaparazzi.database.TableDescriptions.TABLE_GPSLOGS;
-import static java.lang.Math.abs;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
@@ -415,7 +414,7 @@ public class DaoGpsLog implements IGpsLogDbHelper {
                 // Logger.d(DEBUG_TAG, "Res: " + logid + "/" + color + "/" + width + "/" + visible +
                 // "/" +
                 // text);
-                LogMapItem item = new LogMapItem(logid, text, color, (float) width, visible == 1 ? true : false, start, end,
+                LogMapItem item = new LogMapItem(logid, text, color, (float) width, visible == 1, start, end,
                         (double) lengthm);
                 logsList.add(item);
                 c.moveToNext();
@@ -487,7 +486,7 @@ public class DaoGpsLog implements IGpsLogDbHelper {
                     List<GeoPoint> gpslogGeoPoints = getGpslogGeoPoints(sqliteDatabase, logid, -1);
                     if (gpslogGeoPoints.size() > 1) {
                         way.setPaint(null, wayPaintOutline);
-                        GeoPoint[] geoPoints = gpslogGeoPoints.toArray(new GeoPoint[0]);
+                        GeoPoint[] geoPoints = gpslogGeoPoints.toArray(new GeoPoint[gpslogGeoPoints.size()]);
                         way.setWayNodes(new GeoPoint[][]{geoPoints});
                         // item.setId(logid);
                         // item.setVisible(visible == 1 ? true : false);
@@ -839,6 +838,9 @@ public class DaoGpsLog implements IGpsLogDbHelper {
         return linesMap;
     }
 
+
+
+
     /**
      * Get the line for a certain log id from the db
      *
@@ -872,6 +874,7 @@ public class DaoGpsLog implements IGpsLogDbHelper {
             while (!c.isAfterLast()) {
                 double lon = c.getDouble(0);
                 double lat = c.getDouble(1);
+
                 double altim = c.getDouble(2);
                 String date = c.getString(3);
                 line.addPoint(lon, lat, altim, date);
