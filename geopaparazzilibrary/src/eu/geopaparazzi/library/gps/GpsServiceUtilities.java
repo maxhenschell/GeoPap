@@ -31,6 +31,7 @@ import static eu.geopaparazzi.library.gps.GpsService.START_GPS_LOG_HELPER_CLASS;
 import static eu.geopaparazzi.library.gps.GpsService.START_GPS_LOG_NAME;
 import static eu.geopaparazzi.library.gps.GpsService.START_GPS_AVERAGING;
 import static eu.geopaparazzi.library.gps.GpsService.STOP_GPS_LOGGING;
+import static eu.geopaparazzi.library.gps.GpsService.GPS_AVG_COMPLETE;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -83,7 +84,7 @@ public class GpsServiceUtilities {
 
     /**
      * Utility to get the {@link GpsLoggingStatus} from an intent.
-     * 
+     *
      * @param intent the intent.
      * @return the status.
      */
@@ -91,7 +92,7 @@ public class GpsServiceUtilities {
         if (intent == null) {
             return null;
         }
-        int gpsServiceStatusCode = intent.getIntExtra(GPS_LOGGING_STATUS, 0);
+        int gpsServiceStatusCode = intent.getIntExtra(GPS_AVG_COMPLETE, 0);
         return GpsLoggingStatus.getStatusForCode(gpsServiceStatusCode);
     }
 
@@ -151,6 +152,23 @@ public class GpsServiceUtilities {
         double[] position = intent.getDoubleArrayExtra(GPS_SERVICE_AVERAGED_POSITION);
         return position;
     }
+
+
+//    /**
+//     * Utility to get the {@link getGpsAveragingStatus} from an intent.
+//     *
+//     * @param intent the intent.
+//     * @return the status.
+//     */
+//    public static GpsAvgStatus getGpsAveragingStatus( Intent intent ) {
+//        if (intent == null) {
+//            return null;
+//        }
+//        int getGpsAveragingStatusCode = intent.getIntExtra(GPS_AVG_COMPLETE, 0);
+//        return GpsAvgStatus.getStatusForCode(getGpsAveragingStatusCode);
+//    }
+
+
 
     /**
      * Utility to get the gps status extras from an intent.
