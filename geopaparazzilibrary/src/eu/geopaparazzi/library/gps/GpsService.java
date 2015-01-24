@@ -201,6 +201,7 @@ public class GpsService extends Service implements LocationListener, Listener {
     private boolean stopAveragingRequest = false;
     private GpsAvgMeasurements gpsavgmeasurements;
     private NotificationCompat.Builder nBuilder;
+    private int numberSamplesUsedInAvg = -1;
 
     @Override
     public int onStartCommand( Intent intent, int flags, int startId ) {
@@ -271,6 +272,7 @@ public class GpsService extends Service implements LocationListener, Listener {
             if (intent.hasExtra(START_GPS_AVERAGING)){
                 log("onStartCommand: Start GPS averaging called");
                 stopAveragingRequest = false;
+                numberSamplesUsedInAvg = -1;
                 gpsavgmeasurements = GpsAvgMeasurements.getInstance();
                 boolean doAverage = intent.getBooleanExtra(START_GPS_AVERAGING, false);
                 if(!isAveraging && doAverage){
@@ -723,7 +725,8 @@ public class GpsService extends Service implements LocationListener, Listener {
             lon = loc.getLongitude();
             lat = loc.getLatitude();
             elev = loc.getAltitude();
-            double[] GpsAvgPositionArray = new double[]{lon, lat, elev};
+            int numSamples = numberSamplesUsedInAvg;
+            double[] GpsAvgPositionArray = new double[]{lon, lat, elev, numSamples};
             intent.putExtra(GPS_SERVICE_AVERAGED_POSITION, GpsAvgPositionArray);
             if(message == "GPS Averaging complete") {
                 intent.putExtra(GPS_AVG_COMPLETE, 1);
@@ -769,7 +772,7 @@ public class GpsService extends Service implements LocationListener, Listener {
         intent.setAction("stopGpsAv");
         intent.putExtra(GPS_SERVICE_STATUS, 1);
         intent.putExtra(STOP_AVERAGING_NOW, 1);
-        intent.putExtra("stopGPSAveraging","stopGpsAv");
+        //intent.putExtra("stopGPSAveraging","stopGpsAv");
 
         final PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         final NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -795,8 +798,12 @@ public class GpsService extends Service implements LocationListener, Listener {
                             }
                             notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
                             if(stopAveragingRequest){
+                                numberSamplesUsedInAvg = i + 1;
                                 break;
                             }
+                        }
+                        if(numberSamplesUsedInAvg == -1){
+                            numberSamplesUsedInAvg = numSamps;
                         }
                         broadcast("GPS Averaging complete");
                         cancelAvgNotify(notifyMgr);
@@ -826,11 +833,6 @@ public class GpsService extends Service implements LocationListener, Listener {
      */
     public void notifyAboutAveraging(PendingIntent pendingIntent, NotificationManager notifyMgr, Integer sampsAcquired, Integer sampsTargeted) {
 
-//        Intent stopAvgIntent = new Intent(this, GpsService.class);
-//        stopAvgIntent.putExtra("STOP_AVERAGING_NOW","1");
-//        stopAvgIntent.setAction("1");
-//        PendingIntent stopAvgPendingIntent = PendingIntent.getActivity(this,0,stopAvgIntent,PendingIntent.FLAG_UPDATE_CURRENT);
-
         if (nBuilder == null) {
             String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ".";
             nBuilder =  new NotificationCompat.Builder(this)
@@ -838,8 +840,7 @@ public class GpsService extends Service implements LocationListener, Listener {
                             .setContentTitle("GPS Position Averaging")
                             .setContentText(msg)
                             .setContentIntent(pendingIntent)
-                            //.setContentIntent(stopAvgPendingIntent)
-                            //.addAction(R.drawable.goto_position,"Finish now", stopAvgPendingIntent) //only for android 5?
+                            //.addAction(R.drawable.goto_position,"Finish now", stopAvgPendingIntent) //button capabilities only for android 5?
                             .setProgress(sampsTargeted,sampsAcquired,false);
 
         } else {
@@ -848,14 +849,9 @@ public class GpsService extends Service implements LocationListener, Listener {
                     .setProgress(sampsTargeted,sampsAcquired,false);
         }
 
-        //nBuilder.setContentIntent(pendingIntent);
-
-        //TODO add button to stop processing
-
-        // Issuing notification
+        // Issue notification
         int notificationId = 6;
         notifyMgr.notify(notificationId, nBuilder.build());
-
     }
 
     /**
@@ -867,7 +863,6 @@ public class GpsService extends Service implements LocationListener, Listener {
     public void cancelAvgNotify(NotificationManager notifyMgr) {
 
     notifyMgr.cancel(6);
-
 
     }
 
