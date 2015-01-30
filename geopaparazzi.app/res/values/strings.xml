@@ -342,6 +342,3 @@
     <string name="could_not_open_geosms">Could not open the passed URI. Geopaparazzi is able to open only GeoSMS URIs that contain a part like:</string>
 </resources>
 
-
-
-

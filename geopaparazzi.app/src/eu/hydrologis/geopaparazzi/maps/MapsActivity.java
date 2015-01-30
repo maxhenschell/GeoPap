@@ -199,22 +199,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         setContentView(R.layout.mapsview);
 
         created = true;
-
-        // Get intent, action
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-        String dataString = intent.getDataString();
-        //int intentFlags = intent.getFlags();
-        String fullIntent = intent.toString();
-        String intentPackage = intent.getPackage();
-
         if (GPLog.LOG_HEAVY){
-            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
             GPLog.addLogEntry(this, "MapsActivity.created =  " + created); //$NON-NLS-1$
         }
 
@@ -396,21 +381,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
         created = true;
 
-        // Get intent, action
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-        String dataString = intent.getDataString();
-        //int intentFlags = intent.getFlags();
-        String fullIntent = intent.toString();
-        String intentPackage = intent.getPackage();
-
         if (GPLog.LOG_HEAVY){
-            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Resuming ... MapsActivity.created =  " + created); //$NON-NLS-1$
         }
 
@@ -738,8 +709,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     /**
      * set MapView Center point [in MapsDirManager]
      * <p/>
-     * - this should be the only function used to compleate this task
-     * -- error logic has been build in use value incase the function was incorrectly called
+     * - this should be the only function used to complete this task
+     * -- error logic has been build in use value in case the function was incorrectly called
      * <p>if (mapCenterLocation == null)
      * <p>- the default Center of the loaded map will be taken
      * <p>-  if (i_default_zoom == 1)
@@ -880,7 +851,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     // * - when first called this list will build a directory/file list AND a map-type/Directory/File
     // list
     // * - once created, this list will be retained during the Application
-    // * - the user can switch from a sorted list as Directory/File OR Map-Type/Diretory/File view
+    // * - the user can switch from a sorted list as Directory/File OR Map-Type/Directory/File view
     // * </p>
     // * result will be sent to MapDirManager and saved there and stored to preferences
     // * - when the MapView is created, this stored value will be read and loaded
