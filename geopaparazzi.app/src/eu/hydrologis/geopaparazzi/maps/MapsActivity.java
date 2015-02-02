@@ -470,11 +470,20 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             dataOverlay.addWays(logOverlaysList);
 
             /* fred points (obs points, plots, zool or bot points,imap observations) */
-            Drawable fredPt = getResources().getDrawable(R.drawable.trianglept);
-            Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPt);
-            Context fredContext = getApplicationContext();
-            List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
-            dataOverlay.addItems(fredPtOverlays);
+            if (DataManager.getInstance().areFredPtsVisible()) {
+                Drawable fredPt = getResources().getDrawable(R.drawable.trianglept);
+                Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPt);
+                Context fredContext = getApplicationContext();
+                List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
+                if (fredPtOverlays != null) {
+                    int numPts = fredPtOverlays.size();
+                    if (numPts == 0) {
+                        Utilities.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
+                    } else {
+                        dataOverlay.addItems(fredPtOverlays);
+                    }
+                }
+            }
 
             /* images */
             if (DataManager.getInstance().areImagesVisible()) {

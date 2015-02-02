@@ -136,4 +136,12 @@ public class DataManager {
         this.areMapsVisible = areMapsVisible;
     }
 
+    private boolean areFredPtsVisible = true;
+    /**
+     * @return <code>true</code> if fred points are visible
+     */
+    public boolean areFredPtsVisible(){
+        return areFredPtsVisible;
+    }
+
 }
