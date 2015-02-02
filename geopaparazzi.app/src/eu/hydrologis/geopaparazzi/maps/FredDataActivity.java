@@ -21,6 +21,7 @@ package eu.hydrologis.geopaparazzi.maps;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -53,6 +54,7 @@ import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.util.PositionUtilities;
+import eu.geopaparazzi.library.util.Utilities;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DatabaseManager;
 //import eu.geopaparazzi.library.gps.GpsManager;
@@ -137,10 +139,10 @@ public class FredDataActivity extends Activity {
         String action = intent.getAction();
         String type = intent.getType();
 
-        if (GPLog.LOG_HEAVY){
-            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
-        }
+//        if (GPLog.LOG_HEAVY){
+//            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
+//            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+//        }
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if ("text/plain".equals(type)) {
@@ -156,7 +158,7 @@ public class FredDataActivity extends Activity {
         final boolean dbExists = doesDatabaseExist(this, externalDB);
         if (!dbExists) {
             Toast.makeText(getApplicationContext(),
-                    "Can't find the database, please check your settings. Exiting fred add-on", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+                    "Database does not exist", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
             finish();
         } else {
 
@@ -178,28 +180,6 @@ public class FredDataActivity extends Activity {
             mapCenterLatitude = mapCenter[1];
             mapCenterLongitude = mapCenter[0];
             mapCenterElevation = 0.0;
-
-            /**
-             if (GpsManager.getInstance(this).hasFix()) {
-             gpsLocation = PositionUtilities.getGpsLocationFromPreferences(preferences);
-             // if (GPLog.LOG_HEAVY)
-             //    GPLog.addLogEntry(this, "gpsLoc_lat: " + gpsLocation[1]); //$NON-NLS-1$
-             }
-             if (gpsLocation == null) {
-             // no gps, can use only map center
-             togglePositionTypeButtonGps.setChecked(false);
-             togglePositionTypeButtonGps.setEnabled(false);
-             Editor edit = preferences.edit();
-             edit.putBoolean(USE_MAPCENTER_POSITION, false);
-             edit.commit();
-             } else {
-             if (useMapCenterPosition) {
-             togglePositionTypeButtonGps.setChecked(false);
-             } else {
-             togglePositionTypeButtonGps.setChecked(true);
-             }
-             }
-             **/
 
             gpsBroadcastReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
@@ -233,20 +213,49 @@ public class FredDataActivity extends Activity {
                 try {
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
                             .openDatabase(externalDB, null, 2);
-                    firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
+                    boolean tableExists = doesTableExist(parentTable, sqlDB);
+                    if(tableExists){
+                        firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
+                    } else {
+                        GPLog.addLogEntry(this, "Fred DB: no Table 1 " + parentTable);
+//                        Toast.makeText(getApplicationContext(),
+//                                "Missing table in DB - check settings", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                        Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
+                        finish();
+                    }
                     sqlDB.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                    }
+
                 try {
-                    String firstIDsArrayFirstRow = firstIDs.get(0);
-                    int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second //$NON-NLS-1$
-                    String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", ")); //$NON-NLS-1$
-                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
-                            .openDatabase(externalDB, null, 2);
-                    secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
-                            firstIDsID);
-                    sqlDB.close();
+                    // check to see if any records exist
+                    if(firstIDs.size()>0){
+                        String firstIDsArrayFirstRow = firstIDs.get(0);
+                        int start = firstIDsArrayFirstRow.indexOf("(") + 1; // the ID should be the second //$NON-NLS-1$
+                        String firstIDsID = firstIDsArrayFirstRow.substring(start, firstIDsArrayFirstRow.indexOf(", ")); //$NON-NLS-1$
+                        final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
+                                .openDatabase(externalDB, null, 2);
+                        boolean tableExists = doesTableExist(childTable, sqlDB);
+                        if(tableExists) {
+                            secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
+                                    firstIDsID);
+                        } else {
+                            GPLog.addLogEntry(this, "Fred DB: no Table 2 " + childTable);
+//                            Toast.makeText(getApplicationContext(),
+//                                    "Missing table in DB - check settings", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                            Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
+                            finish();
+                        }
+                        sqlDB.close();
+                    } else {
+                        GPLog.addLogEntry(this, "Fred DB: no records 1 " + parentTable);
+//                        Toast.makeText(getApplicationContext(),
+//                                "No records in DB - add one first", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                        Utilities.toast(this,"No records in DB - add one first",Toast.LENGTH_SHORT);
+                        finish();
+                    }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -255,7 +264,24 @@ public class FredDataActivity extends Activity {
                 try {
                     final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
                             .openDatabase(externalDB, null, 2);
-                    secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
+                    boolean tableExists = doesTableExist(childTable, sqlDB);
+                    if(tableExists) {
+                        secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
+                        // don't open form if no records
+                        if(secondIDs.size()==0){
+                            GPLog.addLogEntry(this, "Fred DB: no records 2 " + parentTable);
+//                            Toast.makeText(getApplicationContext(),
+//                                    "No records in DB - add one first", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                            Utilities.toast(this,"No records in DB - add one first",Toast.LENGTH_SHORT);
+                            finish();
+                        }
+                    } else {
+                        GPLog.addLogEntry(this, "Fred DB: no Table 3 " + childTable);
+//                        Toast.makeText(getApplicationContext(),
+//                                "Missing table in DB - check settings", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                        Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
+                        finish();
+                    }
                     sqlDB.close();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -684,6 +710,26 @@ public class FredDataActivity extends Activity {
             if (GPLog.LOG_HEAVY)
                 GPLog.addLogEntry("Intent extra text ", sharedText); //$NON-NLS-1$
         }
+    }
+
+    /**
+     * Check to see if a table in the DB exists
+     *
+     * @param tableName is the name of the table
+     * @param sqlDb  is the name of the database
+     * @param
+     */
+    public boolean doesTableExist(String tableName, SQLiteDatabase sqlDb) {
+
+        Cursor cursor = sqlDb.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"+tableName+"'", null);
+        if(cursor!=null) {
+            if(cursor.getCount()>0) {
+                cursor.close();
+                return true;
+            }
+            cursor.close();
+        }
+        return false;
     }
 
 }
