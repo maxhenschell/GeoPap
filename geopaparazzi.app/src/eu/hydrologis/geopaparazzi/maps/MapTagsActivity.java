@@ -114,17 +114,21 @@ public class MapTagsActivity extends Activity {
             public void onReceive(Context context, Intent intent) {
                 GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
                 if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
-                    int avgComplete = intent.getIntExtra(GPS_AVG_COMPLETE,0);
-                    if(prefsDoGpsAveraging && avgComplete == 0){
-                        GpsServiceUtilities.startGpsAveraging(context);
-                    } else {
-                        gpsLocation = GpsServiceUtilities.getPosition(intent);
-                        gpsAvgLocation = GpsServiceUtilities.getPositionAverage(intent);
-                        GPLog.addLogEntry("GPSAVG","Standard Lat: " + String.valueOf(gpsLocation[0]));
-                        if(gpsAvgLocation != null) {
-                            GPLog.addLogEntry("GPSAVG", "Averaged Lat:  " + String.valueOf(gpsAvgLocation[0]));
-                        }
+                    //int avgComplete = intent.getIntExtra(GPS_AVG_COMPLETE,0);
+                    //if(prefsDoGpsAveraging && avgComplete == 0){
+                    //    GpsServiceUtilities.startGpsAveraging(context);
+                    //} else {
+                    gpsLocation = GpsServiceUtilities.getPosition(intent);
+
+                    if(prefsDoGpsAveraging){
+                        GpsAvgUtilities.startGpsAveraging(context);
                     }
+                    //    gpsAvgLocation = GpsServiceUtilities.getPositionAverage(intent);
+                    //    GPLog.addLogEntry("GPSAVG","Standard Lat: " + String.valueOf(gpsLocation[0]));
+                    //    if(gpsAvgLocation != null) {
+                    //        GPLog.addLogEntry("GPSAVG", "Averaged Lat:  " + String.valueOf(gpsAvgLocation[0]));
+                    //    }
+                    //}
                     boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
                     if (useMapCenterPosition) {
                         togglePositionTypeButtonGps.setChecked(false);
