@@ -77,6 +77,7 @@ public class GpsServiceUtilities {
      * @return the status.
      */
     public static GpsServiceStatus getGpsServiceStatus( Intent intent ) {
+        GPLog.addLogEntry("GPSService","In gpsserviceutilities getGpsServiceStatus");
         if (intent == null) {
             return null;
         }

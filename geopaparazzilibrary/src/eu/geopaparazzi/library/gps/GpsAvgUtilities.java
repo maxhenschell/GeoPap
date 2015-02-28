@@ -90,8 +90,9 @@ public class GpsAvgUtilities {
      */
     public static void startGpsAveraging( Context context) {
         GPLog.addLogEntry("GPSAVG","In gpsserviceutilities startGPSAvg");
-        Intent intent = new Intent(context, GpsService.class);
-        intent.putExtra(START_GPS_AVERAGING, true);
-        context.startService(intent);
+        Intent intent = new Intent(context, GpsAvgActivity.class);
+        //startActivityForResult(intent, AVGRESULT);
+
+
     }
 }

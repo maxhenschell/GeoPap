@@ -20,7 +20,6 @@ package eu.geopaparazzi.library.gps;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,17 +37,12 @@ import android.widget.Toast;
 
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
-import eu.geopaparazzi.library.database.IGpsLogDbHelper;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.PositionUtilities;
 import eu.geopaparazzi.library.util.debug.TestMock;
 
 import static eu.geopaparazzi.library.util.LibraryConstants.GPS_AVERAGING_SAMPLE_NUMBER;
-import static eu.geopaparazzi.library.util.LibraryConstants.GPS_LOGGING_DISTANCE;
-import static eu.geopaparazzi.library.util.LibraryConstants.GPS_LOGGING_INTERVAL;
 import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSAVG_NUMBER_SAMPLES;
-import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSLOGGINGDISTANCE;
-import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSLOGGINGINTERVAL;
 
 
 /**
@@ -132,6 +126,8 @@ public class GpsAvgActivity extends Activity {
 
         GPLog.addLogEntry(this, "GpsAvg onCreate called with intent: " + intent);
 
+        this.setVisible(false);
+
         if (preferences == null) {
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
             useNetworkPositions = preferences.getBoolean(LibraryConstants.PREFS_KEY_GPS_USE_NETWORK_POSITION, false);
@@ -141,7 +137,7 @@ public class GpsAvgActivity extends Activity {
         }
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.addGpsStatusListener(this);
+            //locationManager.addGpsStatusListener(this); //think only needed for gps service, not here
             isProviderEnabled = isGpsOn();
 
             log("onCreateCommand: LocationManager created");
@@ -171,9 +167,6 @@ public class GpsAvgActivity extends Activity {
     @Override
     public void onDestroy() {
         log("onDestroy GpsAvgActivity");
-        if (isDatabaseLogging) {
-            stopDatabaseLogging();
-        }
 
         if (TestMock.isOn) {
             TestMock.stopMocking(locationManager);
@@ -181,249 +174,11 @@ public class GpsAvgActivity extends Activity {
         super.onDestroy();
     }
 
-    /**
-     * Starts listening to the gps provider.
-     */
-    private void registerForLocationUpdates() {
-        if (isMockMode) {
-            log("Gps started using Mock locations");
-            TestMock.startMocking(locationManager, this);
-            isListeningForUpdates = true;
-        } else {
-            float minDistance = 0.0f;
-            long waitForSecs = WAITSECONDS;
-
-            if (useNetworkPositions) {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, waitForSecs * 1000l, minDistance, this);
-            } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, waitForSecs * 1000l, minDistance, this);
-            }
-            isListeningForUpdates = true;
-            log("registered for updates.");
-        }
-        broadcast("triggered by registerForLocationUpdates");
-    }
-
-    /**
-     * Starts logging into the database.
-     *
-     * @param logName         a name for the new log or <code>null</code>.
-     * @param continueLastLog if true, the last previous log is continued.
-     * @param dbHelper        the db helper.
-     */
-    private void startDatabaseLogging(final String logName, final boolean continueLastLog, final IGpsLogDbHelper dbHelper) {
-        if (isDatabaseLogging) {
-            // we do not start twice
-            return;
-        }
-        isDatabaseLogging = true;
-
-        Thread t = new Thread() {
-
-            public void run() {
-                try {
-
-                    SQLiteDatabase sqliteDatabase = dbHelper.getDatabase();
-
-                    long gpsLogId = -1;
-                    if (continueLastLog) {
-                        try {
-                            log("Continue from last log...");
-                            gpsLogId = dbHelper.getLastLogId();
-                            log("...with log id: " + gpsLogId);
-                        } catch (Exception e) {
-                            // ignore and create a new one
-                        }
-                    }
-
-                    if (gpsLogId < 0) {
-                        long now = System.currentTimeMillis();
-                        gpsLogId = dbHelper.addGpsLog(now, now, 0, logName, 2f, "red", true);
-                        log("Beginning a new log with log id: " + gpsLogId);
-                    }
-                    currentRecordedLogId = gpsLogId;
-                    log("GPS Start logging. Logid: " + gpsLogId);
-
-                    // get preferences
-                    String minDistanceStr = preferences.getString(PREFS_KEY_GPSLOGGINGDISTANCE,
-                            String.valueOf(GPS_LOGGING_DISTANCE));
-                    float minDistance = 1f;
-                    try {
-                        minDistance = Float.parseFloat(minDistanceStr);
-                    } catch (Exception e) {
-                        GPLog.error(this, null, e);
-                    }
-                    String intervalStr = preferences
-                            .getString(PREFS_KEY_GPSLOGGINGINTERVAL, String.valueOf(GPS_LOGGING_INTERVAL));
-                    int waitForSecs = 3;
-                    try {
-                        waitForSecs = Integer.parseInt(intervalStr);
-                    } catch (Exception e) {
-                        GPLog.error(this, null, e);
-                    }
-                    if (DO_WHILE_LOOP_LOG) {
-                        GPLog.addLogEntry(GpsAvgActivity.this, "GPS waiting interval: " + waitForSecs);
-                        GPLog.addLogEntry(GpsAvgActivity.this, "GPS min distance: " + minDistance);
-                    }
-
-                    long previousGpsLocationTime = -1;
-                    currentPointsNum = 0;
-                    currentDistance = 0;
-                    while (isDatabaseLogging) {
-                        if (gotFix || isMockMode) {
-                            if (DO_WHILE_LOOP_LOG)
-                                GPLog.addLogEntry(GpsAvgActivity.this, "GPS DEBUG: loop while at: " + System.nanoTime());
-                            if (lastGpsLocation == null) {
-                                if (DO_WHILE_LOOP_LOG)
-                                    GPLog.addLogEntry(GpsAvgActivity.this, "GPS JUMP POINT: lastGpsLocation == null");
-                                if (!holdABitAndCheckLogging(waitForSecs)) {
-                                    break;
-                                }
-                                continue;
-                            }
-                            long time = lastGpsLocation.getTime();
-                            if (previousGpsLocationTime == time) {
-                                if (DO_WHILE_LOOP_LOG)
-                                    GPLog.addLogEntry(GpsAvgActivity.this,
-                                            "GPS JUMP POINT: lastGpsLocation == previous (no new point incoming)");
-                                if (!holdABitAndCheckLogging(waitForSecs)) {
-                                    break;
-                                }
-                                continue;
-                            }
-                            previousGpsLocationTime = time;
-                            if (lastGpsLocation.getPreviousLoc() == null) {
-                                if (DO_WHILE_LOOP_LOG)
-                                    GPLog.addLogEntry(GpsAvgActivity.this,
-                                            "GPS JUMP POINT: waiting for second valid point to come in.");
-                                if (!holdABitAndCheckLogging(waitForSecs)) {
-                                    break;
-                                }
-                                continue;
-                            }
-                            double recLon = lastGpsLocation.getLongitude();
-                            double recLat = lastGpsLocation.getLatitude();
-                            double recAlt = lastGpsLocation.getAltitude();
-
-                            if (DO_WHILE_LOOP_LOG)
-                                GPLog.addLogEntry(GpsAvgActivity.this, "GPS DEBUG: loop while 1: " + System.nanoTime());
-                            double lastDistance = lastGpsLocation.distanceToPrevious();
-                            if (DO_WHILE_LOOP_LOG) {
-                                StringBuilder sb = new StringBuilder();
-                                sb.append("GPS\ngpsloc: ");
-                                sb.append(lastGpsLocation.getLatitude());
-                                sb.append("/");
-                                sb.append(lastGpsLocation.getLongitude());
-                                sb.append("\n");
-                                if (lastGpsLocation.getPreviousLoc() != null) {
-                                    sb.append("previousLoc: ");
-                                    sb.append(lastGpsLocation.getPreviousLoc().getLatitude());
-                                    sb.append("/");
-                                    sb.append(lastGpsLocation.getPreviousLoc().getLongitude());
-                                    sb.append("\n");
-                                }
-                                sb.append("distance: ");
-                                sb.append(lastDistance);
-                                sb.append(" - mindistance: ");
-                                sb.append(minDistance);
-                                logABS(sb.toString());
-                            }
-                            if (DO_WHILE_LOOP_LOG)
-                                GPLog.addLogEntry(GpsAvgActivity.this, "GPS DEBUG: loop while 2: " + System.nanoTime());
-                            // ignore near points
-                            if (lastDistance < minDistance) {
-                                if (DO_WHILE_LOOP_LOG)
-                                    GPLog.addLogEntry(GpsAvgActivity.this, "GPS JUMP POINT: distance from previous");
-                                if (!holdABitAndCheckLogging(waitForSecs)) {
-                                    break;
-                                }
-                                continue;
-                            }
-                            if (DO_WHILE_LOOP_LOG)
-                                GPLog.addLogEntry(GpsAvgActivity.this, "GPS DEBUG: loop while 3: " + System.nanoTime());
-                            try {
-                                if (isDatabaseLogging) {
-                                    dbHelper.addGpsLogDataPoint(sqliteDatabase, gpsLogId, recLon, recLat, recAlt,
-                                            lastGpsLocation.getTime());
-                                }
-                            } catch (Exception e) {
-                                // we log the exception and try to go on
-                                GPLog.error(this, "Point in db writing error!", e);
-                            }
-                            if (DO_WHILE_LOOP_LOG)
-                                GPLog.addLogEntry(GpsAvgActivity.this, "GPS DEBUG: loop while 4: " + System.nanoTime());
-                            currentPointsNum++;
-                            currentDistance = currentDistance + lastDistance;
-                        }
-                        if (!holdABitAndCheckLogging(waitForSecs)) {
-                            break;
-                        }
-                    }
-
-                    if (currentPointsNum < 4) {
-                        log("Removing gpslog, since too few points were added. Logid: " + gpsLogId);
-                        dbHelper.deleteGpslog(gpsLogId);
-                    } else {
-                        // set the end time stamp and the total distance for the track
-                        long end = System.currentTimeMillis();
-                        dbHelper.setEndTs(gpsLogId, end);
-                        dbHelper.setTrackLengthm(gpsLogId, currentDistance);
-                    }
-
-                    currentPointsNum = 0;
-                    currentDistance = 0;
-                    currentRecordedLogId = -1;
-
-                } catch (SQLiteFullException e) {
-                    e.printStackTrace();
-                    String msg = getResources().getString(R.string.error_disk_full);
-                    GPLog.error(this, msg, e);
-                    toastHandler.post(new ToastRunnable(msg));
-                } catch (Exception e) {
-                    String msg = getResources().getString(R.string.cantwrite_gpslog);
-                    GPLog.error(this, msg, e);
-                    toastHandler.post(new ToastRunnable(msg));
-                } finally {
-                    isDatabaseLogging = false;
-                }
-                log("GPS Exit logging...");
-            }
-
-            /**
-             * Waits a bit before next gps query.
-             *
-             * @param waitForSecs seconds to wait.
-             * @return <code>false</code> if the gps got interrupted, <code>true</code> else.
-             */
-            private boolean holdABitAndCheckLogging(int waitForSecs) {
-                try {
-                    for (int i = 0; i < waitForSecs; i++) {
-                        Thread.sleep(1000L);
-                        if (!isDatabaseLogging) {
-                            return false;
-                        }
-                    }
-                    return true;
-                } catch (InterruptedException e) {
-                    String msg = getResources().getString(R.string.cantwrite_gpslog);
-                    GPLog.error(this, msg, e);
-                    return true;
-                }
-            }
-        };
-        t.start();
-
-        Toast.makeText(GpsAvgActivity.this, R.string.gpsloggingon, Toast.LENGTH_SHORT).show();
-    }
-
-    private void stopDatabaseLogging() {
-        isDatabaseLogging = false;
-    }
 
     private static void log(String msg) {
         try {
             if (GPLog.LOG_HEAVY)
-                GPLog.addLogEntry("GPSSERVICE", null, null, msg);
+                GPLog.addLogEntry("GPSAVG", null, null, msg);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -433,7 +188,7 @@ public class GpsAvgActivity extends Activity {
     private static void logABS(String msg) {
         try {
             if (GPLog.LOG_ABSURD)
-                GPLog.addLogEntry("GPSSERVICE", null, null, msg);
+                GPLog.addLogEntry("GPSAVG", null, null, msg);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -476,172 +231,9 @@ public class GpsAvgActivity extends Activity {
             PositionUtilities.putGpsLocationInPreferences(preferences, recLon, recLat, recAlt);
             previousLoc = loc;
 
-            broadcast("triggered by onLocationChanged");
         }
     }
 
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // for( GpsManagerListener activity : listeners ) {
-        // activity.onStatusChanged(provider, status, extras);
-        // }
-    }
-
-    public void onProviderEnabled(String provider) {
-        isProviderEnabled = true;
-        if (!isListeningForUpdates) {
-            registerForLocationUpdates();
-        }
-        broadcast("triggered by onProviderEnabled");
-    }
-
-    public void onProviderDisabled(String provider) {
-        isProviderEnabled = false;
-        broadcast("triggered by onProviderDisabled");
-    }
-
-    public void onGpsStatusChanged(int event) {
-        mStatus = locationManager.getGpsStatus(mStatus);
-
-        // check fix
-        boolean tmpGotFix = GpsStatusInfo.checkFix(gotFix, lastLocationupdateMillis, event);
-        if (!tmpGotFix) {
-            // check if it is just standing still
-            GpsStatusInfo info = new GpsStatusInfo(mStatus);
-            int satForFixCount = info.getSatUsedInFixCount();
-            if (satForFixCount > 2) {
-                tmpGotFix = true;
-                // updating loc update, assuming the still filter is giving troubles
-                lastLocationupdateMillis = SystemClock.elapsedRealtime();
-            }
-        }
-
-        // if (DOLOGPOSITION) {
-        // StringBuilder sb = new StringBuilder();
-        // sb.append("gotFix: ").append(gotFix).append(" tmpGotFix: ").append(tmpGotFix).append("\n");
-        // GPLog.addLogEntry("GPSSERVICE", sb.toString());
-        // }
-
-        if (tmpGotFix != gotFix) {
-            gotFix = tmpGotFix;
-            broadcast("triggered by onGpsStatusChanged on fix change: " + gotFix);
-        } else {
-            gotFix = tmpGotFix;
-            if (!tmpGotFix && isProviderEnabled) {
-                broadcast("triggered by onGpsStatusChanged on fix change: " + gotFix);
-            }
-        }
-
-        if (!gotFix) {
-            lastGpsLocation = null;
-        }
-    }
-
-    /**
-     * @param message a message that can be used for logging.
-     */
-    private void broadcast(String message) {
-        Intent intent = new Intent(GPS_SERVICE_BROADCAST_NOTIFICATION);
-
-        int status = 0; // gps off
-        if (isProviderEnabled) {
-            status = 1; // gps on
-        }
-        if (isProviderEnabled && isListeningForUpdates && !gotFix) {
-            status = 2; // listening for updates but has no fix
-        }
-        if ((isProviderEnabled && isListeningForUpdates && gotFix && lastGpsLocation != null) || isMockMode) {
-            status = 3; // listening for updates and has fix
-        }
-        intent.putExtra(GPS_SERVICE_STATUS, status);
-        if (isDatabaseLogging || (isDatabaseLogging && isMockMode)) {
-            intent.putExtra(GPS_SERVICE_CURRENT_LOG_ID, currentRecordedLogId);
-            intent.putExtra(GPS_LOGGING_STATUS, 1);
-        } else {
-            intent.putExtra(GPS_LOGGING_STATUS, 0);
-        }
-        double lon = -1;
-        double lat = -1;
-        double elev = -1;
-        float accuracy = -1;
-        float speed = -1;
-        float bearing = -1;
-        long time = -1;
-        if (lastGpsLocation != null) {
-            lon = lastGpsLocation.getLongitude();
-            lat = lastGpsLocation.getLatitude();
-            elev = lastGpsLocation.getAltitude();
-            double[] lastPositionArray = new double[]{lon, lat, elev};
-            intent.putExtra(GPS_SERVICE_POSITION, lastPositionArray);
-            accuracy = lastGpsLocation.getAccuracy();
-            speed = lastGpsLocation.getSpeed();
-            bearing = lastGpsLocation.getBearing();
-            float[] lastPositionExtrasArray = new float[]{accuracy, speed, bearing};
-            intent.putExtra(GPS_SERVICE_POSITION_EXTRAS, lastPositionExtrasArray);
-            time = lastGpsLocation.getTime();
-            intent.putExtra(GPS_SERVICE_POSITION_TIME, time);
-        }
-        int maxSatellites = -1;
-        int satCount = -1;
-        int satUsedInFixCount = -1;
-        if (mStatus != null) {
-            GpsStatusInfo info = new GpsStatusInfo(mStatus);
-            maxSatellites = info.getMaxSatellites();
-            satCount = info.getSatCount();
-            satUsedInFixCount = info.getSatUsedInFixCount();
-            intent.putExtra(GPS_SERVICE_GPSSTATUS_EXTRAS, new int[]{maxSatellites, satCount, satUsedInFixCount});
-        }
-
-        if (DOLOGPOSITION) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("GPS SERVICE INFO: ").append(message).append("\n");
-            sb.append("---------------------------\n");
-            sb.append("gps status=").append(GpsServiceStatus.getStatusForCode(status)).append("(" + status).append(")\n");
-            sb.append("lon=").append(lon).append("\n");
-            sb.append("lat=").append(lat).append("\n");
-            sb.append("elev=").append(elev).append("\n");
-            sb.append("accuracy=").append(accuracy).append("\n");
-            sb.append("speed=").append(speed).append("\n");
-            sb.append("bearing=").append(bearing).append("\n");
-            sb.append("time=").append(time).append("\n");
-            sb.append("maxSatellites=").append(maxSatellites).append("\n");
-            sb.append("satCount=").append(satCount).append("\n");
-            sb.append("satUsedInFix=").append(satUsedInFixCount).append("\n");
-            GPLog.addLogEntry("GPSSERVICE", sb.toString());
-        }
-
-        if (isAveraging) {
-            Location loc = gpsavgmeasurements.getAveragedLocation();
-            lon = loc.getLongitude();
-            lat = loc.getLatitude();
-            elev = loc.getAltitude();
-            int numSamples = numberSamplesUsedInAvg;
-            double[] GpsAvgPositionArray = new double[]{lon, lat, elev, numSamples};
-            intent.putExtra(GPS_SERVICE_AVERAGED_POSITION, GpsAvgPositionArray);
-            if(message == "GPS Averaging complete") {
-                intent.putExtra(GPS_AVG_COMPLETE, 1);
-                GPLog.addLogEntry("GPSAVG", "put extra AVGCOMPLETE");
-                isAveraging = false;
-            } else {
-                intent.putExtra(GPS_AVG_COMPLETE,0);
-            }
-            GPLog.addLogEntry("GPSAVG","put extra AVERAGED POSITION");
-        }
-
-        sendBroadcast(intent);
-    }
-
-    private class ToastRunnable implements Runnable {
-        String mText;
-
-        public ToastRunnable(String text) {
-            mText = text;
-        }
-
-        @Override
-        public void run() {
-            Toast.makeText(getApplicationContext(), mText, Toast.LENGTH_LONG).show();
-        }
-    }
 
     /**
      * Starts active averaging.
@@ -659,7 +251,6 @@ public class GpsAvgActivity extends Activity {
         //build the notification intents
         Intent intent = new Intent(this, GpsAvgActivity.class);
         intent.setAction("stopGpsAv");
-        intent.putExtra(GPS_SERVICE_STATUS, 1);
         intent.putExtra(STOP_AVERAGING_NOW, 1);
         //intent.putExtra("stopGPSAveraging","stopGpsAv");
 
@@ -694,8 +285,8 @@ public class GpsAvgActivity extends Activity {
                         if(numberSamplesUsedInAvg == -1){
                             numberSamplesUsedInAvg = numSamps;
                         }
-                        broadcast("GPS Averaging complete");
                         cancelAvgNotify(notifyMgr);
+                        finishAndReturn();
                     }
                 }
         ).start();
@@ -743,6 +334,31 @@ public class GpsAvgActivity extends Activity {
     public void cancelAvgNotify(NotificationManager notifyMgr) {
 
     notifyMgr.cancel(6);
+
+    }
+
+    /**
+     * sends the return intent.
+     */
+    private void finishAndReturn(){
+        Intent intent = getIntent();
+        double lon = -1;
+        double lat = -1;
+        double elev = -1;
+
+        Location loc = gpsavgmeasurements.getAveragedLocation();
+        lon = loc.getLongitude();
+        lat = loc.getLatitude();
+        elev = loc.getAltitude();
+        int numSamples = numberSamplesUsedInAvg;
+        double[] GpsAvgPositionArray = new double[]{lon, lat, elev, numSamples};
+        intent.putExtra(GPS_SERVICE_AVERAGED_POSITION, GpsAvgPositionArray);
+
+        GPLog.addLogEntry("GPSAVG", "put extra AVGCOMPLETE");
+        isAveraging = false;
+
+        setResult(RESULT_OK,intent);
+        finish();
 
     }
 

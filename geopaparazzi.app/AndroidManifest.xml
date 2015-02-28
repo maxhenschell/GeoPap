@@ -195,15 +195,23 @@
         </activity>
         <activity
             android:name=".maps.MapTagsActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="singleTop"
-            android:parentActivityName=".maps.MapsActivity">
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.TAGS" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="eu.geopaparazzi.library.gps.GpsAvgActivity">
+            <intent-filter>
+                <action android:name="eu.geopaparazzi.library.gps.GPSAVGACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+
         <activity android:name=".osm.OsmCategoryActivity">
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.OSMCATEGORYACTIVITY" />

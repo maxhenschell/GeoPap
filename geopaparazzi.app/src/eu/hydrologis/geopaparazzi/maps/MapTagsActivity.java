@@ -48,6 +48,8 @@ import eu.geopaparazzi.library.camera.CameraActivity;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.forms.FormActivity;
 import eu.geopaparazzi.library.forms.TagsManager;
+import eu.geopaparazzi.library.gps.GpsAvgActivity;
+import eu.geopaparazzi.library.gps.GpsAvgUtilities;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.images.ImageUtilities;
@@ -76,6 +78,7 @@ public class MapTagsActivity extends Activity {
     private static final int CAMERA_RETURN_CODE = 667;
     private static final int FORM_RETURN_CODE = 669;
     private static final int SKETCH_RETURN_CODE = 670;
+    private static final int GPSAVG_RETURN_CODE = 700;
     private double latitude;
     private double longitude;
     private double elevation;
@@ -120,9 +123,9 @@ public class MapTagsActivity extends Activity {
                     //} else {
                     gpsLocation = GpsServiceUtilities.getPosition(intent);
 
-                    if(prefsDoGpsAveraging){
-                        GpsAvgUtilities.startGpsAveraging(context);
-                    }
+                   // if(prefsDoGpsAveraging){
+                   //     GpsAvgUtilities.startGpsAveraging(context);
+                   // }
                     //    gpsAvgLocation = GpsServiceUtilities.getPositionAverage(intent);
                     //    GPLog.addLogEntry("GPSAVG","Standard Lat: " + String.valueOf(gpsLocation[0]));
                     //    if(gpsAvgLocation != null) {
@@ -146,6 +149,16 @@ public class MapTagsActivity extends Activity {
         };
         GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
         GpsServiceUtilities.triggerBroadcast(this);
+
+        if(prefsDoGpsAveraging){
+            //GpsAvgUtilities.startGpsAveraging(MapTagsActivity.this);
+            //TODO could build the intent structure here. Not sure which is best
+            GPLog.addLogEntry("GPSAVG","In MapTagsActivity prefsDoGpsAvg is true");
+            Intent intent = new Intent(this, GpsAvgActivity.class);
+            startActivityForResult(intent, GPSAVG_RETURN_CODE);
+
+        }
+
 
         ImageButton imageButton = (ImageButton) findViewById(R.id.imagefromtag);
         imageButton.setOnClickListener(new Button.OnClickListener() {
@@ -373,7 +386,19 @@ public class MapTagsActivity extends Activity {
                     }
                 }
                 break;
+            }case (GPSAVG_RETURN_CODE):{
+                GPLog.addLogEntry("GPSAVG","In intent return code GPSAVG_RETURN_CODE");
+                double lat = data.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
+                double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
+                double elev = data.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
+                double numSamples = data.getDoubleExtra("numSamples",0.0);
+                double[] GpsAvgPositionArray = new double[]{lon, lat, elev, numSamples};
+
+                //TODO now let the rest of the class know about these data
+
+                return;
             }
+
         }
         finish();
     }
