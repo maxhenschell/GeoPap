@@ -25,8 +25,8 @@ import android.content.IntentFilter;
 
 import eu.geopaparazzi.library.database.GPLog;
 
-import static eu.geopaparazzi.library.gps.GpsService.GPS_AVG_COMPLETE;
-import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_AVERAGED_POSITION;
+//import static eu.geopaparazzi.library.gps.GpsService.GPS_AVG_COMPLETE;
+//import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_AVERAGED_POSITION;
 import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_BROADCAST_NOTIFICATION;
 import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_DO_BROADCAST;
 import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_GPSSTATUS_EXTRAS;
@@ -34,7 +34,7 @@ import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_POSITION;
 import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_POSITION_EXTRAS;
 import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_POSITION_TIME;
 import static eu.geopaparazzi.library.gps.GpsService.GPS_SERVICE_STATUS;
-import static eu.geopaparazzi.library.gps.GpsService.START_GPS_AVERAGING;
+//import static eu.geopaparazzi.library.gps.GpsService.START_GPS_AVERAGING;
 import static eu.geopaparazzi.library.gps.GpsService.START_GPS_CONTINUE_LOG;
 import static eu.geopaparazzi.library.gps.GpsService.START_GPS_LOGGING;
 import static eu.geopaparazzi.library.gps.GpsService.START_GPS_LOG_HELPER_CLASS;
@@ -51,6 +51,16 @@ import static eu.geopaparazzi.library.gps.GpsService.STOP_GPS_LOGGING;
  */
 public class GpsAvgUtilities {
 
+    /**
+     * Start the service.
+     *
+     * @param activity the activity to use.
+     */
+    public static void startGpsAvgService( Activity activity ) {
+        GPLog.addLogEntry("GPSAVG","In GpsAvgUtilities start service");
+        Intent intent = new Intent(activity, GpsAvgService.class);
+        activity.startService(intent);
+    }
 
     /**
      * Utility to get the position/gps average from an intent.
@@ -63,7 +73,7 @@ public class GpsAvgUtilities {
         if (intent == null) {
             return null;
         }
-        double[] position = intent.getDoubleArrayExtra(GPS_SERVICE_AVERAGED_POSITION);
+        double[] position = intent.getDoubleArrayExtra("GPS_SERVICE_AVERAGED_POSITION");
         return position;
     }
 

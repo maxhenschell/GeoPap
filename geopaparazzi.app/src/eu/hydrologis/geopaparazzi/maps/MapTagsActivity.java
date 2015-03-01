@@ -91,6 +91,7 @@ public class MapTagsActivity extends Activity {
     private int gpsAvgNumberPointsSampled;
     private ToggleButton togglePositionTypeButtonGps;
     private BroadcastReceiver broadcastReceiver;
+    private BroadcastReceiver gpsAvgReceiver;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -150,13 +151,23 @@ public class MapTagsActivity extends Activity {
         GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
         GpsServiceUtilities.triggerBroadcast(this);
 
-        if(prefsDoGpsAveraging){
-            //GpsAvgUtilities.startGpsAveraging(MapTagsActivity.this);
-            //TODO could build the intent structure here. Not sure which is best
-            GPLog.addLogEntry("GPSAVG","In MapTagsActivity prefsDoGpsAvg is true");
-            Intent intent = new Intent(this, GpsAvgActivity.class);
-            startActivityForResult(intent, GPSAVG_RETURN_CODE);
-
+        if(prefsDoGpsAveraging) {
+            gpsAvgReceiver = new BroadcastReceiver() {
+                public void onReceive(Context context, Intent intent) {
+                    int gpsStat = intent.getIntExtra("GPS_SERVICE_STATUS", 3);
+                    if (gpsStat == 3) {
+                        int avgComplete = intent.getIntExtra(GPS_AVG_COMPLETE, 0);
+                        if (prefsDoGpsAveraging && avgComplete == 0) {
+                            GpsAvgUtilities.startGpsAveraging(context);
+                        }
+                        gpsAvgLocation = GpsAvgUtilities.getPositionAverage(intent);
+                        GPLog.addLogEntry("GPSAVG", "Standard Lat: " + String.valueOf(gpsLocation[0]));
+                        if (gpsAvgLocation != null) {
+                            GPLog.addLogEntry("GPSAVG", "Averaged Lat:  " + String.valueOf(gpsAvgLocation[0]));
+                        }
+                    }
+                }
+            };
         }
 
 

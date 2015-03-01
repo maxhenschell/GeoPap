@@ -204,13 +204,18 @@
         </activity>
 
         <activity
-            android:name="eu.geopaparazzi.library.gps.GpsAvgActivity">
+            android:name="eu.geopaparazzi.library.gps.GpsAvgActivity"
+            android:theme="@android:style/Theme.Dialog"
+            android:windowBackground="@android:color/transparent"
+            android:windowIsFloating="true"
+            android:windowNoTitle="true"
+            android:windowContentOverlay="@null"
+            android:backgroundDimEnabled="false">
             <intent-filter>
                 <action android:name="eu.geopaparazzi.library.gps.GPSAVGACTIVITY" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
 
         <activity android:name=".osm.OsmCategoryActivity">
             <intent-filter>

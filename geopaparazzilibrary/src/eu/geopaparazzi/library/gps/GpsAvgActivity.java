@@ -122,13 +122,17 @@ public class GpsAvgActivity extends Activity {
 
 
     public void onCreate(Bundle icicle, Intent intent) {
-            super.onCreate(icicle);
+        super.onCreate(icicle);
+        setContentView(R.layout.note);
+        set
 
-        GPLog.addLogEntry(this, "GpsAvg onCreate called with intent: " + intent);
+        Bundle extras = getIntent().getExtras();
 
-        this.setVisible(false);
+        log("onCreate GpsAvgActivity");
 
-        if (preferences == null) {
+        //this.setVisible(false);
+
+/*        if (preferences == null) {
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
             useNetworkPositions = preferences.getBoolean(LibraryConstants.PREFS_KEY_GPS_USE_NETWORK_POSITION, false);
             isMockMode = preferences.getBoolean(LibraryConstants.PREFS_KEY_MOCKMODE, false);
@@ -160,7 +164,7 @@ public class GpsAvgActivity extends Activity {
                 stopAveragingRequest = true;
             }
 
-        }
+        }*/
 
     }
 
