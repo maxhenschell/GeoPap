@@ -216,6 +216,10 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <service
+            android:name="eu.geopaparazzi.library.gps.GpsAvgService"
+            android:exported="false">
+        </service>
 
         <activity android:name=".osm.OsmCategoryActivity">
             <intent-filter>

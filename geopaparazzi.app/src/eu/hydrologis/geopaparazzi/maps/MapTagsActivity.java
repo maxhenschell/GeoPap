@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Typeface;
@@ -49,6 +50,7 @@ import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.forms.FormActivity;
 import eu.geopaparazzi.library.forms.TagsManager;
 import eu.geopaparazzi.library.gps.GpsAvgActivity;
+import eu.geopaparazzi.library.gps.GpsAvgService;
 import eu.geopaparazzi.library.gps.GpsAvgUtilities;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
@@ -91,7 +93,7 @@ public class MapTagsActivity extends Activity {
     private int gpsAvgNumberPointsSampled;
     private ToggleButton togglePositionTypeButtonGps;
     private BroadcastReceiver broadcastReceiver;
-    private BroadcastReceiver gpsAvgReceiver;
+    //private BroadcastReceiver gpsAvgReceiver;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -118,21 +120,7 @@ public class MapTagsActivity extends Activity {
             public void onReceive(Context context, Intent intent) {
                 GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
                 if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
-                    //int avgComplete = intent.getIntExtra(GPS_AVG_COMPLETE,0);
-                    //if(prefsDoGpsAveraging && avgComplete == 0){
-                    //    GpsServiceUtilities.startGpsAveraging(context);
-                    //} else {
                     gpsLocation = GpsServiceUtilities.getPosition(intent);
-
-                   // if(prefsDoGpsAveraging){
-                   //     GpsAvgUtilities.startGpsAveraging(context);
-                   // }
-                    //    gpsAvgLocation = GpsServiceUtilities.getPositionAverage(intent);
-                    //    GPLog.addLogEntry("GPSAVG","Standard Lat: " + String.valueOf(gpsLocation[0]));
-                    //    if(gpsAvgLocation != null) {
-                    //        GPLog.addLogEntry("GPSAVG", "Averaged Lat:  " + String.valueOf(gpsAvgLocation[0]));
-                    //    }
-                    //}
                     boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
                     if (useMapCenterPosition) {
                         togglePositionTypeButtonGps.setChecked(false);
@@ -151,24 +139,17 @@ public class MapTagsActivity extends Activity {
         GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
         GpsServiceUtilities.triggerBroadcast(this);
 
+        // start the avg service
         if(prefsDoGpsAveraging) {
-            gpsAvgReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    int gpsStat = intent.getIntExtra("GPS_SERVICE_STATUS", 3);
-                    if (gpsStat == 3) {
-                        int avgComplete = intent.getIntExtra(GPS_AVG_COMPLETE, 0);
-                        if (prefsDoGpsAveraging && avgComplete == 0) {
-                            GpsAvgUtilities.startGpsAveraging(context);
-                        }
-                        gpsAvgLocation = GpsAvgUtilities.getPositionAverage(intent);
-                        GPLog.addLogEntry("GPSAVG", "Standard Lat: " + String.valueOf(gpsLocation[0]));
-                        if (gpsAvgLocation != null) {
-                            GPLog.addLogEntry("GPSAVG", "Averaged Lat:  " + String.valueOf(gpsAvgLocation[0]));
-                        }
-                    }
-                }
-            };
-        }
+            Intent avgServiceIntent = new Intent(this, GpsAvgService.class);
+            avgServiceIntent.putExtra("GPS_AVG_START", 1);
+            this.startService(avgServiceIntent);
+            }
+
+        // define a new filter for the existing broadcast receiver
+        IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
+        this.registerReceiver(broadcastReceiver,gpsAvgIntentFilter);
+
 
 
         ImageButton imageButton = (ImageButton) findViewById(R.id.imagefromtag);

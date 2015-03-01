@@ -23,6 +23,8 @@ import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSLOGGING
 import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSLOGGINGINTERVAL;
 import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSAVG_NUMBER_SAMPLES;
 import static eu.geopaparazzi.library.util.LibraryConstants.GPS_AVERAGING_SAMPLE_NUMBER;
+
+import android.app.IntentService;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -54,19 +56,17 @@ import eu.geopaparazzi.library.util.debug.TestMock;
 
 
 /**
- * A service to handle the GPS data.
+ * An intent service to handle and return gps averaging data
  * <p/>
  * <p/>
- * use this to start and trigger a service</br>
- * <code>Intent i= new Intent(context, GpsService.class)</code>;</br>
- * add data to the intent</br>
- * <code>i.putExtra("KEY1", "Value to be used by the service");</br>
- * context.startService(i);</code>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Tim Howard (nynhp.org)
  */
 @SuppressWarnings("nls")
-public class GpsAvgService extends Service implements LocationListener, Listener {
+
+// info: https://developer.android.com/training/run-background-service/create-service.html
+
+public class GpsAvgService extends IntentService {
 
     /**
      * Intent key to use for broadcasts.
@@ -139,20 +139,6 @@ public class GpsAvgService extends Service implements LocationListener, Listener
     private GpsLocation lastGpsLocation = null;
 
     /**
-     * The previous gps location or null if no gps location was taken yet.
-     * <p/>
-     * <p>This changes with every {@link #onLocationChanged(Location)}.</p>
-     */
-    private Location previousLoc = null;
-
-    private long lastLocationupdateMillis;
-    private int currentPointsNum;
-    /**
-     * The current total distance of the track from start to the current point.
-     */
-    private double currentDistance;
-
-    /**
      * GPS time interval.
      */
     private static int WAITSECONDS = 1;
@@ -174,101 +160,41 @@ public class GpsAvgService extends Service implements LocationListener, Listener
     private NotificationCompat.Builder nBuilder;
     private int numberSamplesUsedInAvg = -1;
 
+    //public constructor
+    public GpsAvgService() {
+        super("GPS_AVG_SERVICE");
+    }
+
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    protected void onHandleIntent(Intent intent) {
+        // Gets data from the incoming Intent
+        String dataString = intent.getDataString();
 
-        // GPLog.addLogEntry(this, "onStartCommand called with intent: " + intent);
-
-        /*
-         * If startService(intent) is called while the service is running, 
-         * its onStartCommand() is also called. Therefore your service needs 
-         * to be prepared that onStartCommand() can be called several times.
-         */
         if (preferences == null) {
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
             useNetworkPositions = preferences.getBoolean(LibraryConstants.PREFS_KEY_GPS_USE_NETWORK_POSITION, false);
             isMockMode = preferences.getBoolean(LibraryConstants.PREFS_KEY_MOCKMODE, false);
-            toastHandler = new Handler();
-            log("onStartCommand: Preferences created");
-        }
-        if (locationManager == null) {
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.addGpsStatusListener(this);
-            isProviderEnabled = isGpsOn();
-
-            log("onStartCommand: LocationManager created + GpsService started");
-        }
-        if (!isListeningForUpdates) {
-            registerForLocationUpdates();
-            log("onStartCommand: Registered for location updates");
+            log("onHandleIntent: Preferences created");
         }
 
-        if (intent != null) {
-
-            if (intent.hasExtra(GPS_SERVICE_DO_BROADCAST)) {
-                log("onStartCommand: broadcast trigger");
-                boolean doBroadcast = intent.getBooleanExtra(GPS_SERVICE_DO_BROADCAST, false);
-                if (doBroadcast) {
-                    broadcast("triggered by onStartCommand Intent");
-                }
+        if (intent.hasExtra(START_GPS_AVERAGING)){
+            log("onStartCommand: Start GPS averaging called");
+            stopAveragingRequest = false;
+            numberSamplesUsedInAvg = -1;
+            gpsavgmeasurements = GpsAvgMeasurements.getInstance();
+            boolean doAverage = intent.getBooleanExtra(START_GPS_AVERAGING, false);
+            if(!isAveraging && doAverage){
+                startAveraging();
             }
-            if (intent.hasExtra(START_GPS_AVERAGING)){
-                log("onStartCommand: Start GPS averaging called");
-                stopAveragingRequest = false;
-                numberSamplesUsedInAvg = -1;
-                gpsavgmeasurements = GpsAvgMeasurements.getInstance();
-                boolean doAverage = intent.getBooleanExtra(START_GPS_AVERAGING, false);
-                if(!isAveraging && doAverage){
-                    startAveraging();
-                }
-            }
-            if (intent.hasExtra(STOP_AVERAGING_NOW)){
-                log("onStartCommand: Stop GPS averaging called");
-                log("GPSAVG: Stop GPS averaging called");
-                stopAveragingRequest = true;
-            }
-
         }
 
-        return Service.START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        log("onDestroy Gpsservice.");
-
-        if (locationManager != null && isListeningForUpdates) {
-            locationManager.removeUpdates(this);
-            locationManager.removeGpsStatusListener(this);
-            isListeningForUpdates = false;
+        if (intent.hasExtra(STOP_AVERAGING_NOW)){
+            log("onStartCommand: Stop GPS averaging called");
+            log("GPSAVG: Stop GPS averaging called");
+            stopAveragingRequest = true;
         }
-        if (TestMock.isOn) {
-            TestMock.stopMocking(locationManager);
-        }
-        super.onDestroy();
-    }
 
-    /**
-     * Starts listening to the gps provider.
-     */
-    private void registerForLocationUpdates() {
-        if (isMockMode) {
-            log("Gps Avg service started using Mock locations");
-            TestMock.startMocking(locationManager, this);
-            isListeningForUpdates = true;
-        } else {
-            float minDistance = 0.2f;
-            long waitForSecs = WAITSECONDS;
 
-            if (useNetworkPositions) {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, waitForSecs * 1000l, minDistance, this);
-            } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, waitForSecs * 1000l, minDistance, this);
-            }
-            isListeningForUpdates = true;
-            log("registered for updates.");
-        }
-        broadcast("triggered by registerForLocationUpdates");
     }
 
     private static void log(String msg) {
@@ -281,111 +207,6 @@ public class GpsAvgService extends Service implements LocationListener, Listener
         }
     }
 
-    private static void logABS(String msg) {
-        try {
-            if (GPLog.LOG_ABSURD)
-                GPLog.addLogEntry("GPSAVGSERVICE", null, null, msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Checks if the GPS is switched on.
-     * <p/>
-     * <p>Does not say if the GPS is supplying valid data.</p>
-     *
-     * @return <code>true</code> if the GPS is switched on.
-     */
-    private boolean isGpsOn() {
-        if (locationManager == null) {
-            return false;
-        }
-        boolean gpsIsEnabled;
-        if (useNetworkPositions) {
-            gpsIsEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } else {
-            gpsIsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        }
-        logABS("Gps is enabled: " + gpsIsEnabled);
-        return gpsIsEnabled;
-    }
-
-    public void onLocationChanged(Location loc) {
-        if (loc == null) {
-            lastGpsLocation = null;
-            return;
-        }
-        lastGpsLocation = new GpsLocation(loc);
-        synchronized (lastGpsLocation) {
-            lastLocationupdateMillis = SystemClock.elapsedRealtime();
-            lastGpsLocation.setPreviousLoc(previousLoc);
-            // save last known location
-            double recLon = lastGpsLocation.getLongitude();
-            double recLat = lastGpsLocation.getLatitude();
-            double recAlt = lastGpsLocation.getAltitude();
-            PositionUtilities.putGpsLocationInPreferences(preferences, recLon, recLat, recAlt);
-            previousLoc = loc;
-
-            broadcast("triggered by onLocationChanged");
-        }
-    }
-
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // for( GpsManagerListener activity : listeners ) {
-        // activity.onStatusChanged(provider, status, extras);
-        // }
-    }
-
-    public void onProviderEnabled(String provider) {
-        isProviderEnabled = true;
-        if (!isListeningForUpdates) {
-            registerForLocationUpdates();
-        }
-        broadcast("triggered by onProviderEnabled");
-    }
-
-    public void onProviderDisabled(String provider) {
-        isProviderEnabled = false;
-        broadcast("triggered by onProviderDisabled");
-    }
-
-    public void onGpsStatusChanged(int event) {
-        mStatus = locationManager.getGpsStatus(mStatus);
-
-        // check fix
-        boolean tmpGotFix = GpsStatusInfo.checkFix(gotFix, lastLocationupdateMillis, event);
-        if (!tmpGotFix) {
-            // check if it is just standing still
-            GpsStatusInfo info = new GpsStatusInfo(mStatus);
-            int satForFixCount = info.getSatUsedInFixCount();
-            if (satForFixCount > 2) {
-                tmpGotFix = true;
-                // updating loc update, assuming the still filter is giving troubles
-                lastLocationupdateMillis = SystemClock.elapsedRealtime();
-            }
-        }
-
-        // if (DOLOGPOSITION) {
-        // StringBuilder sb = new StringBuilder();
-        // sb.append("gotFix: ").append(gotFix).append(" tmpGotFix: ").append(tmpGotFix).append("\n");
-        // GPLog.addLogEntry("GPSSERVICE", sb.toString());
-        // }
-
-        if (tmpGotFix != gotFix) {
-            gotFix = tmpGotFix;
-            broadcast("triggered by onGpsStatusChanged on fix change: " + gotFix);
-        } else {
-            gotFix = tmpGotFix;
-            if (!tmpGotFix && isProviderEnabled) {
-                broadcast("triggered by onGpsStatusChanged on fix change: " + gotFix);
-            }
-        }
-
-        if (!gotFix) {
-            lastGpsLocation = null;
-        }
-    }
 
     /**
      * @param message a message for sending data back.
@@ -521,8 +342,6 @@ public class GpsAvgService extends Service implements LocationListener, Listener
                     public void run() {
                         for (int i = 0; i < numSamps; i++) {
                             GPLog.addLogEntry("GPSAVG", "In avg loop");
-                            // can't figure out how to use lastGpsLocation from this class
-                            // need to sample immediate gps location, not delayed or stored
                             Location location = locationManager.getLastKnownLocation("gps");
                             if (location != null) {
                                 gpsavgmeasurements.add(location);
@@ -618,21 +437,23 @@ public class GpsAvgService extends Service implements LocationListener, Listener
     // return super.startService(service);
     // }
     //
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+//    @Override
+//    public IBinder onBind(Intent intent) {
+//        return null;
+//    }
     //
-    @Override
-    public boolean stopService( Intent name ) {
-    /*
-    * You stop a service via the stopService() method. No matter how
-    * frequently you called the startService(intent) method, one call
-    * to the stopService() method stops the service.
-    *
-    * A service can terminate itself by calling the stopSelf() method.
-    * This is typically done if the service finishes its work.
-    */
-    return super.stopService(name);
-    }
+//    @Override
+//    public boolean stopService( Intent name ) {
+//    /*
+//    * You stop a service via the stopService() method. No matter how
+//    * frequently you called the startService(intent) method, one call
+//    * to the stopService() method stops the service.
+//    *
+//    * A service can terminate itself by calling the stopSelf() method.
+//    * This is typically done if the service finishes its work.
+//    */
+//    return super.stopService(name);
+//    }
+
+
 }
