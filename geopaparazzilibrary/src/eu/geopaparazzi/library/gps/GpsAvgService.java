@@ -71,7 +71,7 @@ public class GpsAvgService extends IntentService {
     /**
      * Intent key to use for broadcasts.
      */
-    public static final String GPS_AVG_SERVICE_BROADCAST_NOTIFICATION = "eu.geopaparazzi.library.gps.GpsAvgService";
+    public static final String GPS_AVG_SERVICE_BROADCAST_NOTIFICATION = "eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST";
 
     /**
      * Intent key to use for int gps status.
@@ -162,7 +162,7 @@ public class GpsAvgService extends IntentService {
 
     //public constructor
     public GpsAvgService() {
-        super("GPS_AVG_SERVICE");
+        super("GpsAvgService");
     }
 
     @Override
@@ -177,22 +177,28 @@ public class GpsAvgService extends IntentService {
             log("onHandleIntent: Preferences created");
         }
 
+        if (locationManager == null) {
+            log("onHandleIntent: start locationManager");
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        }
+
         if (intent.hasExtra(START_GPS_AVERAGING)){
-            log("onStartCommand: Start GPS averaging called");
+            log("onHandleIntent: Start GPS averaging called");
             stopAveragingRequest = false;
             numberSamplesUsedInAvg = -1;
             gpsavgmeasurements = GpsAvgMeasurements.getInstance();
-            boolean doAverage = intent.getBooleanExtra(START_GPS_AVERAGING, false);
-            if(!isAveraging && doAverage){
+            int doAverage = intent.getIntExtra(START_GPS_AVERAGING, 0);
+            if(!isAveraging && doAverage==1){
                 startAveraging();
             }
         }
 
-        if (intent.hasExtra(STOP_AVERAGING_NOW)){
-            log("onStartCommand: Stop GPS averaging called");
-            log("GPSAVG: Stop GPS averaging called");
-            stopAveragingRequest = true;
-        }
+
+//        if (intent.hasExtra(STOP_AVERAGING_NOW)){
+//            log("onHandleIntent: Stop GPS averaging called");
+//            log("GPSAVG: Stop GPS averaging called");
+//            stopAveragingRequest = true;
+//        }
 
 
     }
@@ -291,9 +297,11 @@ public class GpsAvgService extends IntentService {
         }
 
         if (message == "GPS Averaging complete" & isAveraging == false){
+            GPLog.addLogEntry("GPSAVG","sendBroadcast in Av complete and av=F");
             sendBroadcast(intent);
             stopSelf();
         } else {
+            GPLog.addLogEntry("GPSAVG","sendBroadcase av not complete");
             sendBroadcast(intent);
         }
 
@@ -326,49 +334,47 @@ public class GpsAvgService extends IntentService {
                 String.valueOf(GPS_AVERAGING_SAMPLE_NUMBER));
         final Integer numSamps = Integer.parseInt(numSamples);
 
+        // todo: see: http://stackoverflow.com/questions/24785267/pending-intent-from-notification-not-received
+        // see: http://android-er.blogspot.com/2013/03/stop-intentservice.html
+        // see: http://stackoverflow.com/questions/12112998/stopping-an-intentservice-from-an-activity
+
         //build the notification intents
-        Intent intent = new Intent(this, GpsAvgService.class);
-        intent.setAction("stopGpsAv");
+        Intent cancelIntent = new Intent(this, GpsAvgService.class);
+        //cancelIntent.setAction(ACTION_CANCEL);
         //intent.putExtra(GPS_SERVICE_STATUS, 1);
-        intent.putExtra(STOP_AVERAGING_NOW, 1);
+        cancelIntent.putExtra(STOP_AVERAGING_NOW, 1);
         //intent.putExtra("stopGPSAveraging","stopGpsAv");
 
-        final PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent pendingIntent = PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         final NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < numSamps; i++) {
-                            GPLog.addLogEntry("GPSAVG", "In avg loop");
-                            Location location = locationManager.getLastKnownLocation("gps");
-                            if (location != null) {
-                                gpsavgmeasurements.add(location);
-                            }
-                            try {
-                                for (int j = 0; j < averagingDelaySeconds; j++) {
-                                    Thread.sleep(1000L);
-                                }
-                            } catch (InterruptedException e) {
-                                break;
-                            }
-                            notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
-                            if(stopAveragingRequest){
-                                numberSamplesUsedInAvg = i + 1;
-                                break;
-                            }
-                        }
-                        if(numberSamplesUsedInAvg == -1){
-                            numberSamplesUsedInAvg = numSamps;
-                        }
-                        broadcast("GPS Averaging complete");
-                        cancelAvgNotify(notifyMgr);
-                    }
+        for (int i = 0; i < numSamps; i++) {
+            GPLog.addLogEntry("GPSAVG", "In avg loop, i=" + i);
+            Location location = locationManager.getLastKnownLocation("gps");
+            if (location != null) {
+                gpsavgmeasurements.add(location);
+            }
+            try {
+                for (int j = 0; j < averagingDelaySeconds; j++) {
+                    Thread.sleep(1000L);
                 }
-        ).start();
-
+            } catch (InterruptedException e) {
+                break;
+            }
+            notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
+            if(stopAveragingRequest){
+                numberSamplesUsedInAvg = i + 1;
+                break;
+            }
+        }
+        if(numberSamplesUsedInAvg == -1){
+            numberSamplesUsedInAvg = numSamps;
+            GPLog.addLogEntry("GPSAVG", "set numberSamples to " + numberSamplesUsedInAvg);
+        }
+        broadcast("GPS Averaging complete");
+        cancelAvgNotify(notifyMgr);
     }
+
 
     /**
      * Creates a notification for users to track (and stop early, if desired) GPS position averaging

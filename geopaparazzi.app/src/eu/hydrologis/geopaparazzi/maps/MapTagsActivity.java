@@ -93,7 +93,7 @@ public class MapTagsActivity extends Activity {
     private int gpsAvgNumberPointsSampled;
     private ToggleButton togglePositionTypeButtonGps;
     private BroadcastReceiver broadcastReceiver;
-    //private BroadcastReceiver gpsAvgReceiver;
+    private BroadcastReceiver gpsAvgReceiver;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -134,6 +134,9 @@ public class MapTagsActivity extends Activity {
                     edit.putBoolean(USE_MAPCENTER_POSITION, true);
                     edit.commit();
                 }
+                if (intent.getIntExtra("GPS_AVG_COMPLETE",0) == 1){
+                    GPLog.addLogEntry("GPSAVG","inside BR intent getIntExtraGPLog");
+                };
             }
         };
         GpsServiceUtilities.registerForBroadcasts(this, broadcastReceiver);
@@ -142,13 +145,25 @@ public class MapTagsActivity extends Activity {
         // start the avg service
         if(prefsDoGpsAveraging) {
             Intent avgServiceIntent = new Intent(this, GpsAvgService.class);
-            avgServiceIntent.putExtra("GPS_AVG_START", 1);
+            avgServiceIntent.putExtra("START_GPS_AVERAGING", 1);
             this.startService(avgServiceIntent);
             }
 
-        // define a new filter for the existing broadcast receiver
-        IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
-        this.registerReceiver(broadcastReceiver,gpsAvgIntentFilter);
+        gpsAvgReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                GPLog.addLogEntry("GPSAVG","inside gpsAvBR receiver");
+                if (intent.getIntExtra("GPS_AVG_COMPLETE",0) == 1){
+                    GPLog.addLogEntry("GPSAVG","inside gpsAvBR intent getIntExtraGPLog");
+                    gpsAvgLocation = intent.getDoubleArrayExtra("GPS_SERVICE_AVERAGED_POSITION");
+                    double numLocs = gpsAvgLocation[3];
+                };
+            }
+        };
+
+        // define a new filter for the broadcast receiver
+        IntentFilter gpsAvgIntentFilter = new IntentFilter("eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST");
+        //IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
+        this.registerReceiver(gpsAvgReceiver,gpsAvgIntentFilter);
 
 
 
@@ -279,18 +294,22 @@ public class MapTagsActivity extends Activity {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
         if (useMapCenterPosition || (gpsLocation == null && gpsAvgLocation == null)) {
+            GPLog.addLogEntry("GPSAVG","chkPos; using map center");
             latitude = mapCenterLatitude;
             longitude = mapCenterLongitude;
             elevation = mapCenterElevation;
         } else if (gpsAvgLocation == null) {
+            GPLog.addLogEntry("GPSAVG","chkPos; gpsAvLoc is null");
             latitude = gpsLocation[1];
             longitude = gpsLocation[0];
             elevation = gpsLocation[2];
         } else {
+            GPLog.addLogEntry("GPSAVG","chkPos; gpsAvLoc not null");
             latitude = gpsAvgLocation[1];
             longitude = gpsAvgLocation[0];
             elevation = gpsAvgLocation[2];
             gpsAvgNumberPointsSampled = (int)gpsAvgLocation[3];
+            GPLog.addLogEntry("GPSAVG","gpsAc lat is " + latitude);
         }
     }
 

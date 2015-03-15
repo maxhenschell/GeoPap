@@ -124,7 +124,6 @@ public class GpsAvgActivity extends Activity {
     public void onCreate(Bundle icicle, Intent intent) {
         super.onCreate(icicle);
         setContentView(R.layout.note);
-        set
 
         Bundle extras = getIntent().getExtras();
 
