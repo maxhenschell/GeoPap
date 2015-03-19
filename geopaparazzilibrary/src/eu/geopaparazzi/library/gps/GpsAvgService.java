@@ -25,9 +25,11 @@ import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSAVG_NUM
 import static eu.geopaparazzi.library.util.LibraryConstants.GPS_AVERAGING_SAMPLE_NUMBER;
 
 import android.app.IntentService;
+import android.content.BroadcastReceiver;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteFullException;
@@ -103,10 +105,6 @@ public class GpsAvgService extends IntentService {
      */
     public static final String GPS_SERVICE_POSITION_TIME = "GPS_SERVICE_POSITION_TIME";
     /**
-     * Intent key to use for current recorded log id.
-     */
-    public static final String GPS_SERVICE_CURRENT_LOG_ID = "GPS_SERVICE_CURRENT_LOG_ID";
-    /**
      * Intent key to use for int array gps extra data [maxSatellites, satCount, satUsedInFixCount].
      */
     public static final String GPS_SERVICE_GPSSTATUS_EXTRAS = "GPS_SERVICE_GPSSTATUS_EXTRAS";
@@ -132,6 +130,7 @@ public class GpsAvgService extends IntentService {
     private LocationManager locationManager;
     private boolean useNetworkPositions = false;
     private boolean isMockMode = false;
+    private BroadcastReceiver cReceiver;
 
     /**
      * The last taken gps location.
@@ -165,6 +164,35 @@ public class GpsAvgService extends IntentService {
         super("GpsAvgService");
     }
 
+
+    // can't usually cancel an intentService, need these overrides to make it possible
+    private class CancelReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            GPLog.addLogEntry("GPSAVG", "custom receiver onReceive");
+            stopAveragingRequest = true;
+            stopSelf();
+        }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        cReceiver = new CancelReceiver();
+        IntentFilter filter = new IntentFilter(GpsAvgService.STOP_AVERAGING_NOW);
+        registerReceiver(cReceiver, filter);
+        GPLog.addLogEntry("GPSAVG","custom receiver registered");
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (cReceiver != null)
+            unregisterReceiver(cReceiver);
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
         // Gets data from the incoming Intent
@@ -174,16 +202,16 @@ public class GpsAvgService extends IntentService {
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
             useNetworkPositions = preferences.getBoolean(LibraryConstants.PREFS_KEY_GPS_USE_NETWORK_POSITION, false);
             isMockMode = preferences.getBoolean(LibraryConstants.PREFS_KEY_MOCKMODE, false);
-            log("onHandleIntent: Preferences created");
+            GPLog.addLogEntry("GPSAVG", "onHandleIntent: Preferences created");
         }
 
         if (locationManager == null) {
-            log("onHandleIntent: start locationManager");
+            GPLog.addLogEntry("GPSAVG", "onHandleIntent: start locationManager");
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         }
 
         if (intent.hasExtra(START_GPS_AVERAGING)){
-            log("onHandleIntent: Start GPS averaging called");
+            GPLog.addLogEntry("GPSAVG", "onHandleIntent: Start GPS averaging called");
             stopAveragingRequest = false;
             numberSamplesUsedInAvg = -1;
             gpsavgmeasurements = GpsAvgMeasurements.getInstance();
@@ -191,6 +219,12 @@ public class GpsAvgService extends IntentService {
             if(!isAveraging && doAverage==1){
                 startAveraging();
             }
+        }
+
+        if (intent.hasExtra(STOP_AVERAGING_NOW)){
+            GPLog.addLogEntry("GPSAVG", "onHandleIntent: stop averaging called via intent");
+            stopAveragingRequest = true;
+            stopSelf();
         }
 
 
@@ -297,11 +331,11 @@ public class GpsAvgService extends IntentService {
         }
 
         if (message == "GPS Averaging complete" & isAveraging == false){
-            GPLog.addLogEntry("GPSAVG","sendBroadcast in Av complete and av=F");
+            GPLog.addLogEntry("GPSAVG","sendBroadcast in Av complete and av=False");
             sendBroadcast(intent);
             stopSelf();
         } else {
-            GPLog.addLogEntry("GPSAVG","sendBroadcase av not complete");
+            GPLog.addLogEntry("GPSAVG","sendBroadcast av not complete");
             sendBroadcast(intent);
         }
 
@@ -339,13 +373,20 @@ public class GpsAvgService extends IntentService {
         // see: http://stackoverflow.com/questions/12112998/stopping-an-intentservice-from-an-activity
 
         //build the notification intents
-        Intent cancelIntent = new Intent(this, GpsAvgService.class);
+        //Intent cancelIntent = new Intent(this, GpsAvgService.class);
+        //Intent cancelIntent = new Intent(this, CancelReceiver.class);
+        Intent cancelIntent = new Intent();
+        cancelIntent.setAction(STOP_AVERAGING_NOW);
+        //Intent cancelIntent = new Intent();
         //cancelIntent.setAction(ACTION_CANCEL);
         //intent.putExtra(GPS_SERVICE_STATUS, 1);
         cancelIntent.putExtra(STOP_AVERAGING_NOW, 1);
         //intent.putExtra("stopGPSAveraging","stopGpsAv");
 
-        final PendingIntent pendingIntent = PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //final PendingIntent pendingIntent = PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         final NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         for (int i = 0; i < numSamps; i++) {
@@ -364,6 +405,7 @@ public class GpsAvgService extends IntentService {
             notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
             if(stopAveragingRequest){
                 numberSamplesUsedInAvg = i + 1;
+                GPLog.addLogEntry("GPSAVG", "stop avg req in avg loop");
                 break;
             }
         }
@@ -404,7 +446,7 @@ public class GpsAvgService extends IntentService {
         }
 
         // Issue notification
-        int notificationId = 6;
+        int notificationId = 6789;
         notifyMgr.notify(notificationId, nBuilder.build());
     }
 
@@ -415,8 +457,8 @@ public class GpsAvgService extends IntentService {
     *
     */
     public void cancelAvgNotify(NotificationManager notifyMgr) {
-
-    notifyMgr.cancel(6);
+        GPLog.addLogEntry("GPSAVG", "cancel notification called");
+    notifyMgr.cancel(6789);
 
     }
 
