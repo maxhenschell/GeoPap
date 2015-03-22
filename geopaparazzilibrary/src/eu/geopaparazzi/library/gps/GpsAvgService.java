@@ -29,11 +29,9 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
-
 import android.app.NotificationManager;
 import android.support.v4.app.NotificationCompat;
 import android.app.PendingIntent;
-
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
 
@@ -96,9 +94,10 @@ public class GpsAvgService extends IntentService {
     private GpsLocation lastGpsLocation = null;
 
     /**
-     * GPS time interval.
+     * GPS time interval between averaging samples.
+     * 1000 ms = 1 second
      */
-    private static int WAITSECONDS = 1;
+        private static long WAIT_MILLISECONDS = 1000L;
 
 
     /**
@@ -143,6 +142,10 @@ public class GpsAvgService extends IntentService {
         if (cReceiver != null)
             unregisterReceiver(cReceiver);
     }
+
+    //TODO: When gps signal is lost, geopap switches to location on map center, messing things up.
+    //todo: need to handle gps signal coming in and out of connection
+    //todo: extract other gps averaging data. 
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -255,7 +258,7 @@ public class GpsAvgService extends IntentService {
     public void startAveraging() {
         isAveraging = true;
         gpsavgmeasurements.clean();
-        final int averagingDelaySeconds = 1;
+        //final int averagingDelaySeconds = 1;
 
         final String numSamples = preferences.getString(PREFS_KEY_GPSAVG_NUMBER_SAMPLES,
                 String.valueOf(GPS_AVERAGING_SAMPLE_NUMBER));
@@ -267,26 +270,27 @@ public class GpsAvgService extends IntentService {
         cancelIntent.putExtra(STOP_AVERAGING_NOW, 1);
 
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
         final NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
+        //run the averaging
         for (int i = 0; i < numSamps; i++) {
             GPLog.addLogEntry("GPSAVG", "In avg loop, i=" + i);
             Location location = locationManager.getLastKnownLocation("gps");
             if (location != null) {
                 gpsavgmeasurements.add(location);
             }
+
             try {
-                for (int j = 0; j < averagingDelaySeconds; j++) {
-                    Thread.sleep(1000L);
-                }
+//                for (int j = 0; j < averagingDelaySeconds; j++) {
+                    Thread.sleep(WAIT_MILLISECONDS);
+ //               }
             } catch (InterruptedException e) {
                 break;
             }
             notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
             if(stopAveragingRequest){
                 numberSamplesUsedInAvg = i + 1;
-                GPLog.addLogEntry("GPSAVG", "stop avg req in avg loop");
+                GPLog.addLogEntry("GPSAVG", "stop avg req in avg loop. samps is " + i);
                 break;
             }
         }
