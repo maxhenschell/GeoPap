@@ -26,12 +26,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 import android.app.NotificationManager;
 import android.support.v4.app.NotificationCompat;
@@ -39,14 +36,13 @@ import android.app.PendingIntent;
 
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
-import eu.geopaparazzi.library.util.LibraryConstants;
 
 /**
  * An intent service to handle and return gps averaging data
  * <p/>
  * <p/>
  *
- * @author Tim Howard (nynhp.org)
+ * @author Tim Howard (nynhp.org), based on work by Andrea Antonello
  */
 @SuppressWarnings("nls")
 
@@ -58,19 +54,6 @@ public class GpsAvgService extends IntentService {
      * Intent key to use for broadcasts.
      */
     public static final String GPS_AVG_SERVICE_BROADCAST_NOTIFICATION = "eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST";
-
-    /**
-     * Intent key to use for int gps status.
-     * <p/>
-     * <p>Status can be:
-     * <ul>
-     * <li>gps off = 0</li>
-     * <li>gps on but not listening for updates = 1</li>
-     * <li>gps on and listening for updates but no fix= 2</li>
-     * <li>gps has fix = 3</li>
-     * </ul>
-     */
-    public static final String GPS_SERVICE_STATUS = "GPS_SERVICE_STATUS";
 
     /**
      * Intent key to use for double array position data [lon, lat, elev].
@@ -88,14 +71,7 @@ public class GpsAvgService extends IntentService {
      * Intent key to use for long time.
      */
     public static final String GPS_SERVICE_POSITION_TIME = "GPS_SERVICE_POSITION_TIME";
-    /**
-     * Intent key to use for int array gps extra data [maxSatellites, satCount, satUsedInFixCount].
-     */
-    public static final String GPS_SERVICE_GPSSTATUS_EXTRAS = "GPS_SERVICE_GPSSTATUS_EXTRAS";
-    /**
-     * Intent key to use to trigger a broadcast.
-     */
-    public static final String GPS_SERVICE_DO_BROADCAST = "GPS_SERVICE_DO_BROADCAST";
+
     /**
      * Intent key to pass the boolean to start gps averaging.
      */
@@ -112,8 +88,6 @@ public class GpsAvgService extends IntentService {
 
     private SharedPreferences preferences;
     private LocationManager locationManager;
-    private boolean useNetworkPositions = false;
-    private boolean isMockMode = false;
     private BroadcastReceiver cReceiver;
 
     /**
@@ -126,13 +100,11 @@ public class GpsAvgService extends IntentService {
      */
     private static int WAITSECONDS = 1;
 
-    private boolean isListeningForUpdates = false;
-
 
     /**
      * for gps avg
      */
-    private boolean isAveraging = false; //original also declared static
+    private boolean isAveraging = false;
     private boolean stopAveragingRequest = false;
     private GpsAvgMeasurements gpsavgmeasurements;
     private NotificationCompat.Builder nBuilder;
@@ -179,8 +151,6 @@ public class GpsAvgService extends IntentService {
 
         if (preferences == null) {
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            useNetworkPositions = preferences.getBoolean(LibraryConstants.PREFS_KEY_GPS_USE_NETWORK_POSITION, false);
-            isMockMode = preferences.getBoolean(LibraryConstants.PREFS_KEY_MOCKMODE, false);
             GPLog.addLogEntry("GPSAVG", "onHandleIntent: Preferences created");
         }
 
@@ -194,8 +164,7 @@ public class GpsAvgService extends IntentService {
             stopAveragingRequest = false;
             numberSamplesUsedInAvg = -1;
             gpsavgmeasurements = GpsAvgMeasurements.getInstance();
-            int doAverage = intent.getIntExtra(START_GPS_AVERAGING, 0);
-            if(!isAveraging && doAverage==1){
+            if(!isAveraging){
                 startAveraging();
             }
         }
@@ -207,17 +176,6 @@ public class GpsAvgService extends IntentService {
         }
 
     }
-
-    private static void log(String msg) {
-        try {
-            if (GPLog.LOG_HEAVY)
-                GPLog.addLogEntry("GPSAVGSERVICE", null, null, msg);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     /**
      * @param message a message for sending data back.
@@ -296,17 +254,12 @@ public class GpsAvgService extends IntentService {
      */
     public void startAveraging() {
         isAveraging = true;
-        //Toast.makeText(GpsService.this, "Starting GPS Averaging", Toast.LENGTH_SHORT).show();
         gpsavgmeasurements.clean();
         final int averagingDelaySeconds = 1;
 
         final String numSamples = preferences.getString(PREFS_KEY_GPSAVG_NUMBER_SAMPLES,
                 String.valueOf(GPS_AVERAGING_SAMPLE_NUMBER));
         final Integer numSamps = Integer.parseInt(numSamples);
-
-        // todo: see: http://stackoverflow.com/questions/24785267/pending-intent-from-notification-not-received
-        // see: http://android-er.blogspot.com/2013/03/stop-intentservice.html
-        // see: http://stackoverflow.com/questions/12112998/stopping-an-intentservice-from-an-activity
 
         //build the notification intents
         Intent cancelIntent = new Intent();

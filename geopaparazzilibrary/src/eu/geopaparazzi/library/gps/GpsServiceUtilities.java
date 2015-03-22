@@ -138,24 +138,6 @@ public class GpsServiceUtilities {
         return time;
     }
 
-
-
-//    /**
-//     * Utility to get the {@link getGpsAveragingStatus} from an intent.
-//     *
-//     * @param intent the intent.
-//     * @return the status.
-//     */
-//    public static GpsAvgStatus getGpsAveragingStatus( Intent intent ) {
-//        if (intent == null) {
-//            return null;
-//        }
-//        int getGpsAveragingStatusCode = intent.getIntExtra(GPS_AVG_COMPLETE, 0);
-//        return GpsAvgStatus.getStatusForCode(getGpsAveragingStatusCode);
-//    }
-
-
-
     /**
      * Utility to get the gps status extras from an intent.
      * 
