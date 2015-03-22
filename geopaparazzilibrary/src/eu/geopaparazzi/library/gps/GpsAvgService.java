@@ -17,31 +17,19 @@
  */
 package eu.geopaparazzi.library.gps;
 
-import static eu.geopaparazzi.library.util.LibraryConstants.GPS_LOGGING_DISTANCE;
-import static eu.geopaparazzi.library.util.LibraryConstants.GPS_LOGGING_INTERVAL;
-import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSLOGGINGDISTANCE;
-import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSLOGGINGINTERVAL;
 import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSAVG_NUMBER_SAMPLES;
 import static eu.geopaparazzi.library.util.LibraryConstants.GPS_AVERAGING_SAMPLE_NUMBER;
 
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteFullException;
 import android.location.GpsStatus;
-import android.location.GpsStatus.Listener;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
@@ -51,11 +39,7 @@ import android.app.PendingIntent;
 
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
-import eu.geopaparazzi.library.database.IGpsLogDbHelper;
 import eu.geopaparazzi.library.util.LibraryConstants;
-import eu.geopaparazzi.library.util.PositionUtilities;
-import eu.geopaparazzi.library.util.debug.TestMock;
-
 
 /**
  * An intent service to handle and return gps averaging data
@@ -142,13 +126,8 @@ public class GpsAvgService extends IntentService {
      */
     private static int WAITSECONDS = 1;
 
-    private GpsStatus mStatus;
-    private long currentRecordedLogId = -1;
-    private volatile boolean gotFix;
-    private boolean isDatabaseLogging = false;
     private boolean isListeningForUpdates = false;
-    private boolean isProviderEnabled;
-    private Handler toastHandler;
+
 
     /**
      * for gps avg
@@ -227,14 +206,6 @@ public class GpsAvgService extends IntentService {
             stopSelf();
         }
 
-
-//        if (intent.hasExtra(STOP_AVERAGING_NOW)){
-//            log("onHandleIntent: Stop GPS averaging called");
-//            log("GPSAVG: Stop GPS averaging called");
-//            stopAveragingRequest = true;
-//        }
-
-
     }
 
     private static void log(String msg) {
@@ -254,18 +225,6 @@ public class GpsAvgService extends IntentService {
     private void broadcast(String message) {
         Intent intent = new Intent(GPS_AVG_SERVICE_BROADCAST_NOTIFICATION);
 
-        int status = 0; // gps off
-        if (isProviderEnabled) {
-            status = 1; // gps on
-        }
-        if (isProviderEnabled && isListeningForUpdates && !gotFix) {
-            status = 2; // listening for updates but has no fix
-        }
-        if ((isProviderEnabled && isListeningForUpdates && gotFix && lastGpsLocation != null) || isMockMode) {
-            status = 3; // listening for updates and has fix
-        }
-        intent.putExtra(GPS_SERVICE_STATUS, status);
-
         double lon = -1;
         double lat = -1;
         double elev = -1;
@@ -282,16 +241,6 @@ public class GpsAvgService extends IntentService {
             intent.putExtra(GPS_SERVICE_POSITION_EXTRAS, lastPositionExtrasArray);
             time = lastGpsLocation.getTime();
             intent.putExtra(GPS_SERVICE_POSITION_TIME, time);
-        }
-        int maxSatellites = -1;
-        int satCount = -1;
-        int satUsedInFixCount = -1;
-        if (mStatus != null) {
-            GpsStatusInfo info = new GpsStatusInfo(mStatus);
-            maxSatellites = info.getMaxSatellites();
-            satCount = info.getSatCount();
-            satUsedInFixCount = info.getSatUsedInFixCount();
-            intent.putExtra(GPS_SERVICE_GPSSTATUS_EXTRAS, new int[]{maxSatellites, satCount, satUsedInFixCount});
         }
 
 //        if (DOLOGPOSITION) {
@@ -342,19 +291,6 @@ public class GpsAvgService extends IntentService {
 
     }
 
-    private class ToastRunnable implements Runnable {
-        String mText;
-
-        public ToastRunnable(String text) {
-            mText = text;
-        }
-
-        @Override
-        public void run() {
-            Toast.makeText(getApplicationContext(), mText, Toast.LENGTH_LONG).show();
-        }
-    }
-
     /**
      * Starts active averaging.
      */
@@ -373,18 +309,10 @@ public class GpsAvgService extends IntentService {
         // see: http://stackoverflow.com/questions/12112998/stopping-an-intentservice-from-an-activity
 
         //build the notification intents
-        //Intent cancelIntent = new Intent(this, GpsAvgService.class);
-        //Intent cancelIntent = new Intent(this, CancelReceiver.class);
         Intent cancelIntent = new Intent();
         cancelIntent.setAction(STOP_AVERAGING_NOW);
-        //Intent cancelIntent = new Intent();
-        //cancelIntent.setAction(ACTION_CANCEL);
-        //intent.putExtra(GPS_SERVICE_STATUS, 1);
         cancelIntent.putExtra(STOP_AVERAGING_NOW, 1);
-        //intent.putExtra("stopGPSAveraging","stopGpsAv");
 
-
-        //final PendingIntent pendingIntent = PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final NotificationManager notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -461,47 +389,6 @@ public class GpsAvgService extends IntentService {
     notifyMgr.cancel(6789);
 
     }
-
-    // /////////////////////////////////////////////
-    // UNUSED METHODS
-    // /////////////////////////////////////////////
-    // @Override
-    // public void onCreate() {
-    // super.onCreate();
-    // /*
-    // * If the startService(intent) method is called and the service is not
-    // * yet running, the service object is created and the onCreate()
-    // * method of the service is called.
-    // */
-    // }
-    //
-    // @Override
-    // public ComponentName startService( Intent service ) {
-    // /*
-    // * Once the service is started, the startService(intent) method in the
-    // * service is called. It passes in the Intent object from the
-    // * startService(intent) call.
-    // */
-    // return super.startService(service);
-    // }
-    //
-//    @Override
-//    public IBinder onBind(Intent intent) {
-//        return null;
-//    }
-    //
-//    @Override
-//    public boolean stopService( Intent name ) {
-//    /*
-//    * You stop a service via the stopService() method. No matter how
-//    * frequently you called the startService(intent) method, one call
-//    * to the stopService() method stops the service.
-//    *
-//    * A service can terminate itself by calling the stopSelf() method.
-//    * This is typically done if the service finishes its work.
-//    */
-//    return super.stopService(name);
-//    }
 
 
 }
