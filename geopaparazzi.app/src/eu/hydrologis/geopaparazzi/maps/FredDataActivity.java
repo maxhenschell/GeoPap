@@ -101,6 +101,8 @@ public class FredDataActivity extends Activity {
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
+    private static String PREFS_KEY_FRED_QUICK_SET = "PREFS_KEY_FRED_QUICK_SET";//$NON-NLS-1$
+
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -126,6 +128,7 @@ public class FredDataActivity extends Activity {
         final String parentTimeStamp = preferences.getString(COLUMN_FIRST_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
         final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default10"); //$NON-NLS-1$
         final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default11"); //$NON-NLS-1$
+        final String quicksetChoice = preferences.getString(PREFS_KEY_FRED_QUICK_SET, "default11"); //$NON-NLS-1$
 
         // debug some of the defaults in case of problems
         if (GPLog.LOG_HEAVY) {
@@ -215,11 +218,9 @@ public class FredDataActivity extends Activity {
                             .openDatabase(externalDB, null, 2);
                     boolean tableExists = doesTableExist(parentTable, sqlDB);
                     if(tableExists){
-                        firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null);
+                        firstIDs = getTableIDs(sqlDB, parentTable, parentID, parentDescriptorField, parentTimeStamp, null, null, quicksetChoice);
                     } else {
                         GPLog.addLogEntry(this, "Fred DB: no Table 1 " + parentTable);
-//                        Toast.makeText(getApplicationContext(),
-//                                "Missing table in DB - check settings", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
                         Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
                         finish();
                     }
@@ -239,19 +240,15 @@ public class FredDataActivity extends Activity {
                         boolean tableExists = doesTableExist(childTable, sqlDB);
                         if(tableExists) {
                             secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
-                                    firstIDsID);
+                                    firstIDsID, quicksetChoice);
                         } else {
                             GPLog.addLogEntry(this, "Fred DB: no Table 2 " + childTable);
-//                            Toast.makeText(getApplicationContext(),
-//                                    "Missing table in DB - check settings", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
                             Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
                             finish();
                         }
                         sqlDB.close();
                     } else {
                         GPLog.addLogEntry(this, "Fred DB: no records 1 " + parentTable);
-//                        Toast.makeText(getApplicationContext(),
-//                                "No records in DB - add one first", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
                         Utilities.toast(this,"No records in DB - add one first",Toast.LENGTH_SHORT);
                         finish();
                     }
@@ -266,19 +263,15 @@ public class FredDataActivity extends Activity {
                             .openDatabase(externalDB, null, 2);
                     boolean tableExists = doesTableExist(childTable, sqlDB);
                     if(tableExists) {
-                        secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null);
+                        secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null, quicksetChoice);
                         // don't open form if no records
                         if(secondIDs.size()==0){
                             GPLog.addLogEntry(this, "Fred DB: no records 2 " + parentTable);
-//                            Toast.makeText(getApplicationContext(),
-//                                    "No records in DB - add one first", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
                             Utilities.toast(this,"No records in DB - add one first",Toast.LENGTH_SHORT);
                             finish();
                         }
                     } else {
                         GPLog.addLogEntry(this, "Fred DB: no Table 3 " + childTable);
-//                        Toast.makeText(getApplicationContext(),
-//                                "Missing table in DB - check settings", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
                         Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
                         finish();
                     }
@@ -386,10 +379,7 @@ public class FredDataActivity extends Activity {
                             intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
                             startActivity(intent);
                         }
-
                     }
-
-
                 }
             });
 
@@ -432,7 +422,7 @@ public class FredDataActivity extends Activity {
                             final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(FredDataActivity.this)
                                     .openDatabase(externalDB, null, 2);
                             secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, parentID,
-                                    firstIDsID);
+                                    firstIDsID, quicksetChoice);
                             sqlDB.close();
 
                             if (GPLog.LOG_HEAVY)
@@ -554,7 +544,11 @@ public class FredDataActivity extends Activity {
      * @throws IOException if a problem
      */
     private static List<String> getTableIDs(SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
-                                            String tsCol, String filterID, String strWhere) throws IOException {
+                                            String tsCol, String filterID, String strWhere, String quickSet) throws IOException {
+
+        GPLog.addLogEntry("in getTableIDs, tableName= " + tableName);
+        GPLog.addLogEntry("in getTableIDs, IdCol= " + IdCol);
+        GPLog.addLogEntry("in getTableIDs, NameCol= " + NameCol);
 
         String asColumnsToReturn[] = {NameCol, IdCol, tsCol};
         String strSortOrder = tsCol + " DESC"; //$NON-NLS-1$
@@ -569,14 +563,20 @@ public class FredDataActivity extends Activity {
 
             c.moveToFirst();
             List<String> NmIdTsList = new ArrayList<String>(count);
+            String row = "";
             while (!c.isAfterLast()) {
                 String fID = c.getString(1); // to handle non-int IDs
                 // int fID = c.getInt(1);
                 String fName = c.getString(0);
                 String tStamp = c.getString(2);
                 try {
-                    //String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    String row = fName + " (" + fID + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    //todo: customize for each type
+                    if(quickSet == "Fred-Bot,Zool" && tableName == "IPAQ_SppSurvUtmList") {
+                        row = "GPS ID = " + fName + " (created on " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    } else {
+                        //String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        row = fName + " (" + fID + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    }
                     NmIdTsList.add(row);
                 } catch (Exception e) {
                     // ignore invalid rows
