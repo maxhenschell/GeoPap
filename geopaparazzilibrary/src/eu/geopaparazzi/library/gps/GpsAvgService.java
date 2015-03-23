@@ -145,7 +145,7 @@ public class GpsAvgService extends IntentService {
 
     //TODO: When gps signal is lost, geopap switches to location on map center, messing things up.
     //todo: need to handle gps signal coming in and out of connection
-    //todo: extract other gps averaging data. 
+    //todo: extract other gps averaging data.
 
     @Override
     protected void onHandleIntent(Intent intent) {
