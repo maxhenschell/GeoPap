@@ -195,9 +195,9 @@ public class FredDataActivity extends Activity {
                     } else {
                         togglePositionTypeButtonGps.setChecked(false);
                         togglePositionTypeButtonGps.setEnabled(false);
-                        Editor edit = preferences.edit();
-                        edit.putBoolean(USE_MAPCENTER_POSITION, true);
-                        edit.commit();
+                        //Editor edit = preferences.edit();
+                        //edit.putBoolean(USE_MAPCENTER_POSITION, true);
+                        //edit.commit();
                     }
                 }
             };
