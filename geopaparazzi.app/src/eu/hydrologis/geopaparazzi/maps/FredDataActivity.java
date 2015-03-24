@@ -570,7 +570,7 @@ public class FredDataActivity extends Activity {
                 String fName = c.getString(0);
                 String tStamp = c.getString(2);
                 try {
-                    //todo: customize for each type
+                    //todo: customize for each type - does not work yet
                     if(quickSet == "Fred-Bot,Zool" && tableName == "IPAQ_SppSurvUtmList") {
                         row = "GPS ID = " + fName + " (created on " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     } else {

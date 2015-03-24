@@ -295,7 +295,7 @@
     <string name="fred_BotZoo_first_level_table">IPAQ_SppSurvArea</string>
     <string name="fred_BotZoo_first_level_ID">intArea_id</string>
     <string name="fred_BotZoo_first_level_descriptor">strAreaComment</string>
-    <string name="fred_BotZoo_first_level_timestamp">dtmRecCreate</string>
+    <string name="fred_BotZoo_first_level_timestamp">TIMESTAMP</string>  <!-- want last modified, not last created -->
     <string name="fred_BotZoo_second_level_table">IPAQ_SppSurvUtmList</string>
     <string name="fred_BotZoo_second_level_ID">intUtm_ID</string>
     <string name="fred_BotZoo_column_Lat">intlatitude</string>

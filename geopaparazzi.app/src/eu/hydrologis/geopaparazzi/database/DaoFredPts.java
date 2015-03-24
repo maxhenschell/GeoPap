@@ -87,8 +87,8 @@ public class DaoFredPts {
                     try {
                         c.moveToFirst();
                         while (!c.isAfterLast()) {
-                            double lon = c.getDouble(0);
-                            double lat = c.getDouble(1);
+                            double lon = c.getDouble(1);
+                            double lat = c.getDouble(0);
                             String text = c.getString(2);
                             text = text + "\n";
                             OverlayItem pt = new OverlayItem(new GeoPoint(lat, lon), null, text, marker);
