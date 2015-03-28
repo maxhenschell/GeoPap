@@ -1574,7 +1574,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
     @Override
     public void onStop() {
-        created = false;
+        //created = false;
         GPLog.addLogEntry(this, "Stopping ... MapsActivity.created =  " + created); //$NON-NLS-1$
 
         super.onStop();
