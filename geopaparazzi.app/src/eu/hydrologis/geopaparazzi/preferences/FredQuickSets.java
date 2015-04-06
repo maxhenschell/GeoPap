@@ -96,7 +96,7 @@ public class FredQuickSets extends DialogPreference {
         //quicksetChoicesList.add(0, ""); //$NON-NLS-1$
         ArrayList<String> quicksetChoicesList = new ArrayList<String>();
         // List<String> quicksetChoicesList = new List<String>();
-        quicksetChoicesList.add("iMap FDCT"); //$NON-NLS-1$
+        quicksetChoicesList.add("iMap Field"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Ecology"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Bot,Zool"); //$NON-NLS-1$
 
