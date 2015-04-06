@@ -90,6 +90,29 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.mapsforge.android.maps.DebugSettings;
+import org.mapsforge.android.maps.MapActivity;
+import org.mapsforge.android.maps.MapScaleBar;
+import org.mapsforge.android.maps.MapScaleBar.ScreenPosition;
+import org.mapsforge.android.maps.MapScaleBar.TextField;
+import org.mapsforge.android.maps.MapView;
+import org.mapsforge.android.maps.MapViewPosition;
+import org.mapsforge.android.maps.Projection;
+import org.mapsforge.android.maps.mapgenerator.MapGenerator;
+import org.mapsforge.android.maps.overlay.Overlay;
+import org.mapsforge.android.maps.overlay.OverlayItem;
+import org.mapsforge.android.maps.overlay.OverlayWay;
+import org.mapsforge.core.model.GeoPoint;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.List;
+
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.features.EditManager;
 import eu.geopaparazzi.library.features.EditingView;
@@ -100,7 +123,6 @@ import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.mixare.MixareHandler;
 import eu.geopaparazzi.library.network.NetworkUtilities;
 import eu.geopaparazzi.library.share.ShareUtilities;
-import eu.geopaparazzi.library.sms.SmsData;
 import eu.geopaparazzi.library.sms.SmsUtilities;
 import eu.geopaparazzi.library.util.ColorUtilities;
 import eu.geopaparazzi.library.util.LibraryConstants;
@@ -123,16 +145,15 @@ import eu.hydrologis.geopaparazzi.database.DaoFredPts;
 import eu.hydrologis.geopaparazzi.database.DaoGpsLog;
 import eu.hydrologis.geopaparazzi.database.DaoImages;
 import eu.hydrologis.geopaparazzi.database.DaoNotes;
+import eu.hydrologis.geopaparazzi.maps.mapsforge.ImportMapsforgeActivity;
 import eu.hydrologis.geopaparazzi.maps.overlays.ArrayGeopaparazziOverlay;
 import eu.hydrologis.geopaparazzi.maptools.tools.MainEditingToolGroup;
 import eu.hydrologis.geopaparazzi.maptools.tools.TapMeasureTool;
 import eu.hydrologis.geopaparazzi.osm.OsmCategoryActivity;
 import eu.hydrologis.geopaparazzi.osm.OsmTagsManager;
 import eu.hydrologis.geopaparazzi.osm.OsmUtilities;
-import eu.hydrologis.geopaparazzi.util.Bookmark;
 import eu.hydrologis.geopaparazzi.util.Constants;
 import eu.hydrologis.geopaparazzi.util.MixareUtilities;
-import eu.hydrologis.geopaparazzi.util.Note;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
@@ -157,7 +178,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     private final int MENU_GO_TO = 6;
     private final int MENU_CENTER_ON_MAP = 7;
     private final int MENU_COMPASS_ID = 8;
-    private final int MENU_SENDDATA_ID = 9;
+    private final int MENU_SHAREPOSITION_ID = 9;
+    private final int MENU_LOADMAPSFORGE_VECTORS_ID = 10;
 
     private static final String ARE_BUTTONSVISIBLE_OPEN = "ARE_BUTTONSVISIBLE_OPEN"; //$NON-NLS-1$
     private DecimalFormat formatter = new DecimalFormat("00"); //$NON-NLS-1$
@@ -415,6 +437,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         overlays.clear();
         overlays.add(dataOverlay);
 
+        readData();
+
         super.onResume();
     }
 
@@ -605,8 +629,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                         return;
                     }
 
-                    Utilities.inputMessageDialog(MapsActivity.this, getString(R.string.set_description),
-                            getString(R.string.osm_insert_a_changeset_description), "", new TextRunnable(){
+                    Utilities.inputMessageDialog(MapsActivity.this,
+                            getString(R.string.osm_insert_a_changeset_description), "", new TextRunnable() {
                                 public void run() {
                                     sync(theTextToRunOn);
                                 }
@@ -684,7 +708,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             int currentZoomLevel = getCurrentZoomLevel();
             setGuiZoomText(currentZoomLevel);
 
-            readData();
+//            readData(); // TODO make sure this is not needed (moved to onResume)
             saveCenterPref();
         }
         super.onWindowFocusChanged(hasFocus);
@@ -776,8 +800,9 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
         menu.add(Menu.NONE, MENU_CENTER_ON_MAP, 7, R.string.center_on_map).setIcon(android.R.drawable.ic_menu_mylocation);
         menu.add(Menu.NONE, MENU_GO_TO, 8, R.string.go_to).setIcon(android.R.drawable.ic_menu_myplaces);
-        menu.add(Menu.NONE, MENU_SENDDATA_ID, 8, R.string.share_position).setIcon(android.R.drawable.ic_menu_send);
+        menu.add(Menu.NONE, MENU_SHAREPOSITION_ID, 8, R.string.share_position).setIcon(android.R.drawable.ic_menu_send);
         menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare).setIcon(R.drawable.icon_datasource);
+        menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, "Import mapsforge data").setIcon(R.drawable.icon_datasource);
     }
 
     public boolean onContextItemSelected(MenuItem item) {
@@ -808,16 +833,16 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     MixareHandler.installMixareFromMarket(this);
                     return true;
                 }
-                float[] nswe = getMapWorldBounds();
 
                 try {
+                    float[] nswe = getMapWorldBounds();
                     MixareUtilities.runRegionOnMixare(this, nswe[0], nswe[1], nswe[2], nswe[3]);
                     return true;
                 } catch (Exception e1) {
                     GPLog.error(this, null, e1); //$NON-NLS-1$
                     return false;
                 }
-            case MENU_SENDDATA_ID:
+            case MENU_SHAREPOSITION_ID:
                 try {
                     if (!NetworkUtilities.isNetworkAvailable(this)) {
                         Utilities.messageDialog(this, R.string.available_only_with_network, null);
@@ -830,6 +855,15 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     GPLog.error(this, null, e1); //$NON-NLS-1$
                     return false;
                 }
+            case MENU_LOADMAPSFORGE_VECTORS_ID: {
+                float[] mapWorldBounds = getMapWorldBounds();
+                int currentZoomLevel = getCurrentZoomLevel();
+                Intent mapsforgeIntent = new Intent(this, ImportMapsforgeActivity.class);
+                mapsforgeIntent.putExtra(LibraryConstants.NSWE, mapWorldBounds);
+                mapsforgeIntent.putExtra(LibraryConstants.ZOOMLEVEL, currentZoomLevel);
+                startActivity(mapsforgeIntent);
+                return true;
+            }
             case MENU_GO_TO: {
                 return goTo();
             }
@@ -850,6 +884,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         }
         return super.onContextItemSelected(item);
     }
+
+
     // THIS IS CURRENTLY DISABLED
     //
     // /**
@@ -1192,37 +1228,29 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         GeoPoint mapCenter = mapView.getMapPosition().getMapCenter();
         final float centerLat = mapCenter.latitudeE6 / LibraryConstants.E6;
         final float centerLon = mapCenter.longitudeE6 / LibraryConstants.E6;
-        final EditText input = new EditText(this);
-        final String newDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date());
-        final String proposedName = "bookmark " + newDate; //$NON-NLS-1$
-        input.setText(proposedName);
-        Builder builder = new AlertDialog.Builder(this).setTitle(R.string.mapsactivity_new_bookmark);
-        builder.setMessage(R.string.mapsactivity_enter_bookmark_name);
-        builder.setView(input);
-        builder.setIcon(android.R.drawable.ic_dialog_info)
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener(){
-                    public void onClick( DialogInterface dialog, int whichButton ) {
-                        // ignore
-                    }
-                }).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                try {
-                    Editable value = input.getText();
-                    String newName = value.toString();
-                    if (newName == null || newName.length() < 1) {
-                        newName = proposedName;
-                    }
 
+        final String newDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date());
+        final String proposedName = "bookmark " + newDate;
+
+        String message = getString(R.string.mapsactivity_enter_bookmark_name);
+        Utilities.inputMessageDialog(this, message, proposedName, new TextRunnable() {
+            @Override
+            public void run() {
+                try {
+                    if (theTextToRunOn.length() < 1) {
+                        theTextToRunOn = proposedName;
+                    }
                     int zoom = mapView.getMapPosition().getZoomLevel();
                     float[] nswe = getMapWorldBounds();
-                    DaoBookmarks.addBookmark(centerLon, centerLat, newName, zoom, nswe[0], nswe[1], nswe[2], nswe[3]);
-                    mapView.invalidateOnUiThread();
+                    DaoBookmarks.addBookmark(centerLon, centerLat, theTextToRunOn, zoom, nswe[0], nswe[1], nswe[2], nswe[3]);
+                    readData();
                 } catch (IOException e) {
                     GPLog.error(this, e.getLocalizedMessage(), e);
                     Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 }
             }
-        }).setCancelable(false).show();
+        });
+
     }
 
     /**

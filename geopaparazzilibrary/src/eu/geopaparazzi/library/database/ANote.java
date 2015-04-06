@@ -15,20 +15,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package eu.geopaparazzi.library.sensors;
+package eu.geopaparazzi.library.database;
+
 /**
- * Listener for GPS.
+ * Utility abstraction.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public interface SensorsManagerListener {
+public abstract class ANote {
+    /**
+     * Flag to define selection or visibility.
+     */
+    protected boolean isChecked = true;
 
     /**
-     * On sensor changed action.
-     * 
-     * @param normalAzimuth normal azimuth.
-     * @param pictureAzimuth picture azimuth.
+     * @return the note id.
      */
-    public void onSensorChanged( double normalAzimuth, double pictureAzimuth );
+    public abstract long getId();
 
+    /**
+     * @return the note name.
+     */
+    public abstract String getName();
+
+    /**
+     * @return the note latitude.
+     */
+    public abstract double getLat();
+
+    /**
+     * @return the note longitude.
+     */
+    public abstract double getLon();
+
+    public void setChecked(boolean isChecked) {
+        this.isChecked = isChecked;
+    }
+
+    public boolean isChecked() {
+        return isChecked;
+    }
 }

@@ -68,6 +68,7 @@ import eu.geopaparazzi.spatialite.database.spatial.core.enums.GeometryType;
 import eu.geopaparazzi.spatialite.database.spatial.core.geometry.GeometryIterator;
 import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
 import eu.geopaparazzi.spatialite.database.spatial.util.Style;
+import eu.hydrologis.geopaparazzi.GeopaparazziApplication;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DaoImages;
 import eu.hydrologis.geopaparazzi.database.DaoNotes;
@@ -175,7 +176,7 @@ public abstract class GeopaparazziOverlay extends Overlay {
         this.itemPosition = new Point();
 
         // cross
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(GeopaparazziApplication.getInstance());
         String crossColorStr = preferences.getString(Constants.PREFS_KEY_CROSS_COLOR, "red"); //$NON-NLS-1$
         int crossColor = ColorUtilities.toColor(crossColorStr);
         String crossWidthStr = preferences.getString(Constants.PREFS_KEY_CROSS_WIDTH, "3"); //$NON-NLS-1$
@@ -268,7 +269,7 @@ public abstract class GeopaparazziOverlay extends Overlay {
             } catch (NumberFormatException e) {
                 // ignore and use default
             }
-            doNotesTextHalo = preferences.getBoolean(Constants.PREFS_KEY_NOTES_TEXT_DOHALO, false);
+            doNotesTextHalo = preferences.getBoolean(Constants.PREFS_KEY_NOTES_TEXT_DOHALO, true);
             textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             textPaint.setStyle(Paint.Style.FILL);
             textPaint.setColor(Color.BLACK);
@@ -821,9 +822,10 @@ public abstract class GeopaparazziOverlay extends Overlay {
                 if (style4Table.enabled == 0 || style4Table.labelvisible == 0) {
                     continue;
                 }
-                if (!canvasEnvelope.intersects(spatialTable.getTableEnvelope())) {
-                    continue;
-                }
+                // TODO enable this again only when updating of bound when adding geometries has been done
+                //                if (!canvasEnvelope.intersects(spatialTable.getTableEnvelope())) {
+                //                    continue;
+                //                }
                 if (drawZoomLevel < style4Table.minZoom || drawZoomLevel > style4Table.maxZoom) {
                     // we do not draw outside of the zoom levels
                     continue;
@@ -868,6 +870,10 @@ public abstract class GeopaparazziOverlay extends Overlay {
                     while (geometryIterator.hasNext()) {
                         Geometry geom = geometryIterator.next();
                         if (geom != null) {
+                            if (!canvasEnvelope.intersects(geom.getEnvelopeInternal())) {
+                                // TODO check the performance impact of this
+                                continue;
+                            }
                             String labelText = geometryIterator.getLabelText();
                             if (labelText == null || labelText.length() == 0) {
                                 continue;

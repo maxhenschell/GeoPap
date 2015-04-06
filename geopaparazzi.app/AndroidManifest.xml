@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="eu.hydrologis.geopaparazzi"
     android:installLocation="auto"
-    android:versionCode="63"
-    android:versionName="4.1.0">
+    android:versionCode="70"
+    android:versionName="4.2.5">
 
     <!-- permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -172,6 +172,9 @@
         <activity android:name="eu.hydrologis.geopaparazzi.util.SecretActivity" />
         <activity android:name=".util.ProjectMetadataActivity" />
         <activity android:name="eu.geopaparazzi.library.util.activities.LogAnalysisActivity" />
+        <activity
+            android:name=".maps.mapsforge.ImportMapsforgeActivity"
+            android:configChanges="orientation|screenSize" />
         <activity android:name="eu.hydrologis.geopaparazzi.tantomapurls.TantoMapurlsActivity" />
         <activity android:name="eu.hydrologis.geopaparazzi.tantomapurls.TantoMapurlsListActivity" />
         <activity android:name="eu.hydrologis.geopaparazzi.maps.NotesPropertiesActivity" />

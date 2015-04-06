@@ -15,33 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package eu.geopaparazzi.library.database;
+package eu.geopaparazzi.library.util;
 
 /**
- * Utility interface.
+ * A runnable that runs on text.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public interface INote {
+public abstract class TextAndBooleanRunnable implements Runnable {
+    protected String theTextToRunOn = ""; //$NON-NLS-1$
+    protected boolean theBooleanToRunOn = false;
 
     /**
-     * @return the note id.
+     * @param text text to set.
      */
-    public long getId();
+    public void setText( String text ) {
+        theTextToRunOn = text;
+    }
 
     /**
-     * @return the note name.
+     * @param check the flag to set.
      */
-    public String getName();
-
-    /**
-     * @return the note latitude.
-     */
-    public double getLat();
-
-    /**
-     * @return the note longitude.
-     */
-    public double getLon();
-
+    public void setTheBoolean(boolean check) {
+        this.theBooleanToRunOn = check;
+    }
 }
