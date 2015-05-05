@@ -42,7 +42,7 @@ public class GeoPapFromDroidDb extends Activity{
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
 
     private static String whichFredDb = null;
-    private static String idKey = null;
+    public static String idKey = null;
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -60,7 +60,7 @@ public class GeoPapFromDroidDb extends Activity{
 
         GPLog.addLogEntry(this, "GPFDDB " + extraParam);
 
-
+        GPLog.addLogEntry(this, "GPFDDB maps extra " + intent.getStringExtra("uid"));
 
         if (extraParam != null) {
             String[] extraParams = extraParam.split(";");
@@ -76,20 +76,6 @@ public class GeoPapFromDroidDb extends Activity{
             // currently mapped items are DDB, Form, ID
             GPLog.addLogEntry(this, "GPFDDB " + extraParsMap);
 
-//        for (String p:extraParams){
-//            GPLog.addLogEntry(this, "GPFDDB extras " + p);
-//        }
-//
-//        if (GPLog.LOG_HEAVY){
-//            GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "GPFDDB intent type " + type); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "GPFDDB intent dataString " + dataString); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "GPFDDB intent fullIntent " + fullIntent); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "GPFDDB intent package " + intentPackage); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "GPFDDB extra " + extraParam); //$NON-NLS-1$
-//        }
-
-            //set base preferences for fred
 
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
@@ -98,6 +84,7 @@ public class GeoPapFromDroidDb extends Activity{
 
             if (extraParsMap.containsKey("ID")){
                 idKey = extraParsMap.get("ID");
+                GPLog.addLogEntry(this, "GPFDDB idkey is" + idKey);
             }
         }
 
@@ -119,9 +106,10 @@ public class GeoPapFromDroidDb extends Activity{
                 GPLog.addLogEntry(this, "GPFDDB starting maps"); //$NON-NLS-1$
             }
 
-            if (idKey != null){
-                intent.putExtra("uid",idKey);
-            }
+//            if (idKey != null){
+//                intent.putExtra("uid",idKey);
+//            }
+//            GPLog.addLogEntry(this, "GPFDDB maps extra " + intent.getStringExtra("uid"));
 
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
@@ -133,9 +121,11 @@ public class GeoPapFromDroidDb extends Activity{
                 GPLog.addLogEntry(this, "GPFDDB starting main"); //$NON-NLS-1$
             }
 
-            if (idKey != null){
-                intent.putExtra("uid",idKey);
-            }
+//            if (idKey != null){
+//                intent.putExtra("uid", idKey);
+//            }
+//
+//            GPLog.addLogEntry(this, "GPFDDB extra" + intent.getStringExtra("uid"));
 
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);

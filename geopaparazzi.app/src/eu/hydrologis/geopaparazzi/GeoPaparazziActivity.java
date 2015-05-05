@@ -166,13 +166,14 @@ public class GeoPaparazziActivity extends Activity {
         //int intentFlags = intent.getFlags();
         String fullIntent = intent.toString();
         String intentPackage = intent.getPackage();
+        String uid = intent.getStringExtra("uid");
 
         if (GPLog.LOG_HEAVY){
             GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent dataString " + dataString); //$NON-NLS-1$
             GPLog.addLogEntry(this, "Received intent fullIntent " + fullIntent); //$NON-NLS-1$
-            GPLog.addLogEntry(this, "Received intent package " + intentPackage); //$NON-NLS-1$
+            GPLog.addLogEntry(this, "Received intent extras are " + uid); //$NON-NLS-1$
         }
     }
 
@@ -330,6 +331,14 @@ public class GeoPaparazziActivity extends Activity {
     protected void onResume() {
         super.onResume();
         checkActionBar();
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String uid = intent.getStringExtra("uid");
+        GPLog.addLogEntry(this, "onResume intent uid extra is " + uid); //$NON-NLS-1$
+
+
+
     }
 
     @Override

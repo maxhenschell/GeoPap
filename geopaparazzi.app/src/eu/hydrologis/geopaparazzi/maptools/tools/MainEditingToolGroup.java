@@ -53,6 +53,7 @@ import eu.geopaparazzi.spatialite.database.spatial.core.daos.DaoSpatialite;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.maps.MapsSupportService;
 import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
+import jsqlite.Database;
 
 /**
  * The main editing tool, which just shows the tool palette.
@@ -265,10 +266,15 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
                                     Utilities.messageDialog(v.getContext(), R.string.geom_incompatible_with_layer, null);
                                     return;
                                 }
+                                //tgh added
+                                //Database database = ((SpatialiteDatabaseHandler) vectorHandler).getDatabase();
+                                //DaoSpatialite.updateFeatureSingleStringAttribute(database, cutExtendProcessedFeature, "guid", "a_UID_value");
                                 break;
+
                             }
                         }
                     }
+
 
                     EditManager.INSTANCE.setActiveTool(null);
                     commitButton.setVisibility(View.GONE);
