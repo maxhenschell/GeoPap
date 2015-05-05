@@ -1,30 +1,18 @@
 package eu.hydrologis.geopaparazzi;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.util.Xml;
-
-import org.xmlpull.v1.XmlPullParser;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import eu.geopaparazzi.library.database.GPLog;
 import eu.hydrologis.geopaparazzi.maps.MapsActivity;
-import eu.hydrologis.geopaparazzi.preferences.FredQuickSets;
-
-import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_DATABASE_TO_LOAD;
 
 /**
  * A way to handle inconsistent activity opening in the activity stack
@@ -53,6 +41,8 @@ public class GeoPapFromDroidDb extends Activity{
     private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
 
+    private static String whichFredDb = null;
+    private static String idKey = null;
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -67,6 +57,10 @@ public class GeoPapFromDroidDb extends Activity{
 
         String extraParam = intent.getStringExtra("parameter");
         // parameter should map as "key: value; key: value; key: value" with or without spaces
+
+        GPLog.addLogEntry(this, "GPFDDB " + extraParam);
+
+
 
         if (extraParam != null) {
             String[] extraParams = extraParam.split(";");
@@ -96,14 +90,16 @@ public class GeoPapFromDroidDb extends Activity{
 //        }
 
             //set base preferences for fred
-            String whichFredDb = null;
+
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
                 setFredPrefs(whichFredDb);
             }
-        }
 
-        //todo if iMap set ID val to a var to ship it off for poly creation
+            if (extraParsMap.containsKey("ID")){
+                idKey = extraParsMap.get("ID");
+            }
+        }
 
         // finally see what's open and send user to the correct spot
         checkMapsActivity();
@@ -123,6 +119,10 @@ public class GeoPapFromDroidDb extends Activity{
                 GPLog.addLogEntry(this, "GPFDDB starting maps"); //$NON-NLS-1$
             }
 
+            if (idKey != null){
+                intent.putExtra("uid",idKey);
+            }
+
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
         } else {
@@ -131,6 +131,10 @@ public class GeoPapFromDroidDb extends Activity{
             if (GPLog.LOG_HEAVY){
                 GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
                 GPLog.addLogEntry(this, "GPFDDB starting main"); //$NON-NLS-1$
+            }
+
+            if (idKey != null){
+                intent.putExtra("uid",idKey);
             }
 
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -149,21 +153,14 @@ public class GeoPapFromDroidDb extends Activity{
 
         GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
 
-//        Resources res = this.getResources();
-//        XmlPullParser parser = res.getXml(R.xml.my_preferences);
-//        AttributeSet attrs = Xml.asAttributeSet(parser);
-//        FredQuickSets fredQuickSets = new FredQuickSets(this, attrs);
-
         changeSettings(ddbName, this);
-
 
     }
 
-    static void changeSettings(String quicksetChoice, Context context){
+    private void changeSettings(String quicksetChoice, Context context){
+        // could not call FredQuickSets.java directly so repeating here, yuk.
 
-        // get the base path
         String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        // set defaults to something real
         String externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
         String externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
         Boolean haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
@@ -179,7 +176,7 @@ public class GeoPapFromDroidDb extends Activity{
         String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
         String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
 
-        if (quicksetChoice == "iMapField") { //$NON-NLS-1$
+        if (quicksetChoice.equals("iMapField")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
@@ -194,7 +191,7 @@ public class GeoPapFromDroidDb extends Activity{
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
-        } else if (quicksetChoice == "Fred-Ecology") { //$NON-NLS-1$
+        } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$ //should be "Fred-Ecology"
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));
@@ -209,7 +206,7 @@ public class GeoPapFromDroidDb extends Activity{
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
-        } else if (quicksetChoice == "Fred-Bot_Zool") { //$NON-NLS-1$
+        } else if (quicksetChoice.equals("Fred-Bot_Zool")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_two_levels));
@@ -228,13 +225,9 @@ public class GeoPapFromDroidDb extends Activity{
             // don't change anything
         }
 
-        //PreferenceManager.setDefaultValues(this, R.xml.my_preferences, false);
-        //final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        GPLog.addLogEntry(this, "GPFDDB external db is " + externalDB);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        //todo: don't know what is appropriate for text and int in following call
-        //SharedPreferences prefs = context.getSharedPreferences("one",0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(EXTERNAL_DB, externalDB);
         editor.putString(EXTERNAL_DB_NAME, externalDBname);
