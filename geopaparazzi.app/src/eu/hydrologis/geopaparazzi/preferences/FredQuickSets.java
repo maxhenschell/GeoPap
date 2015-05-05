@@ -93,12 +93,11 @@ public class FredQuickSets extends DialogPreference {
         quicksetChoicesSpinner.setPadding(15, 5, 15, 5);
         mainLayout.addView(quicksetChoicesSpinner);
 
-        //quicksetChoicesList.add(0, ""); //$NON-NLS-1$
         ArrayList<String> quicksetChoicesList = new ArrayList<String>();
-        // List<String> quicksetChoicesList = new List<String>();
-        quicksetChoicesList.add("iMap Field"); //$NON-NLS-1$
+
+        quicksetChoicesList.add("iMapField"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Ecology"); //$NON-NLS-1$
-        quicksetChoicesList.add("Fred-Bot,Zool"); //$NON-NLS-1$
+        quicksetChoicesList.add("Fred-Bot_Zool"); //$NON-NLS-1$
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
                 quicksetChoicesList);
@@ -142,6 +141,30 @@ public class FredQuickSets extends DialogPreference {
             persistString(quicksetChoice);
         }
 
+        changeSettings(quicksetChoice, context);
+
+    }
+    @Override
+    protected Object onGetDefaultValue( TypedArray a, int index ) {
+        return (a.getString(index));
+    }
+
+    @Override
+    protected void onSetInitialValue( boolean restoreValue, Object defaultValue ) {
+
+        if (restoreValue) {
+            if (defaultValue == null) {
+                quicksetChoice = getPersistedString(""); //$NON-NLS-1$
+            } else {
+                quicksetChoice = getPersistedString(defaultValue.toString());
+            }
+        } else {
+            quicksetChoice = defaultValue.toString();
+        }
+    }
+
+    private void changeSettings(String quicksetChoice, Context context){
+
         // get the base path
         String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         // set defaults to something real
@@ -160,7 +183,7 @@ public class FredQuickSets extends DialogPreference {
         String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
         String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
 
-        if (quicksetChoice == "iMap Field") { //$NON-NLS-1$
+        if (quicksetChoice.equals("iMapField")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
@@ -175,7 +198,7 @@ public class FredQuickSets extends DialogPreference {
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
-        } else if (quicksetChoice == "Fred-Ecology") { //$NON-NLS-1$
+        } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));
@@ -190,7 +213,7 @@ public class FredQuickSets extends DialogPreference {
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
-        } else if (quicksetChoice == "Fred-Bot,Zool") { //$NON-NLS-1$
+        } else if (quicksetChoice.equals("Fred-Bot_Zool")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_two_levels));
@@ -227,23 +250,5 @@ public class FredQuickSets extends DialogPreference {
         editor.putString(COLUMN_SECOND_LEVEL_TIMESTAMP, childTimeStamp);
         editor.commit();
 
-    }
-    @Override
-    protected Object onGetDefaultValue( TypedArray a, int index ) {
-        return (a.getString(index));
-    }
-
-    @Override
-    protected void onSetInitialValue( boolean restoreValue, Object defaultValue ) {
-
-        if (restoreValue) {
-            if (defaultValue == null) {
-                quicksetChoice = getPersistedString(""); //$NON-NLS-1$
-            } else {
-                quicksetChoice = getPersistedString(defaultValue.toString());
-            }
-        } else {
-            quicksetChoice = defaultValue.toString();
-        }
     }
 }

@@ -33,9 +33,11 @@ import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTabl
 import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.SpatialiteDatabaseHandler;
 import eu.geopaparazzi.spatialite.database.spatial.core.enums.GeometryType;
 import eu.geopaparazzi.spatialite.database.spatial.util.SpatialiteUtilities;
+import jsqlite.Callback;
 import jsqlite.Database;
 import jsqlite.Exception;
 import jsqlite.Stmt;
+import jsqlite.TableResult;
 
 
 /**
@@ -335,6 +337,106 @@ public class DaoSpatialite implements ISpatialiteTableAndFieldsNames {
     }
 
     /**
+     * Add a new spatial record by adding a geometry.
+     * <p/>
+     * <p>The other attributes will not be populated.
+     *
+     * @param geometry           the geometry that will create the new record.
+     * @param geometrySrid       the srid of the geometry without the EPSG prefix.
+     * @param spatialVectorTable the table into which to insert the record.
+     * @param fredID             the column ID for the value to be place in
+     * @param fredIDVal          the actual value to be placed. will be placed as text
+     * @throws Exception if something goes wrong.
+     */
+    public static int addNewFeatureByGeometryFredId(Geometry geometry, String geometrySrid, SpatialVectorTable spatialVectorTable,
+                                                    String fredID, String fredIDVal)
+            throws Exception {
+        String uniqueTableName = spatialVectorTable.getUniqueNameBasedOnDbFilePath();
+        Database database = getDatabaseFromUniqueTableName(uniqueTableName);
+        String tableName = spatialVectorTable.getTableName();
+        String geometryFieldName = spatialVectorTable.getGeomName();
+        String srid = spatialVectorTable.getSrid();
+        int geomType = spatialVectorTable.getGeomType();
+        GeometryType geometryType = GeometryType.forValue(geomType);
+        String geometryTypeCast = geometryType.getGeometryTypeCast();
+        String spaceDimensionsCast = geometryType.getSpaceDimensionsCast();
+        String multiSingleCast = geometryType.getMultiSingleCast();
+
+        // get list of non geom fields and default values
+        String nonGeomFieldsNames = "";
+        String nonGeomFieldsValues = "";
+        for (String field : spatialVectorTable.getTableFieldNamesList()) {
+            boolean ignore = SpatialiteUtilities.doIgnoreField(field);
+            if(field.equals(fredID)){ignore = true;};
+            if (!ignore) {
+                DataType tableFieldType = spatialVectorTable.getTableFieldType(field);
+                if (tableFieldType != null) {
+                    nonGeomFieldsNames = nonGeomFieldsNames + "," + field;
+                    nonGeomFieldsValues = nonGeomFieldsValues + "," + tableFieldType.getDefaultValueForSql();
+                }
+            }
+            if(field.equals(fredID)){
+                nonGeomFieldsNames = nonGeomFieldsNames + "," + fredID;
+                nonGeomFieldsValues = nonGeomFieldsValues + ", '" + fredIDVal + "'";
+            }
+        }
+
+        boolean doTransform = true;
+        if (srid.equals(geometrySrid)) {
+            doTransform = false;
+        }
+
+        StringBuilder sbIn = new StringBuilder();
+        sbIn.append("insert into ").append(tableName);
+        sbIn.append(" (");
+        sbIn.append(geometryFieldName);
+        // add fields
+        if (nonGeomFieldsNames.length() > 0) {
+            sbIn.append(nonGeomFieldsNames);
+        }
+        sbIn.append(") values (");
+        if (doTransform)
+            sbIn.append("ST_Transform(");
+        if (multiSingleCast != null)
+            sbIn.append(multiSingleCast).append("(");
+        if (spaceDimensionsCast != null)
+            sbIn.append(spaceDimensionsCast).append("(");
+        if (geometryTypeCast != null)
+            sbIn.append(geometryTypeCast).append("(");
+        sbIn.append("GeomFromText('");
+        sbIn.append(geometry.toText());
+        sbIn.append("' , ");
+        sbIn.append(geometrySrid);
+        sbIn.append(")");
+        if (geometryTypeCast != null)
+            sbIn.append(")");
+        if (spaceDimensionsCast != null)
+            sbIn.append(")");
+        if (multiSingleCast != null)
+            sbIn.append(")");
+        if (doTransform) {
+            sbIn.append(",");
+            sbIn.append(srid);
+            sbIn.append(")");
+        }
+        // add field default values
+        if (nonGeomFieldsNames.length() > 0) {
+            sbIn.append(nonGeomFieldsValues);
+        }
+        sbIn.append(")");
+        String insertQuery = sbIn.toString();
+
+        GPLog.addLogEntry("DAOSP", "insertQ = " + insertQuery);
+        database.exec(insertQuery, null);
+
+
+        return(33);
+
+    }
+
+
+
+    /**
      * Updates the alphanumeric values of a feature in the given database.
      *
      * @param database the database.
@@ -370,6 +472,31 @@ public class DaoSpatialite implements ISpatialiteTableAndFieldsNames {
 
         sbIn.append(" ");
         sbIn.append(valuesPart);
+        sbIn.append(" where ");
+        sbIn.append(SpatialiteUtilities.SPATIALTABLE_ID_FIELD);
+        sbIn.append("=");
+        sbIn.append(feature.getId());
+
+        String updateQuery = sbIn.toString();
+        database.exec(updateQuery, null);
+    }
+
+    /**
+     * Updates the alphanumeric values of single field for a feature in the given database.
+     *
+     * @param database the database.
+     * @param feature  the feature.
+     * @param attributeName the field to update
+     * @param attributeValue the value to put in the field
+     * @throws Exception if something goes wrong.
+     */
+    public static void updateFeatureSingleStringAttribute(Database database, Feature feature, String attributeName, String attributeValue) throws Exception {
+        String tableName = feature.getTableName();
+
+        StringBuilder sbIn = new StringBuilder();
+        sbIn.append("update ").append(tableName);
+        sbIn.append(" set ").append(attributeName);
+        sbIn.append(" ='").append(attributeValue).append("'");
         sbIn.append(" where ");
         sbIn.append(SpatialiteUtilities.SPATIALTABLE_ID_FIELD);
         sbIn.append("=");

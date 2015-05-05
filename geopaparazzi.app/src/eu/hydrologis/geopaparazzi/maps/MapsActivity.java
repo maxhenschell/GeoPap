@@ -225,6 +225,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             GPLog.addLogEntry(this, "MapsActivity.created =  " + created); //$NON-NLS-1$
         }
 
+        // Get intent, action
+        Intent intent = getIntent();
+        String uid = intent.getStringExtra("uid");
+        GPLog.addLogEntry(this, "Maps onCreate intent uid extra is " + uid); //$NON-NLS-1$
+
         mapsSupportBroadcastReceiver = new BroadcastReceiver(){
             public void onReceive( Context context, Intent intent ) {
                 if (intent.hasExtra(MapsSupportService.REREAD_MAP_REQUEST)) {
@@ -406,6 +411,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         if (GPLog.LOG_HEAVY){
             GPLog.addLogEntry(this, "Resuming ... MapsActivity.created =  " + created); //$NON-NLS-1$
         }
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String uid = intent.getStringExtra("uid");
+        GPLog.addLogEntry(this, "Maps onResume intent uid extra is " + uid); //$NON-NLS-1$
 
         // notes type
         boolean doCustom = preferences.getBoolean(Constants.PREFS_KEY_NOTES_CHECK, false);
