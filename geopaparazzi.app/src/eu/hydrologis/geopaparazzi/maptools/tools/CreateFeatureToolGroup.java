@@ -278,11 +278,11 @@ public class CreateFeatureToolGroup implements ToolGroup, OnClickListener, OnTou
                         for (Geometry geometry : geomsList) {
                             //todo: tgh added the fred parts here
                             String fredIDVal = null;
+                            GPLog.addLogEntry(this, "DAOSP idKey is " + GeoPapFromDroidDb.idKey);
                             if(GeoPapFromDroidDb.idKey != null){
                                 fredIDVal = GeoPapFromDroidDb.idKey;
                             }
-
-                            if(fredIDVal.equals(null)) {
+                            if(fredIDVal == null) {
                                 GPLog.addLogEntry(this, "DAOSP .. in newFeatByGeom ..");
                                 DaoSpatialite.addNewFeatureByGeometry(geometry, LibraryConstants.SRID_WGS84_4326,
                                         spatialVectorTableLayer.getSpatialVectorTable());

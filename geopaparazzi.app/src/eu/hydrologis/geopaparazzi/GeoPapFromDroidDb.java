@@ -51,9 +51,7 @@ public class GeoPapFromDroidDb extends Activity{
         String extraParam = intent.getStringExtra("parameter");
         // parameter should map as "key: value; key: value; key: value" with or without spaces
 
-        GPLog.addLogEntry(this, "GPFDDB " + extraParam);
-
-        GPLog.addLogEntry(this, "GPFDDB maps extra " + intent.getStringExtra("uid"));
+        GPLog.addLogEntry(this, "GPFDDB extra string " + extraParam);
 
         if (extraParam != null) {
             String[] extraParams = extraParam.split(";");
@@ -67,18 +65,21 @@ public class GeoPapFromDroidDb extends Activity{
                 extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
             }
             // currently mapped items are DDB, Form, ID
-            GPLog.addLogEntry(this, "GPFDDB " + extraParsMap);
+            GPLog.addLogEntry(this, "GPFDDB extraParsMap " + extraParsMap);
 
 
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
                 setFredPrefs(whichFredDb);
             }
+            GPLog.addLogEntry(this, "GPFDDB db is " + whichFredDb);
+
 
             if (extraParsMap.containsKey("ID")){
                 idKey = extraParsMap.get("ID");
-                GPLog.addLogEntry(this, "GPFDDB idkey is" + idKey);
             }
+
+            GPLog.addLogEntry(this, "GPFDDB idkey is " + idKey);
         }
 
         // finally see what's open and send user to the correct spot
@@ -252,11 +253,12 @@ public class GeoPapFromDroidDb extends Activity{
                 whichFredDb = extraParsMap.get("DDB");
                 setFredPrefs(whichFredDb);
             }
+            GPLog.addLogEntry(this, "GPFDDB onResume ddb is " + whichFredDb);
 
             if (extraParsMap.containsKey("ID")) {
                 idKey = extraParsMap.get("ID");
-                GPLog.addLogEntry(this, "GPFDDB onResume idkey is " + idKey);
             }
+            GPLog.addLogEntry(this, "GPFDDB onResume idkey is " + idKey);
         }
     }
 
