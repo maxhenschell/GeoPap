@@ -48,13 +48,6 @@ public class GeoPapFromDroidDb extends Activity{
         super.onCreate(icicle);
         // Get intent, action
         Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-        String dataString = intent.getDataString();
-        //int intentFlags = intent.getFlags();
-        String fullIntent = intent.toString();
-        String intentPackage = intent.getPackage();
-
         String extraParam = intent.getStringExtra("parameter");
         // parameter should map as "key: value; key: value; key: value" with or without spaces
 
@@ -105,28 +98,16 @@ public class GeoPapFromDroidDb extends Activity{
                 GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
                 GPLog.addLogEntry(this, "GPFDDB starting maps"); //$NON-NLS-1$
             }
-
-//            if (idKey != null){
-//                intent.putExtra("uid",idKey);
-//            }
-//            GPLog.addLogEntry(this, "GPFDDB maps extra " + intent.getStringExtra("uid"));
-
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
+
         } else {
             Intent intent = new Intent(this, GeoPaparazziActivity.class);
-            //Intent intent = new Intent(".GeoPaparazziActivity");
+
             if (GPLog.LOG_HEAVY){
                 GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
                 GPLog.addLogEntry(this, "GPFDDB starting main"); //$NON-NLS-1$
             }
-
-//            if (idKey != null){
-//                intent.putExtra("uid", idKey);
-//            }
-//
-//            GPLog.addLogEntry(this, "GPFDDB extra" + intent.getStringExtra("uid"));
-
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
@@ -242,8 +223,42 @@ public class GeoPapFromDroidDb extends Activity{
         super.onPause();
     }
 
+
     @Override
-    protected void onResume() { super.onResume(); }
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent = getIntent();
+        String extraParam = intent.getStringExtra("parameter");
+
+        if (extraParam != null) {
+            String[] extraParams = extraParam.split(";");
+
+            for (int i = 0; i < extraParams.length; i++)
+                extraParams[i] = extraParams[i].trim();
+
+            Map<String, String> extraParsMap = new LinkedHashMap<String, String>();
+            for (String keyValue : extraParams) {
+                String[] pairs = keyValue.split(" *: *", 2);
+                extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
+            }
+
+            if (extraParsMap.containsKey("DDB")) {
+                whichFredDb = extraParsMap.get("DDB");
+                setFredPrefs(whichFredDb);
+            }
+
+            if (extraParsMap.containsKey("ID")) {
+                idKey = extraParsMap.get("ID");
+                GPLog.addLogEntry(this, "GPFDDB onResume idkey is " + idKey);
+            }
+        }
+    }
 
     @Override
     protected void onStop() { super.onStop(); }

@@ -278,9 +278,7 @@ public class CreateFeatureToolGroup implements ToolGroup, OnClickListener, OnTou
                         for (Geometry geometry : geomsList) {
                             //todo: tgh added the fred parts here
                             String fredIDVal = null;
-                            if(GeoPapFromDroidDb.idKey == null){
-                                fredIDVal = null;
-                            } else {
+                            if(GeoPapFromDroidDb.idKey != null){
                                 fredIDVal = GeoPapFromDroidDb.idKey;
                             }
 
