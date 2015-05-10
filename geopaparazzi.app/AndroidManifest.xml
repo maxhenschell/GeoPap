@@ -119,7 +119,8 @@
 
         <activity
             android:name=".GeoPapFromDroidDb"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:launchMode="singleTask">
         <intent-filter
             android:icon="@drawable/ic_launcher">
             <action android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb" />

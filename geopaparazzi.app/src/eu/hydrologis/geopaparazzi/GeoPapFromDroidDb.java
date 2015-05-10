@@ -51,7 +51,7 @@ public class GeoPapFromDroidDb extends Activity{
         String extraParam = intent.getStringExtra("parameter");
         // parameter should map as "key: value; key: value; key: value" with or without spaces
 
-        GPLog.addLogEntry(this, "GPFDDB extra string " + extraParam);
+        GPLog.addLogEntry(this, "GPFDDB onCreate extra string " + extraParam);
 
         if (extraParam != null) {
             String[] extraParams = extraParam.split(";");
@@ -65,7 +65,7 @@ public class GeoPapFromDroidDb extends Activity{
                 extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
             }
             // currently mapped items are DDB, Form, ID
-            GPLog.addLogEntry(this, "GPFDDB extraParsMap " + extraParsMap);
+            // GPLog.addLogEntry(this, "GPFDDB extraParsMap " + extraParsMap);
 
 
             if (extraParsMap.containsKey("DDB")) {
@@ -123,7 +123,7 @@ public class GeoPapFromDroidDb extends Activity{
      *    ddbName is name of droid db database. Options: iMapField, fredEcol, fredBotZool
      */
 
-        GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
+        //GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
 
         changeSettings(ddbName, this);
 
@@ -221,19 +221,33 @@ public class GeoPapFromDroidDb extends Activity{
 
     @Override
     protected void onPause() {
+
         super.onPause();
+        GPLog.addLogEntry(this, "GPFDDB onPause");
     }
 
+    @Override
+    protected void onRestart() {
+
+        super.onRestart();
+        GPLog.addLogEntry(this, "GPFDDB onRestart");
+    }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        //Intent intent = getIntent();
+        String extraParam = intent.getStringExtra("parameter");
+        // parameter should map as "key: value; key: value; key: value" with or without spaces
+
+        GPLog.addLogEntry(this, "GPFDDB onNewIntent extra string " + extraParam);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        GPLog.addLogEntry(this, "GPFDDB onResume");
         Intent intent = getIntent();
         String extraParam = intent.getStringExtra("parameter");
 
@@ -258,7 +272,7 @@ public class GeoPapFromDroidDb extends Activity{
             if (extraParsMap.containsKey("ID")) {
                 idKey = extraParsMap.get("ID");
             }
-            GPLog.addLogEntry(this, "GPFDDB onResume idkey is " + idKey);
+            // GPLog.addLogEntry(this, "GPFDDB onResume idkey is " + idKey);
         }
     }
 
