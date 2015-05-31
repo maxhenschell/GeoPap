@@ -41,7 +41,7 @@ public class GeoPapFromDroidDb extends Activity{
     private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
 
-    private static String whichFredDb = null;
+    public static String whichFredDb = null;
     public static String idKey = null;
 
     public void onCreate( Bundle icicle ) {

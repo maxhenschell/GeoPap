@@ -214,6 +214,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     private GpsLoggingStatus lastGpsLoggingStatus = GpsLoggingStatus.GPS_DATABASELOGGING_OFF;
     private ImageButton centerOnGps;
     private Button batteryButton;
+    //private Button toggleEditingButton;
     private BroadcastReceiver mapsSupportBroadcastReceiver;
 
     public static boolean created = false;
@@ -372,7 +373,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         final ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         toggleMeasuremodeButton.setOnClickListener(this);
 
-        final Button toggleEditingButton = (Button) findViewById(R.id.toggleEditingButton);
+        Button toggleEditingButton = (Button) findViewById(R.id.toggleEditingButton);
         toggleEditingButton.setOnClickListener(this);
         toggleEditingButton.setOnLongClickListener(this);
 
@@ -395,6 +396,14 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             activeToolGroup.initUI();
             setLeftButtoonsEnablement(true);
         }
+
+        //tgh debugging
+        if (toggleEditingButton != null) {
+            GPLog.addLogEntry("fred","MapsActivity toggle Button NOT Null");
+        } else {
+            GPLog.addLogEntry("fred","MapsActivity toggle Button Is Null");
+        }
+
     }
 
     @Override
@@ -1619,4 +1628,18 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
         super.onStop();
     }
+
+    //tgh added to access from the maineditingtoolgroup
+//    public Button getEditButton(){
+//        final Button toggleEditingButton = (Button) findViewById(R.id.toggleEditingButton);
+//        //tgh debugging
+//        if (toggleEditingButton != null) {
+//            GPLog.addLogEntry("fred","MapsActivity getEditB toggle Button NOT Null");
+//        } else {
+//            GPLog.addLogEntry("fred","MapsActivity getEditB toggle Button Is Null");
+//        }
+//
+//        return toggleEditingButton;
+//    }
+
 }
