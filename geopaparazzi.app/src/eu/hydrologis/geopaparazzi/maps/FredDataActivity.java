@@ -647,7 +647,7 @@ public class FredDataActivity extends Activity {
      * @param sqlDB       the DB to write to
      * @throws IOException if a problem
      */
-    private static boolean writeGpsData(String tbl, String colLat, String colLon, String colNot, String colFirstID,
+    public static boolean writeGpsData(String tbl, String colLat, String colLon, String colNot, String colFirstID,
                                         String lvlOneID, Boolean hasParent, String colSecondID, String lvlTwoID, String ddLat, String ddLon, String note,
                                         SQLiteDatabase sqlDB) throws IOException {
 

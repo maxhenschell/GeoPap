@@ -138,6 +138,7 @@ import eu.geopaparazzi.mapsforge.mapsdirmanager.MapsDirManager;
 import eu.geopaparazzi.spatialite.database.spatial.SpatialDatabasesManager;
 import eu.geopaparazzi.spatialite.database.spatial.activities.DataListActivity;
 import eu.geopaparazzi.spatialite.database.spatial.activities.EditableLayersListActivity;
+import eu.hydrologis.geopaparazzi.GeoPapFromDroidDb;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.dashboard.ActionBar;
 import eu.hydrologis.geopaparazzi.database.DaoBookmarks;
@@ -182,6 +183,8 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     private final int MENU_COMPASS_ID = 8;
     private final int MENU_SHAREPOSITION_ID = 9;
     private final int MENU_LOADMAPSFORGE_VECTORS_ID = 10;
+    private final int MENU_PLACE_PT_GPS = 21;
+    private final int MENU_PLACE_PT_MAP_CENTER = 22;
 
     private static final String ARE_BUTTONSVISIBLE_OPEN = "ARE_BUTTONSVISIBLE_OPEN"; //$NON-NLS-1$
     private DecimalFormat formatter = new DecimalFormat("00"); //$NON-NLS-1$
@@ -344,19 +347,33 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         /*
         * tool buttons
         */
-        ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-        addfreddataButton.setOnClickListener(new Button.OnClickListener(){
-            public void onClick( View v ) {
-                MapViewPosition mapPosition = mapView.getMapPosition();
-                GeoPoint mapCenter = mapPosition.getMapCenter();
-                Intent mapFredIntent = new Intent(MapsActivity.this, FredDataActivity.class);
-                mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivity(mapFredIntent);
-            }
-        });
+
+        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredDb.equals("iMapField")) {
+            // iMapField button here
+            GPLog.addLogEntry("fred", "inside mapsactivity imap button");
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            //GPLog.addLogEntry("fred","addFredButton v id is " + addfreddataButton.getId());
+            addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
+            //GPLog.addLogEntry("fred", "addFred point v id is " + addfreddataButton.getId());
+            addfreddataButton.setOnClickListener(this);
+            registerForContextMenu(addfreddataButton);
+        } else {
+            // regular fred data collection here
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
+            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    GeoPoint mapCenter = mapPosition.getMapCenter();
+                    Intent mapFredIntent = new Intent(MapsActivity.this, FredDataActivity.class);
+                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(mapFredIntent);
+                }
+            });
+        }
 
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         addnotebytagButton.setOnClickListener(this);
@@ -805,27 +822,31 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     @Override
     public void onCreateContextMenu( ContextMenu menu, View v, ContextMenuInfo menuInfo ) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(Menu.NONE, MENU_GPSDATA, 1, R.string.mainmenu_gpsdataselect).setIcon(android.R.drawable.ic_menu_compass);
-        menu.add(Menu.NONE, MENU_DATA, 2, R.string.base_maps).setIcon(android.R.drawable.ic_menu_compass);
-        menu.add(Menu.NONE, MENU_SCALE_ID, 3, R.string.mapsactivity_menu_toggle_scalebar).setIcon(R.drawable.ic_menu_scalebar);
-        menu.add(Menu.NONE, MENU_COMPASS_ID, 4, R.string.mapsactivity_menu_toggle_compass).setIcon(
-                android.R.drawable.ic_menu_compass);
-        boolean centerOnGps = preferences.getBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, false);
-        if (centerOnGps) {
-            menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.disable_center_on_gps).setIcon(
-                    android.R.drawable.ic_menu_mylocation);
-        } else {
-            menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.enable_center_on_gps).setIcon(
-                    android.R.drawable.ic_menu_mylocation);
+        if (v.getId() == R.id.menu_map_btn) {
+            menu.add(Menu.NONE, MENU_GPSDATA, 1, R.string.mainmenu_gpsdataselect).setIcon(android.R.drawable.ic_menu_compass);
+            menu.add(Menu.NONE, MENU_DATA, 2, R.string.base_maps).setIcon(android.R.drawable.ic_menu_compass);
+            menu.add(Menu.NONE, MENU_SCALE_ID, 3, R.string.mapsactivity_menu_toggle_scalebar).setIcon(R.drawable.ic_menu_scalebar);
+            menu.add(Menu.NONE, MENU_COMPASS_ID, 4, R.string.mapsactivity_menu_toggle_compass).setIcon(
+                    android.R.drawable.ic_menu_compass);
+            boolean centerOnGps = preferences.getBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, false);
+            if (centerOnGps) {
+                menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.disable_center_on_gps).setIcon(
+                        android.R.drawable.ic_menu_mylocation);
+            } else {
+                menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.enable_center_on_gps).setIcon(
+                        android.R.drawable.ic_menu_mylocation);
+            }
+
+            menu.add(Menu.NONE, MENU_CENTER_ON_MAP, 7, R.string.center_on_map).setIcon(android.R.drawable.ic_menu_mylocation);
+            menu.add(Menu.NONE, MENU_GO_TO, 8, R.string.go_to).setIcon(android.R.drawable.ic_menu_myplaces);
+            menu.add(Menu.NONE, MENU_SHAREPOSITION_ID, 8, R.string.share_position).setIcon(android.R.drawable.ic_menu_send);
+            menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare).setIcon(R.drawable.icon_datasource);
+            menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, "Import mapsforge data").setIcon(R.drawable.icon_datasource);
+        } else if (v.getId() == R.id.addfreddata){
+            menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 1, "Place point at GPS").setIcon(android.R.drawable.ic_menu_compass);;
+            menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 2, "Place point at map center").setIcon(android.R.drawable.ic_menu_compass);;
         }
-
-        menu.add(Menu.NONE, MENU_CENTER_ON_MAP, 7, R.string.center_on_map).setIcon(android.R.drawable.ic_menu_mylocation);
-        menu.add(Menu.NONE, MENU_GO_TO, 8, R.string.go_to).setIcon(android.R.drawable.ic_menu_myplaces);
-        menu.add(Menu.NONE, MENU_SHAREPOSITION_ID, 8, R.string.share_position).setIcon(android.R.drawable.ic_menu_send);
-        menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare).setIcon(R.drawable.icon_datasource);
-        menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, "Import mapsforge data").setIcon(R.drawable.icon_datasource);
     }
-
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             // THIS IS CURRENTLY DISABLED
@@ -888,20 +909,27 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             case MENU_GO_TO: {
                 return goTo();
             }
-
-        case MENU_CENTER_ON_MAP: {
-            MapsDirManager.getInstance().setMapViewCenter(mapView, null, MapsDirManager.ZOOMTYPE.DEFAULT);
-            saveCenterPref();
-            return true;
-        }
-        case MENU_CENTER_ON_GPS: {
-            boolean centerOnGps = preferences.getBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, false);
-            Editor edit = preferences.edit();
-            edit.putBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, !centerOnGps);
-            edit.commit();
-            return true;
-        }
-        default:
+            case MENU_CENTER_ON_MAP: {
+                MapsDirManager.getInstance().setMapViewCenter(mapView, null, MapsDirManager.ZOOMTYPE.DEFAULT);
+                saveCenterPref();
+                return true;
+            }
+            case MENU_CENTER_ON_GPS: {
+                boolean centerOnGps = preferences.getBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, false);
+                Editor edit = preferences.edit();
+                edit.putBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, !centerOnGps);
+                edit.commit();
+                return true;
+            }
+            case MENU_PLACE_PT_GPS: {
+                GPLog.addLogEntry("fred", "in case gps");
+                return true;
+            }
+            case MENU_PLACE_PT_MAP_CENTER: {
+                GPLog.addLogEntry("fred","in case map center");
+                return true;
+            }
+            default:
         }
         return super.onContextItemSelected(item);
     }
@@ -1429,6 +1457,10 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     }
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.addfreddata:
+                ImageButton fredPtMenuButton = (ImageButton) findViewById(R.id.addfreddata);
+                openContextMenu(fredPtMenuButton);
+                break;
             case R.id.menu_map_btn:
                 Button menuButton = (Button) findViewById(R.id.menu_map_btn);
                 openContextMenu(menuButton);
