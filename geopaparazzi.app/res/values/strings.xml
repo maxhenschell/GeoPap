@@ -313,7 +313,7 @@
     <string name="fred_iMap_first_level_descriptor">noParent</string>
     <string name="fred_iMap_first_level_timestamp">noParent</string>
     <string name="fred_iMap_second_level_table">Observation</string>
-    <string name="fred_iMap_second_level_ID">OID</string>
+    <string name="fred_iMap_second_level_ID">mobsid</string>
     <string name="fred_iMap_column_Lat">State_Y</string>
     <string name="fred_iMap_column_Lon">State_X</string>
     <string name="fred_iMap_column_note">obscomments_long</string>

@@ -146,6 +146,7 @@ import eu.hydrologis.geopaparazzi.database.DaoFredPts;
 import eu.hydrologis.geopaparazzi.database.DaoGpsLog;
 import eu.hydrologis.geopaparazzi.database.DaoImages;
 import eu.hydrologis.geopaparazzi.database.DaoNotes;
+import eu.hydrologis.geopaparazzi.database.DatabaseManager;
 import eu.hydrologis.geopaparazzi.maps.mapsforge.ImportMapsforgeActivity;
 import eu.hydrologis.geopaparazzi.maps.overlays.ArrayGeopaparazziOverlay;
 import eu.hydrologis.geopaparazzi.maptools.tools.MainEditingToolGroup;
@@ -922,11 +923,42 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 return true;
             }
             case MENU_PLACE_PT_GPS: {
-                GPLog.addLogEntry("fred", "in case gps");
+                GPLog.addLogEntry("fred", "in Case gps");
+
+                GeoPoint geoPoint;
+                if (lastGpsPosition != null) {
+                    setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
+                    geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+                            (int) (lastGpsPosition[0] * LibraryConstants.E6));
+                } else {
+                    Utilities.toast(this, "no GPS, using map center", Toast.LENGTH_SHORT);
+                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    geoPoint = mapPosition.getMapCenter();
+                }
+
+                Intent mapFredIMapIntent = new Intent(MapsActivity.this, FredIMapDataActivity.class);
+                mapFredIMapIntent.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+                mapFredIMapIntent.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+                mapFredIMapIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredIMapIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredIMapIntent.addFlags(mapFredIMapIntent.FLAG_ACTIVITY_NO_HISTORY);
+                startActivity(mapFredIMapIntent);
+
                 return true;
             }
             case MENU_PLACE_PT_MAP_CENTER: {
-                GPLog.addLogEntry("fred","in case map center");
+                GPLog.addLogEntry("fred","in Case map center");
+
+                MapViewPosition mapPosition = mapView.getMapPosition();
+                GeoPoint mapCenter = mapPosition.getMapCenter();
+                Intent mapFredIMapIntent = new Intent(MapsActivity.this, FredIMapDataActivity.class);
+                mapFredIMapIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                mapFredIMapIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                mapFredIMapIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredIMapIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredIMapIntent.addFlags(mapFredIMapIntent.FLAG_ACTIVITY_NO_HISTORY);
+                startActivity(mapFredIMapIntent);
+
                 return true;
             }
             default:

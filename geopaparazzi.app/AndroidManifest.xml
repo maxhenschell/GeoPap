@@ -129,14 +129,25 @@
         </intent-filter>
         </activity>
 
-        <activity 	android:name=".maps.FredDataActivity"
-                    android:launchMode="singleTop">
+        <activity
+            android:name=".maps.FredDataActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>            
         </activity>
-        
+        <activity
+            android:name=".maps.FredIMapDataActivity"
+            android:launchMode="singleTop"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_IMAP_WRITECOORDS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+
         <activity android:name=".maps.GpsDataPropertiesActivity">
             <intent-filter>
                 <action android:name="eu.hydrologis.geopaparazzi.maps.GPSLOG_PROPERTIES" />

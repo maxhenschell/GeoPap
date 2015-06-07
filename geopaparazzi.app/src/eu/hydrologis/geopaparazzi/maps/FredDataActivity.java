@@ -647,7 +647,7 @@ public class FredDataActivity extends Activity {
      * @param sqlDB       the DB to write to
      * @throws IOException if a problem
      */
-    public static boolean writeGpsData(String tbl, String colLat, String colLon, String colNot, String colFirstID,
+    private static boolean writeGpsData(String tbl, String colLat, String colLon, String colNot, String colFirstID,
                                         String lvlOneID, Boolean hasParent, String colSecondID, String lvlTwoID, String ddLat, String ddLon, String note,
                                         SQLiteDatabase sqlDB) throws IOException {
 
@@ -721,7 +721,7 @@ public class FredDataActivity extends Activity {
      */
     public boolean doesTableExist(String tableName, SQLiteDatabase sqlDb) {
 
-        Cursor cursor = sqlDb.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"+tableName+"'", null);
+        Cursor cursor = sqlDb.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '" + tableName + "'", null);
         if(cursor!=null) {
             if(cursor.getCount()>0) {
                 cursor.close();
@@ -731,5 +731,4 @@ public class FredDataActivity extends Activity {
         }
         return false;
     }
-
 }

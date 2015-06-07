@@ -65,7 +65,7 @@ public class GeoPapFromDroidDb extends Activity{
                 extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
             }
             // currently mapped items are DDB, Form, ID
-            // GPLog.addLogEntry(this, "GPFDDB extraParsMap " + extraParsMap);
+            GPLog.addLogEntry(this, "GPFDDB extraParsMap " + extraParsMap);
 
 
             if (extraParsMap.containsKey("DDB")) {
