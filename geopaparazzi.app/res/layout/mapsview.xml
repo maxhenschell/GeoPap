@@ -78,13 +78,21 @@
             android:orientation="vertical" >
 
             <ImageButton
-                        android:id="@+id/addfreddata"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/mapview_sides_space"
-                        android:background="@drawable/fredpoint" >
+                android:id="@+id/addfreddata"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/mapview_sides_space"
+                android:background="@drawable/fredpoint" >
             </ImageButton>
-            
+
+            <ImageButton
+                android:id="@+id/gobacktofred"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/mapview_sides_space"
+                android:background="@drawable/ic_editing_goback_fred" >
+            </ImageButton>
+
             <ImageButton
                 android:id="@+id/addnotebytagbutton"
                 android:layout_width="wrap_content"

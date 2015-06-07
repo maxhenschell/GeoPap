@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package eu.hydrologis.geopaparazzi.maps;
 
 import java.io.File;
@@ -41,6 +42,7 @@ import org.mapsforge.android.maps.overlay.OverlayWay;
 import org.mapsforge.core.model.GeoPoint;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
@@ -171,6 +173,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
      * The form update return code.
      */
     public static final int FORMUPDATE_RETURN_CODE = 669;
+    public static final int FRED_POINT_DATA_WRITTEN_RETURN_CODE = 251;
     private final int CONTACT_RETURN_CODE = 670;
     // private static final int MAPSDIR_FILETREE = 777;
 
@@ -188,6 +191,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
     private final int MENU_PLACE_PT_MAP_CENTER = 22;
 
     private static final String ARE_BUTTONSVISIBLE_OPEN = "ARE_BUTTONSVISIBLE_OPEN"; //$NON-NLS-1$
+    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
     private DecimalFormat formatter = new DecimalFormat("00"); //$NON-NLS-1$
     private MapView mapView;
     private SlidingDrawer osmSlidingDrawer;
@@ -288,6 +292,9 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         }
         boolean areButtonsVisible = preferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, true);
 
+        //for fred
+        final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+
         /*
          * create main mapview
         */
@@ -376,8 +383,37 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             });
         }
 
+        ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
+        gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
+              public void onClick(View v) {
+                  // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
+                  ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                  List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+                  if (!tasklist.isEmpty()) {
+                      int nSize = tasklist.size();
+                      boolean appFound = false;
+                      for (int i = 0; i < nSize; i++) {
+                          ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+                          if (GPLog.LOG_HEAVY)
+                              GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+                          if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+                              appFound = true;
+                              am.moveTaskToFront(taskinfo.id, 0);
+                          }
+                      }
+                      if (!appFound) {
+                          Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                          intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                          intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
+                          startActivity(intent);
+                      }
+                  }
+              }
+          });
+
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         addnotebytagButton.setOnClickListener(this);
+
 
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         addBookmarkButton.setOnClickListener(this);
@@ -940,9 +976,9 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 mapFredIMapIntent.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
                 mapFredIMapIntent.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
                 mapFredIMapIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredIMapIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredIMapIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
                 mapFredIMapIntent.addFlags(mapFredIMapIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivity(mapFredIMapIntent);
+                startActivityForResult(mapFredIMapIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
                 return true;
             }
@@ -957,7 +993,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 mapFredIMapIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
                 mapFredIMapIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredIMapIntent.addFlags(mapFredIMapIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivity(mapFredIMapIntent);
+                startActivityForResult(mapFredIMapIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
                 return true;
             }
@@ -1576,6 +1612,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 break;
             case R.id.toggleEditingButton:
                 toggleEditing();
+                break;
+            case R.id.gobacktofred:
+                //todo work here
+
+
                 break;
 
         default:

@@ -87,21 +87,15 @@ public class FredIMapDataActivity extends Activity {
     private Spinner lvlOneSpinner;
     private Spinner lvlTwoSpinner;
 
-    private List<String> firstIDs; // first level information -- e.g. surveysite
     private List<String> secondIDs; // second level information -- e.g. obspoint
     private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
     private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
-    private static String FIRST_LEVEL_TABLE = "FIRST_LEVEL_TABLE";//$NON-NLS-1$
-    private static String COLUMN_FIRST_LEVEL_ID = "COLUMN_FIRST_LEVEL_ID";//$NON-NLS-1$
     private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";//$NON-NLS-1$
-    private static String TABLES_TWO_LEVELS = "TABLES_TWO_LEVELS";//$NON-NLS-1$
     private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
     private static String COLUMN_LON = "COLUMN_LON";//$NON-NLS-1$
     private static String COLUMN_NOTE = "COLUMN_NOTE";//$NON-NLS-1$
-    private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
-    private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String PREFS_KEY_FRED_QUICK_SET = "PREFS_KEY_FRED_QUICK_SET";//$NON-NLS-1$
 
@@ -109,25 +103,16 @@ public class FredIMapDataActivity extends Activity {
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
-        //setContentView(R.layout.fred_writecoords);
-
         // get preferences
         PreferenceManager.setDefaultValues(this, R.xml.my_preferences, false);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
         final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-        //final Boolean haveParentTable = preferences.getBoolean(TABLES_TWO_LEVELS, true);
-        //final String parentTable = preferences.getString(FIRST_LEVEL_TABLE, "default1"); //$NON-NLS-1$
-        //final String parentID = preferences.getString(COLUMN_FIRST_LEVEL_ID, "default2"); //$NON-NLS-1$
-        final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$  
+        final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$
         final String childID = preferences.getString(COLUMN_SECOND_LEVEL_ID, "default4"); //$NON-NLS-1$  
         final String colLat = preferences.getString(COLUMN_LAT, "default5"); //$NON-NLS-1$  
         final String colLon = preferences.getString(COLUMN_LON, "default6"); //$NON-NLS-1$  
-        final String colNote = preferences.getString(COLUMN_NOTE, "default7"); //$NON-NLS-1$  
-
-        //final String parentDescriptorField = preferences.getString(COLUMN_FIRST_LEVEL_DESCRIPTOR, "default8"); //$NON-NLS-1$
-        //final String parentTimeStamp = preferences.getString(COLUMN_FIRST_LEVEL_TIMESTAMP, "default9"); //$NON-NLS-1$
         final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default10"); //$NON-NLS-1$
         final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default11"); //$NON-NLS-1$
         final String quicksetChoice = preferences.getString(PREFS_KEY_FRED_QUICK_SET, "default11"); //$NON-NLS-1$
@@ -141,8 +126,6 @@ public class FredIMapDataActivity extends Activity {
 
         // Get intent, action
         Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
 
         latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
         longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
@@ -156,30 +139,18 @@ public class FredIMapDataActivity extends Activity {
 //            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
 //        }
 
-
-//
-//        if (Intent.ACTION_SEND.equals(action) && type != null) {
-//            if ("text/plain".equals(type)) {
-//                handleSendText(intent); // Handle text being sent
-//            }
-//
-//        } else {
-//            // Handle other intents, such as being started from the home screen
-//        }
-
-
         // first off, check to see if dB exists
         final boolean dbExists = doesDatabaseExist(this, externalDB);
         if (!dbExists) {
             Toast.makeText(getApplicationContext(),
                     "Database does not exist", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
             finish();
+        } else if (recordID == null){
+            Toast.makeText(getApplicationContext(),
+                    "No record ID, can't write point data", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+            finish();
         } else {
-
-            //firstIDs = new ArrayList<String>();
             secondIDs = new ArrayList<String>();
-            // filter child records by parent only if we have a parent table
-
             try {
                 final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
                         .openDatabase(externalDB, null, 2);
@@ -188,12 +159,12 @@ public class FredIMapDataActivity extends Activity {
                     secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null, quicksetChoice);
                     // don't open form if no records
                     if(secondIDs.size()==0){
-                        GPLog.addLogEntry(this, "Fred DB: no records 2 " + quicksetChoice);
+                        GPLog.addLogEntry(this, "Fred DB: no records 1 " + quicksetChoice);
                         Utilities.toast(this,"No records in DB - add one first",Toast.LENGTH_SHORT);
                         finish();
                     }
                 } else {
-                    GPLog.addLogEntry(this, "Fred DB: no Table 3 " + childTable);
+                    GPLog.addLogEntry(this, "Fred DB: no Table 2 " + childTable);
                     Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
                     finish();
                 }
@@ -201,45 +172,50 @@ public class FredIMapDataActivity extends Activity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            }
+        }
 
-            boolean IsWritten = false;
+        boolean IsWritten = false;
+        try {
+            final SQLiteDatabase sqlDB;
+            sqlDB = DatabaseManager.getInstance().getDatabase(FredIMapDataActivity.this)
+                    .openDatabase(externalDB, null, 2);
+            IsWritten = writeGpsData(childTable, colLat, colLon,
+                    childID, recordID, latitude, longitude, sqlDB);
+            sqlDB.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            try {
-                final SQLiteDatabase sqlDB;
-                sqlDB = DatabaseManager.getInstance().getDatabase(FredIMapDataActivity.this)
-                        .openDatabase(externalDB, null, 2);
-                IsWritten = writeGpsData(childTable, colLat, colLon,
-                        childID, recordID, latitude, longitude, sqlDB);
-                sqlDB.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
+        if (IsWritten){
+            Intent resultIntent = new Intent();
+            setResult(Activity.RESULT_OK, resultIntent);
+            finish();
+        }
 
-            if (IsWritten){
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
-                if (!tasklist.isEmpty()) {
-                    int nSize = tasklist.size();
-                    boolean appFound = false;
-                    for (int i = 0; i < nSize; i++) {
-                        ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-                        if (GPLog.LOG_HEAVY)
-                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-                            appFound = true;
-                            am.moveTaskToFront(taskinfo.id, 0);
-                        }
-                    }
-                    if (!appFound) {
-                        Intent intentDDB = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                        intentDDB.addFlags(intentDDB.FLAG_ACTIVITY_NEW_TASK);
-                        intentDDB.putExtra("parameter", externalDBname); //$NON-NLS-1$
-                        startActivity(intentDDB);
-                    }
-                }
-            }
+//        if (IsWritten){
+//            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+//            List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+//            if (!tasklist.isEmpty()) {
+//                int nSize = tasklist.size();
+//                boolean appFound = false;
+//                for (int i = 0; i < nSize; i++) {
+//                    ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+//                    if (GPLog.LOG_HEAVY)
+//                        GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+//                    if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+//                        appFound = true;
+//                        am.moveTaskToFront(taskinfo.id, 0);
+//                    }
+//                }
+//                if (!appFound) {
+//                    Intent intentDDB = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+//                    intentDDB.addFlags(intentDDB.FLAG_ACTIVITY_NEW_TASK);
+//                    intentDDB.putExtra("parameter", externalDBname); //$NON-NLS-1$
+//                    startActivity(intentDDB);
+//                }
+//            }
+//        }
 
 
     }
@@ -275,23 +251,6 @@ public class FredIMapDataActivity extends Activity {
         GPLog.addLogEntry(this, "Destroying Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
 
         super.onDestroy();
-    }
-
-    /**
-     * Checks to see whether to draw position from map or from GPS
-     */
-    private void checkPositionCoordinates() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
-        if (useMapCenterPosition || gpsLocation == null) {
-            latitude = mapCenterLatitude;
-            longitude = mapCenterLongitude;
-            elevation = mapCenterElevation;
-        } else {
-            latitude = gpsLocation[1];
-            longitude = gpsLocation[0];
-            elevation = gpsLocation[2];
-        }
     }
 
     /**
@@ -419,20 +378,6 @@ public class FredIMapDataActivity extends Activity {
     private static boolean doesDatabaseExist(Context context, String dbName) {
         File dbFile = context.getDatabasePath(dbName);
         return dbFile.exists();
-    }
-
-    /**
-     * string handling for receiving the intent
-     *
-     * @param intent is the intent received
-     */
-    void handleSendText(Intent intent) {
-        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-        if (sharedText != null) {
-            // Update UI to reflect text being shared
-            if (GPLog.LOG_HEAVY)
-                GPLog.addLogEntry("Intent extra text ", sharedText); //$NON-NLS-1$
-        }
     }
 
     /**
