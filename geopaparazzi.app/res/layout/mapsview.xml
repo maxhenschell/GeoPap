@@ -90,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/mapview_sides_space"
-                android:background="@drawable/ic_editing_goback_fred" >
+                android:background="@drawable/fred_go_back" >
             </ImageButton>
 
             <ImageButton

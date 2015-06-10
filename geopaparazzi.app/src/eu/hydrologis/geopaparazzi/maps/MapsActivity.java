@@ -360,11 +360,18 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             // iMapField button here
             GPLog.addLogEntry("fred", "inside mapsactivity imap button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-            //GPLog.addLogEntry("fred","addFredButton v id is " + addfreddataButton.getId());
+            // only enable if Observation, otherwise user might write xy to earlier obs?
+            if(GeoPapFromDroidDb.whichFredForm.equals("Observation")){
+                GPLog.addLogEntry("Fred","form is observation");
+                addfreddataButton.setEnabled(true);
+                addfreddataButton.setOnClickListener(this);
+                registerForContextMenu(addfreddataButton);
+            } else {
+                GPLog.addLogEntry("Fred","form is NOT observation");
+                addfreddataButton.setEnabled(false);
+            }
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
-            //GPLog.addLogEntry("fred", "addFred point v id is " + addfreddataButton.getId());
-            addfreddataButton.setOnClickListener(this);
-            registerForContextMenu(addfreddataButton);
+
         } else {
             // regular fred data collection here
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
@@ -513,6 +520,42 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         overlays.add(dataOverlay);
 
         readData();
+
+        //reset this button as settings could have changed on resume (re-entry)
+        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredDb.equals("iMapField")) {
+            // iMapField button here
+            GPLog.addLogEntry("fred", "inside mapsactivity imap button");
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            // only enable if Observation, otherwise user might write xy to earlier obs?
+            if(GeoPapFromDroidDb.whichFredForm.equals("Observation")){
+                GPLog.addLogEntry("Fred","form is observation");
+                addfreddataButton.setEnabled(true);
+                addfreddataButton.setOnClickListener(this);
+                registerForContextMenu(addfreddataButton);
+            } else {
+                GPLog.addLogEntry("Fred","form is NOT observation");
+                addfreddataButton.setEnabled(false);
+            }
+            addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
+
+        } else {
+            // regular fred data collection here
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
+            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    GeoPoint mapCenter = mapPosition.getMapCenter();
+                    Intent mapFredIntent = new Intent(MapsActivity.this, FredDataActivity.class);
+                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(mapFredIntent);
+                }
+            });
+        }
+
 
         super.onResume();
     }

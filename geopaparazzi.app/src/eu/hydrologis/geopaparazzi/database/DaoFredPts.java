@@ -91,10 +91,19 @@ public class DaoFredPts {
                             double lat = c.getDouble(0);
                             String text = c.getString(2);
                             text = text + "\n";
-                            OverlayItem pt = new OverlayItem(new GeoPoint(lat, lon), null, text, marker);
-                            fredPts.add(pt);
+                            //GPLog.addLogEntry("fredPts","coords are lon lat: " + String.valueOf(lon) + " " + String.valueOf(lat));
+                            try {
+                                GeoPoint gp = new GeoPoint(lat, lon);
+                                OverlayItem pt = new OverlayItem(gp, null, text, marker);
+                                fredPts.add(pt);
+                            } catch (IllegalArgumentException e) {
+                                GPLog.addLogEntry(context, "Exception during Fred geopoints query and display");
+                                Utilities.toast(context, "At least one Fred point out of possible range", Toast.LENGTH_SHORT);
+                            }
+
                             c.moveToNext();
                         }
+
                     } finally {
                         c.close();
                     }

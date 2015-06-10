@@ -612,7 +612,7 @@ public class FredDataActivity extends Activity {
 
         String asColumnsToReturn[] = {NoteCol};
         if (strWhere != null) {
-            strWhere = IdCol + "=" + strWhere; //$NON-NLS-1$
+            strWhere = IdCol + "= '" + strWhere + "'"; //$NON-NLS-1$
         }
 
         Cursor c = null;

@@ -43,6 +43,7 @@ public class GeoPapFromDroidDb extends Activity{
 
     public static String whichFredDb = null;
     public static String idKey = null;
+    public static String whichFredForm = null;
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -70,8 +71,12 @@ public class GeoPapFromDroidDb extends Activity{
 
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
+                if(whichFredDb.equals("iMapInvasivesField")){
+                    whichFredDb = "iMapField";
+                }
                 setFredPrefs(whichFredDb);
             }
+
             GPLog.addLogEntry(this, "GPFDDB db is " + whichFredDb);
 
 
@@ -80,6 +85,12 @@ public class GeoPapFromDroidDb extends Activity{
             }
 
             GPLog.addLogEntry(this, "GPFDDB idkey is " + idKey);
+
+            if (extraParsMap.containsKey("Form")){
+                whichFredForm = extraParsMap.get("Form");
+            }
+
+            GPLog.addLogEntry(this, "GPFDDB Form is " + whichFredForm);
         }
 
         // finally see what's open and send user to the correct spot
@@ -265,6 +276,9 @@ public class GeoPapFromDroidDb extends Activity{
 
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
+                if(whichFredDb.equals("iMapInvasivesField")){
+                    whichFredDb = "iMapField";
+                }
                 setFredPrefs(whichFredDb);
             }
             GPLog.addLogEntry(this, "GPFDDB onResume ddb is " + whichFredDb);
