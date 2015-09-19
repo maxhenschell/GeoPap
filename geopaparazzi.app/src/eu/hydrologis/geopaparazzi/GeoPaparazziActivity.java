@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import eu.geopaparazzi.library.GPApplication;
@@ -516,6 +517,14 @@ public class GeoPaparazziActivity extends Activity {
             GeopaparazziApplication.getInstance().getDatabase();
             checkMapsAndLogsVisibility();
 
+            HashMap<String, String> projectMetadata = DaoMetadata.getProjectMetadata();
+            String projectName = projectMetadata.get(TableDescriptions.MetadataTableFields.KEY_NAME.getFieldName());
+            if (projectName.length() == 0) {
+                File dbFile = resourcesManager.getDatabaseFile();
+                String dbName = FileUtilities.getNameWithoutExtention(dbFile);
+                DaoMetadata.setValue(TableDescriptions.MetadataTableFields.KEY_NAME.getFieldName(), dbName);
+            }
+
             initMapsDirManager();
         } catch (Exception e) {
             Log.e(getClass().getSimpleName(), e.getLocalizedMessage(), e);
@@ -631,6 +640,7 @@ public class GeoPaparazziActivity extends Activity {
                                             GpsServiceUtilities.stopDatabaseLogging(appContext);
                                             logButton.setImageResource(R.drawable.dashboard_log_item);
                                             actionBar.checkLogging();
+                                            GpsServiceUtilities.triggerBroadcast(GeoPaparazziActivity.this);
                                         }
                                     });
                                 }
@@ -658,6 +668,7 @@ public class GeoPaparazziActivity extends Activity {
                                                         DefaultHelperClasses.GPSLOG_HELPER_CLASS);
                                                 actionBar.checkLogging();
                                                 DataManager.getInstance().setLogsVisible(true);
+                                                GpsServiceUtilities.triggerBroadcast(GeoPaparazziActivity.this);
                                             }
                                         });
                                     }
