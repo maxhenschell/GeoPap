@@ -37,7 +37,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.mapsforge.android.maps.MapView;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,15 +62,11 @@ import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
 import jsqlite.Database;
 
 /**
- * The main editing tool, which just shows the tool palette.
+ * The main polygon layer editing tool group, which just shows the tool palette.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-
-@TargetApi(11)
-
-public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouchListener {
-
+public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, OnTouchListener {
     private ImageButton selectAllButton;
     private MapView mapView;
 
@@ -81,7 +76,6 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
     private ImageButton cutButton;
     private ImageButton extendButton;
     private ImageButton commitButton;
-    private ImageButton logInfoButton;
 
     private ImageButton backToFredButton;
 
@@ -94,7 +88,7 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
      *
      * @param mapView the map view.
      */
-    public MainEditingToolGroup(MapView mapView) {
+    public PolygonMainEditingToolGroup(MapView mapView) {
         this.mapView = mapView;
 
         LinearLayout parent = EditManager.INSTANCE.getToolsLayout();
@@ -170,14 +164,6 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
         selectAllButton.setOnTouchListener(this);
         parent.addView(selectAllButton);
 
-        logInfoButton = new ImageButton(context);
-        logInfoButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        logInfoButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_gpsloginfo_off));
-        logInfoButton.setPadding(0, padding, 0, padding);
-        logInfoButton.setOnClickListener(this);
-        logInfoButton.setOnTouchListener(this);
-        parent.addView(logInfoButton);
-
         if (editLayer != null) {
             undoButton = new ImageButton(context);
             undoButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
@@ -247,24 +233,24 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
                 EditManager.INSTANCE.setActiveTool(activeTool);
             }
         } else if (v == createFeatureButton) {
-            ToolGroup createFeatureToolGroup = new CreateFeatureToolGroup(mapView);
+            ToolGroup createFeatureToolGroup = new PolygonCreateFeatureToolGroup(mapView);
             EditManager.INSTANCE.setActiveToolGroup(createFeatureToolGroup);
         } else if (v == cutButton) {
             Tool currentTool = EditManager.INSTANCE.getActiveTool();
-            if (currentTool != null && currentTool instanceof CutExtendTool) {
+            if (currentTool != null && currentTool instanceof PolygonCutExtendTool) {
                 // if the same tool is re-selected, it is disabled
                 EditManager.INSTANCE.setActiveTool(null);
             } else {
-                Tool activeTool = new CutExtendTool(mapView, true);
+                Tool activeTool = new PolygonCutExtendTool(mapView, true);
                 EditManager.INSTANCE.setActiveTool(activeTool);
             }
         } else if (v == extendButton) {
             Tool currentTool = EditManager.INSTANCE.getActiveTool();
-            if (currentTool != null && currentTool instanceof CutExtendTool) {
+            if (currentTool != null && currentTool instanceof PolygonCutExtendTool) {
                 // if the same tool is re-selected, it is disabled
                 EditManager.INSTANCE.setActiveTool(null);
             } else {
-                Tool activeTool = new CutExtendTool(mapView, false);
+                Tool activeTool = new PolygonCutExtendTool(mapView, false);
                 EditManager.INSTANCE.setActiveTool(activeTool);
             }
         } else if (v == commitButton) {
@@ -351,28 +337,6 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
                     context.startActivity(intent);
                 }
             }
-            //Button toggleEditingButton = (Button) MapsActivity().getEditButton();
-//            if (toggleEditingButton != null) {
-//                GPLog.addLogEntry("fred", "toggle Button Is NOT Null");
-//                //toggleEditingButton.performClick();
-//            } else {
-//                GPLog.addLogEntry("fred","toggle Button Is Null");
-//            }
-
-        } else if (v == logInfoButton) {
-            Tool currentTool = EditManager.INSTANCE.getActiveTool();
-            if (currentTool != null && currentTool instanceof GpsLogInfoTool) {
-                // if the same tool is re-selected, it is disabled
-                EditManager.INSTANCE.setActiveTool(null);
-            } else {
-                Tool activeTool = null;
-                try {
-                    activeTool = new GpsLogInfoTool(mapView);
-                    EditManager.INSTANCE.setActiveTool(activeTool);
-                } catch (IOException e) {
-                    GPLog.error(this, "Activating gpslog tool", e);
-                }
-            }
         }
 
         handleToolIcons(v);
@@ -397,13 +361,6 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
                         .setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_editing_select_all_active));
             } else {
                 selectAllButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_editing_select_all));
-            }
-        if (logInfoButton != null)
-            if (currentTool != null && activeToolButton == logInfoButton) {
-                logInfoButton
-                        .setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_gpsloginfo_on));
-            } else {
-                logInfoButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_gpsloginfo_off));
             }
         if (cutButton != null)
             if (currentTool != null && activeToolButton == cutButton) {
@@ -437,8 +394,8 @@ public class MainEditingToolGroup implements ToolGroup, OnClickListener, OnTouch
     }
 
     public void onToolFinished(Tool tool) {
-        if (tool instanceof CutExtendTool) {
-            CutExtendTool cutExtendTool = (CutExtendTool) tool;
+        if (tool instanceof PolygonCutExtendTool) {
+            PolygonCutExtendTool cutExtendTool = (PolygonCutExtendTool) tool;
             Feature[] processedFeatures = cutExtendTool.getProcessedFeatures();
             cutExtendProcessedFeature = processedFeatures[0];
             cutExtendFeatureToRemove = processedFeatures[1];

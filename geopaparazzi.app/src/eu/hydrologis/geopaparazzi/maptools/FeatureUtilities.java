@@ -88,7 +88,7 @@ public class FeatureUtilities {
 
     /**
      * Build the features given by a query.
-     * <p/>
+     * <p>
      * <b>Note that it is mandatory that the first item of the
      * query is the id of the feature, which can be used at any time
      * to update the feature in the db.
@@ -133,7 +133,7 @@ public class FeatureUtilities {
 
     /**
      * Build the features given by a query.
-     * <p/>
+     * <p>
      * <p><b>Note that this query needs to have at least 2 arguments, the first
      * being the ROWID and the last the geometry. Else if will fail.</b>
      *
@@ -238,50 +238,48 @@ public class FeatureUtilities {
         int geometryTypeInt = GeometryType.forValue(geometryTypeStr);
         GeometryType geometryType = GeometryType.forValue(geometryTypeInt);
         DrawableShape shape = shapeWriter.toShape(geom);
-        switch( geometryType ) {
-        // case POINT_XY:
-        // case POINT_XYM:
-        // case POINT_XYZ:
-        // case POINT_XYZM:
-        // case MULTIPOINT_XY:
-        // case MULTIPOINT_XYM:
-        // case MULTIPOINT_XYZ:
-        // case MULTIPOINT_XYZM: {
-        // if (selectedGeometryPaintFill != null)
-        // shape.fill(canvas, selectedGeometryPaintFill);
-        // if (selectedGeometryPaintStroke != null)
-        // shape.draw(canvas, selectedGeometryPaintStroke);
-        // //
-        // GPLog.androidLog(-1,"GeopaparazziOverlay.drawGeometry geometry_type["+s_geometry_type+"]: ["+i_geometry_type+"]");
-        // }
-        // break;
-        // case LINESTRING_XY:
-        // case LINESTRING_XYM:
-        // case LINESTRING_XYZ:
-        // case LINESTRING_XYZM:
-        // case MULTILINESTRING_XY:
-        // case MULTILINESTRING_XYM:
-        // case MULTILINESTRING_XYZ:
-        // case MULTILINESTRING_XYZM: {
-        // if (selectedGeometryPaintStroke != null)
-        // shape.draw(canvas, selectedGeometryPaintStroke);
-        // }
-        // break;
-        case POLYGON_XY:
-        case POLYGON_XYM:
-        case POLYGON_XYZ:
-        case POLYGON_XYZM:
-        case MULTIPOLYGON_XY:
-        case MULTIPOLYGON_XYM:
-        case MULTIPOLYGON_XYZ:
-        case MULTIPOLYGON_XYZM: {
-            if (geometryPaintFill != null)
-                shape.fill(canvas, geometryPaintFill);
-            if (geometryPaintStroke != null)
-                shape.draw(canvas, geometryPaintStroke);
-        }
+        switch (geometryType) {
+            // case POINT_XY:
+            // case POINT_XYM:
+            // case POINT_XYZ:
+            // case POINT_XYZM:
+            // case MULTIPOINT_XY:
+            // case MULTIPOINT_XYM:
+            // case MULTIPOINT_XYZ:
+            // case MULTIPOINT_XYZM: {
+            // if (selectedGeometryPaintFill != null)
+            // shape.fill(canvas, selectedGeometryPaintFill);
+            // if (selectedGeometryPaintStroke != null)
+            // shape.draw(canvas, selectedGeometryPaintStroke);
+            // //
+            // GPLog.androidLog(-1,"GeopaparazziOverlay.drawGeometry geometry_type["+s_geometry_type+"]: ["+i_geometry_type+"]");
+            // }
+            // break;
+            case LINESTRING_XY:
+            case LINESTRING_XYM:
+            case LINESTRING_XYZ:
+            case LINESTRING_XYZM:
+            case MULTILINESTRING_XY:
+            case MULTILINESTRING_XYM:
+            case MULTILINESTRING_XYZ:
+            case MULTILINESTRING_XYZM: {
+                if (geometryPaintStroke != null)
+                    shape.draw(canvas, geometryPaintStroke);
+            }
             break;
-        default:
+            case POLYGON_XY:
+            case POLYGON_XYM:
+            case POLYGON_XYZ:
+            case POLYGON_XYZM:
+            case MULTIPOLYGON_XY:
+            case MULTIPOLYGON_XYM:
+            case MULTIPOLYGON_XYZ:
+            case MULTIPOLYGON_XYZM: {
+                if (geometryPaintFill != null)
+                    shape.fill(canvas, geometryPaintFill);
+                if (geometryPaintStroke != null)
+                    shape.draw(canvas, geometryPaintStroke);
+            }
             break;
         }
     }
@@ -303,7 +301,7 @@ public class FeatureUtilities {
 
     /**
      * Tries to split an invalid polygon in its {@link GeometryCollection}.
-     * <p/>
+     * <p>
      * <p>Based on JTSBuilder code.
      *
      * @param invalidPolygon the invalid polygon.
@@ -350,7 +348,7 @@ public class FeatureUtilities {
      * Checks if the text is a vievable string (ex urls or files) and if yes, opens the intent.
      *
      * @param context the context to use.
-     * @param text the text to check.
+     * @param text    the text to check.
      * @return <code>true</code> if the text is viewable.
      */
     public static void viewIfApplicable( Context context, String text ) {

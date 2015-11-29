@@ -44,7 +44,6 @@ import org.mapsforge.core.model.GeoPoint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -69,10 +68,8 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
-import android.text.Editable;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -85,7 +82,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -121,6 +117,7 @@ import java.util.List;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.features.EditManager;
 import eu.geopaparazzi.library.features.EditingView;
+import eu.geopaparazzi.library.features.ILayer;
 import eu.geopaparazzi.library.features.Tool;
 import eu.geopaparazzi.library.features.ToolGroup;
 import eu.geopaparazzi.library.gps.GpsLoggingStatus;
@@ -156,7 +153,9 @@ import eu.hydrologis.geopaparazzi.database.DatabaseManager;
 import eu.hydrologis.geopaparazzi.maps.mapsforge.ImportMapsforgeActivity;
 import eu.hydrologis.geopaparazzi.maps.overlays.ArrayGeopaparazziOverlay;
 import eu.hydrologis.geopaparazzi.maptools.core.MapTool;
-import eu.hydrologis.geopaparazzi.maptools.tools.MainEditingToolGroup;
+import eu.hydrologis.geopaparazzi.maptools.tools.GpsLogInfoTool;
+import eu.hydrologis.geopaparazzi.maptools.tools.LineMainEditingToolGroup;
+import eu.hydrologis.geopaparazzi.maptools.tools.PolygonMainEditingToolGroup;
 import eu.hydrologis.geopaparazzi.maptools.tools.TapMeasureTool;
 import eu.hydrologis.geopaparazzi.osm.OsmCategoryActivity;
 import eu.hydrologis.geopaparazzi.osm.OsmTagsManager;
@@ -434,21 +433,20 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         addnotebytagButton.setOnClickListener(this);
+        addnotebytagButton.setOnLongClickListener(this);
 
 
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         addBookmarkButton.setOnClickListener(this);
-
-        ImageButton listNotesButton = (ImageButton) findViewById(R.id.listnotesbutton);
-        listNotesButton.setOnClickListener(this);
-
-        ImageButton listBookmarksButton = (ImageButton) findViewById(R.id.bookmarkslistbutton);
-        listBookmarksButton.setOnClickListener(this);
+        addBookmarkButton.setOnLongClickListener(this);
 
         final ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         toggleMeasuremodeButton.setOnClickListener(this);
 
-        Button toggleEditingButton = (Button) findViewById(R.id.toggleEditingButton);
+        final ImageButton toggleLogInfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
+        toggleLogInfoButton.setOnClickListener(this);
+
+        final Button toggleEditingButton = (Button) findViewById(R.id.toggleEditingButton);
         toggleEditingButton.setOnClickListener(this);
         toggleEditingButton.setOnLongClickListener(this);
 
@@ -698,6 +696,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 GeoPoint geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
                         (int) (lastGpsPosition[0] * LibraryConstants.E6));
                 dataOverlay.setGpsPosition(geoPoint, 0f, lastGpsServiceStatus, lastGpsLoggingStatus);
+                dataOverlay.requestRedraw();
             }
             // dataOverlay.requestRedraw();
         } catch (IOException e1) {
@@ -916,7 +915,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
     /**
      * Set current Zoom level in gui and MapsDirManager.
-     * <p/>
+     * <p>
      * <p>checking is done to insure that the new Zoom is
      * inside the supported min/max Zoom-levels
      * <p>the present value will be retained if invalid
@@ -1532,7 +1531,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
     /**
      * Set center coords and zoom ready for the {@link MapsActivity} to focus again.
-     * <p/>
+     * <p>
      * <p>In {@link MapsActivity} the {@link MapsActivity#onWindowFocusChanged(boolean)}
      * will take care to zoom properly.
      *
@@ -1654,7 +1653,38 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             finish();
         }
     }
+
+    public boolean onLongClick(View v) {
+        switch (v.getId()) {
+            case R.id.toggleEditingButton:
+                Intent editableLayersIntent = new Intent(MapsActivity.this, EditableLayersListActivity.class);
+                startActivity(editableLayersIntent);
+                return true;
+            case R.id.addnotebytagbutton:
+                Intent intent = new Intent(MapsActivity.this, NotesListActivity.class);
+                startActivityForResult(intent, ZOOM_RETURN_CODE);
+                break;
+            case R.id.addbookmarkbutton:
+                intent = new Intent(MapsActivity.this, BookmarksListActivity.class);
+                startActivityForResult(intent, ZOOM_RETURN_CODE);
+                break;
+            case R.id.menu_map_btn:
+                boolean areButtonsVisible = preferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, false);
+                setAllButtoonsEnablement(!areButtonsVisible);
+                Editor edit = preferences.edit();
+                edit.putBoolean(ARE_BUTTONSVISIBLE_OPEN, !areButtonsVisible);
+                edit.commit();
+                return true;
+            default:
+                break;
+        }
+        return false;
+    }
+
     public void onClick(View v) {
+        boolean isInNonClickableMode;
+        ImageButton toggleMeasuremodeButton;
+        ImageButton toggleLoginfoButton;
         switch (v.getId()) {
             case R.id.addfreddata:
                 ImageButton fredPtMenuButton = (ImageButton) findViewById(R.id.addfreddata);
@@ -1726,27 +1756,39 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             case R.id.addbookmarkbutton:
                 addBookmark();
                 break;
-            case R.id.listnotesbutton:
-                Intent intent = new Intent(MapsActivity.this, NotesListActivity.class);
-                startActivityForResult(intent, ZOOM_RETURN_CODE);
-                break;
-            case R.id.bookmarkslistbutton:
-                intent = new Intent(MapsActivity.this, BookmarksListActivity.class);
-                startActivityForResult(intent, ZOOM_RETURN_CODE);
-                break;
             case R.id.togglemeasuremodebutton:
-                boolean isInMeasureMode = !mapView.isClickable();
-                final ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
-                if (!isInMeasureMode) {
+                isInNonClickableMode = !mapView.isClickable();
+                toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
+                toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
+                if (!isInNonClickableMode) {
                     toggleMeasuremodeButton.setBackgroundResource(R.drawable.measuremode_on);
-                } else {
-                    toggleMeasuremodeButton.setBackgroundResource(R.drawable.measuremode);
-                }
-                if (isInMeasureMode) {
-                    EditManager.INSTANCE.setActiveTool(null);
-                } else {
+                    toggleLoginfoButton.setBackgroundResource(R.drawable.ic_loginfo_off);
+
                     TapMeasureTool measureTool = new TapMeasureTool(mapView);
                     EditManager.INSTANCE.setActiveTool(measureTool);
+                } else {
+                    toggleMeasuremodeButton.setBackgroundResource(R.drawable.measuremode);
+
+                    EditManager.INSTANCE.setActiveTool(null);
+                }
+                break;
+            case R.id.toggleloginfobutton:
+                isInNonClickableMode = !mapView.isClickable();
+                toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
+                toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
+                if (!isInNonClickableMode) {
+                    toggleLoginfoButton.setBackgroundResource(R.drawable.ic_loginfo_on);
+                    toggleMeasuremodeButton.setBackgroundResource(R.drawable.measuremode);
+
+                    try {
+                        GpsLogInfoTool measureTool = new GpsLogInfoTool(mapView);
+                        EditManager.INSTANCE.setActiveTool(measureTool);
+                    } catch (IOException e) {
+                        GPLog.error(this, null, e);
+                    }
+                } else {
+                    toggleLoginfoButton.setBackgroundResource(R.drawable.ic_loginfo_off);
+                    EditManager.INSTANCE.setActiveTool(null);
                 }
                 break;
             case R.id.toggleEditingButton:
@@ -1769,7 +1811,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         if (activeToolGroup == null) {
             toggleEditingButton.setBackgroundResource(R.drawable.ic_toggle_editing_on);
 
-            activeToolGroup = new MainEditingToolGroup(mapView);
+            ILayer editLayer = EditManager.INSTANCE.getEditLayer();
+            if (editLayer.isPolygon())
+                activeToolGroup = new PolygonMainEditingToolGroup(mapView);
+            else if (editLayer.isLine())
+                activeToolGroup = new LineMainEditingToolGroup(mapView);
             EditManager.INSTANCE.setActiveToolGroup(activeToolGroup);
             setLeftButtoonsEnablement(false);
         } else {
@@ -1784,22 +1830,19 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
-        ImageButton listNotesButton = (ImageButton) findViewById(R.id.listnotesbutton);
-        ImageButton listBookmarksButton = (ImageButton) findViewById(R.id.bookmarkslistbutton);
+        ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
         ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         if (enable) {
             addfreddataButton.setVisibility(View.VISIBLE);
             addnotebytagButton.setVisibility(View.VISIBLE);
             addBookmarkButton.setVisibility(View.VISIBLE);
-            listNotesButton.setVisibility(View.VISIBLE);
-            listBookmarksButton.setVisibility(View.VISIBLE);
+            toggleLoginfoButton.setVisibility(View.VISIBLE);
             toggleMeasuremodeButton.setVisibility(View.VISIBLE);
         } else {
             addfreddataButton.setVisibility(View.GONE);
             addnotebytagButton.setVisibility(View.GONE);
             addBookmarkButton.setVisibility(View.GONE);
-            listNotesButton.setVisibility(View.GONE);
-            listBookmarksButton.setVisibility(View.GONE);
+            toggleLoginfoButton.setVisibility(View.GONE);
             toggleMeasuremodeButton.setVisibility(View.GONE);
         }
     }
@@ -1808,8 +1851,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
-        ImageButton listNotesButton = (ImageButton) findViewById(R.id.listnotesbutton);
-        ImageButton listBookmarksButton = (ImageButton) findViewById(R.id.bookmarkslistbutton);
+        ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
         ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         Button zoomInButton = (Button) findViewById(R.id.zoomin);
         TextView zoomLevelTextview = (TextView) findViewById(R.id.zoomlevel);
@@ -1823,8 +1865,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         addfreddataButton.setVisibility(visibility);
         addnotebytagButton.setVisibility(visibility);
         addBookmarkButton.setVisibility(visibility);
-        listNotesButton.setVisibility(visibility);
-        listBookmarksButton.setVisibility(visibility);
+        toggleLoginfoButton.setVisibility(visibility);
         toggleMeasuremodeButton.setVisibility(visibility);
         batteryButton.setVisibility(visibility);
         centerOnGps.setVisibility(visibility);
@@ -1834,26 +1875,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         toggleEditingButton.setVisibility(visibility);
     }
 
-    public boolean onLongClick( View v ) {
-        switch( v.getId() ) {
-        case R.id.toggleEditingButton:
-            Intent editableLayersIntent = new Intent(MapsActivity.this, EditableLayersListActivity.class);
-            startActivity(editableLayersIntent);
-            return true;
-        case R.id.menu_map_btn:
-            boolean areButtonsVisible = preferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, false);
-            setAllButtoonsEnablement(!areButtonsVisible);
-            Editor edit = preferences.edit();
-            edit.putBoolean(ARE_BUTTONSVISIBLE_OPEN, !areButtonsVisible);
-            edit.commit();
-            return true;
-        default:
-            break;
-        }
-        return false;
-    }
-
-    public boolean onKeyDown( int keyCode, KeyEvent event ) {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         // force to exit through the exit button
         // System.out.println(keyCode + "/" + KeyEvent.KEYCODE_BACK);
         switch( keyCode ) {
