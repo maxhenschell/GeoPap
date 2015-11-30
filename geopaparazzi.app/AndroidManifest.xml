@@ -146,6 +146,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".maps.FredDataDirectActivity"
+            android:launchMode="singleTop"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDSDIRECT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
 
         <activity android:name=".maps.GpsDataPropertiesActivity">

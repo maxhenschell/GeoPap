@@ -369,24 +369,26 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         * tool buttons
         */
 
-        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredDb.equals("iMapField")) {
+        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null ) {
             // iMapField button here
-            GPLog.addLogEntry("fred", "inside mapsactivity imap button");
+            GPLog.addLogEntry("fred", "inside mapsactivity button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
             // only enable if Observation, otherwise user might write xy to earlier obs?
-            if(GeoPapFromDroidDb.whichFredForm.equals("Observation")){
-                GPLog.addLogEntry("Fred","form is observation");
+            //if(GeoPapFromDroidDb.whichFredForm.equals("Observation") || GeoPapFromDroidDb.whichFredForm.equals("ObsPnts")){
+            //    GPLog.addLogEntry("Fred","form is Observation or ObsPnts");
+
+            //TODO: check for existing values in XY fields instead of checking for form type
                 addfreddataButton.setEnabled(true);
                 addfreddataButton.setOnClickListener(this);
                 registerForContextMenu(addfreddataButton);
-            } else {
-                GPLog.addLogEntry("Fred","form is NOT observation");
-                addfreddataButton.setEnabled(false);
-            }
+            //} else {
+              //  GPLog.addLogEntry("Fred","form is NOT observation");
+              //  addfreddataButton.setEnabled(false);
+            //}
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
 
         } else {
-            // regular fred data collection here
+            // old style fred data collection here
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
             addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
             addfreddataButton.setOnClickListener(new Button.OnClickListener() {
@@ -565,20 +567,21 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         readData();
 
         //reset this button as settings could have changed on resume (re-entry)
-        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredDb.equals("iMapField")) {
+        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
             // iMapField button here
-            GPLog.addLogEntry("fred", "inside mapsactivity imap button");
+            GPLog.addLogEntry("fred", "inside mapsactivity button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-            // only enable if Observation, otherwise user might write xy to earlier obs?
-            if(GeoPapFromDroidDb.whichFredForm.equals("Observation")){
-                GPLog.addLogEntry("Fred","form is observation");
+            // only enable if Observation when in iMap, otherwise user might write xy to earlier obs?
+            //if(GeoPapFromDroidDb.whichFredForm.equals("Observation") || GeoPapFromDroidDb.whichFredForm.equals("ObsPnts")){
+             //TODO: check for exising XY!! and throw overwrite warning
+              //  GPLog.addLogEntry("Fred","form is observation or obspts");
                 addfreddataButton.setEnabled(true);
                 addfreddataButton.setOnClickListener(this);
                 registerForContextMenu(addfreddataButton);
-            } else {
-                GPLog.addLogEntry("Fred","form is NOT observation");
-                addfreddataButton.setEnabled(false);
-            }
+            //} else {
+             //   GPLog.addLogEntry("Fred","form is NOT observation");
+              //  addfreddataButton.setEnabled(false);
+            //}
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
 
         } else {
@@ -655,9 +658,14 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             dataOverlay.addWays(logOverlaysList);
 
             /* fred points (obs points, plots, zool or bot points,imap observations) */
+            // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
+            final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
             if (DataManager.getInstance().areFredPtsVisible()) {
-                Drawable fredPt = getResources().getDrawable(R.drawable.trianglept);
-                Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPt);
+                //GPLog.addLogEntry(this, "External DB is " + externalDBname);  //Fred vs. ImapInvasivesField. not helpful.
+                Drawable fredPtp = getResources().getDrawable(R.drawable.trianglept_p);
+                Drawable fredPta = getResources().getDrawable(R.drawable.trianglept_a);
+                Drawable fredPtc = getResources().getDrawable(R.drawable.trianglept_c);
+                Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
                 Context fredContext = getApplicationContext();
                 List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
                 if (fredPtOverlays != null) {
@@ -1075,7 +1083,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             }
             case MENU_PLACE_PT_GPS: {
                 GPLog.addLogEntry("fred", "in Case gps");
-
+                //TODO: check if point has existing coordinates
                 GeoPoint geoPoint;
                 if (lastGpsPosition != null) {
                     setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
@@ -1087,28 +1095,28 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     geoPoint = mapPosition.getMapCenter();
                 }
 
-                Intent mapFredIMapIntent = new Intent(MapsActivity.this, FredIMapDataActivity.class);
-                mapFredIMapIntent.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
-                mapFredIMapIntent.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-                mapFredIMapIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredIMapIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
-                mapFredIMapIntent.addFlags(mapFredIMapIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivityForResult(mapFredIMapIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+                mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+                mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
                 return true;
             }
             case MENU_PLACE_PT_MAP_CENTER: {
                 GPLog.addLogEntry("fred","in Case map center");
-
+                //TODO: check if point has existing coordinates
                 MapViewPosition mapPosition = mapView.getMapPosition();
                 GeoPoint mapCenter = mapPosition.getMapCenter();
-                Intent mapFredIMapIntent = new Intent(MapsActivity.this, FredIMapDataActivity.class);
-                mapFredIMapIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                mapFredIMapIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                mapFredIMapIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredIMapIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
-                mapFredIMapIntent.addFlags(mapFredIMapIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivityForResult(mapFredIMapIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
                 return true;
             }
