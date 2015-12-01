@@ -34,8 +34,11 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequence;
+
 import java.io.File;
 import java.io.IOException;
+import java.lang.Exception;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +48,8 @@ import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.Utilities;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DatabaseManager;
+import eu.hydrologis.geopaparazzi.maps.overlays.GpsData;
+import jsqlite.*;
 //import eu.geopaparazzi.library.gps.GpsManager;
 
 /**
@@ -104,72 +109,105 @@ public class FredDataDirectActivity extends Activity {
 
         // Get intent, action
         Intent intent = getIntent();
+        GPLog.addLogEntry("fred","extra, type = " + intent.getStringExtra("type"));
+        String intentType = intent.getStringExtra("type");
 
-        latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
-        longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
-        elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
         recordID = intent.getStringExtra("recordID");
-
         GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
 
-//        if (GPLog.LOG_HEAVY){
-//            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
-//        }
+        if (intentType.equals("checkForExistingLocation")){
+            GPLog.addLogEntry("fred", "checking if location already has gps data");
 
-        // first off, check to see if dB exists
-        final boolean dbExists = doesDatabaseExist(this, externalDB);
-        if (!dbExists) {
-            Toast.makeText(getApplicationContext(),
-                    "Database does not exist", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
-            finish();
-        } else if (recordID == null){
-            Toast.makeText(getApplicationContext(),
-                    "No record ID, can't write point data", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
-            finish();
-        } else {
-            secondIDs = new ArrayList<String>();
+            boolean hasLocData = false;
             try {
-                final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
+                final SQLiteDatabase sqlDB;
+                sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
                         .openDatabase(externalDB, null, 2);
-                boolean tableExists = doesTableExist(childTable, sqlDB);
-                if(tableExists) {
-                    secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null, quicksetChoice);
-                    // don't open form if no records
-                    if(secondIDs.size()==0){
-                        GPLog.addLogEntry(this, "Fred DB: no records 1 " + quicksetChoice);
-                        Utilities.toast(this,"No records in DB - add one first",Toast.LENGTH_SHORT);
-                        finish();
-                    }
-                } else {
-                    GPLog.addLogEntry(this, "Fred DB: no Table 2 " + childTable);
-                    Utilities.toast(this,"Missing table in DB - check settings", Toast.LENGTH_SHORT);
-                    finish();
-                }
+                hasLocData = checkExistingGpsLoc(childTable, colLat,
+                        childID, recordID, sqlDB);
                 sqlDB.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
 
-        boolean IsWritten = false;
-        try {
-            final SQLiteDatabase sqlDB;
-            sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
-                    .openDatabase(externalDB, null, 2);
-            IsWritten = writeGpsData(childTable, colLat, colLon,
-                    childID, recordID, latitude, longitude, sqlDB);
-            sqlDB.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        if (IsWritten){
             Intent resultIntent = new Intent();
-            setResult(Activity.RESULT_OK, resultIntent);
-            finish();
-        }
+            if (hasLocData) {
+                //Intent resultIntent = new Intent();
+                resultIntent.putExtra("hasLocData",true);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            } else {
+                //Intent resultIntent = new Intent();
+                resultIntent.putExtra("hasLocData", false);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            }
+
+        } else {
+            GPLog.addLogEntry("fred", "writing location data");
+
+            latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
+            longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
+            elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
+
+            //        if (GPLog.LOG_HEAVY){
+//            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
+//            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
+//        }
+
+            // first off, check to see if dB exists
+            final boolean dbExists = doesDatabaseExist(this, externalDB);
+            if (!dbExists) {
+                Toast.makeText(getApplicationContext(),
+                        "Database does not exist", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                finish();
+            } else if (recordID == null) {
+                Toast.makeText(getApplicationContext(),
+                        "No record ID, can't write point data", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                finish();
+            } else {
+                secondIDs = new ArrayList<String>();
+                try {
+                    final SQLiteDatabase sqlDB = DatabaseManager.getInstance().getDatabase(this)
+                            .openDatabase(externalDB, null, 2);
+                    boolean tableExists = doesTableExist(childTable, sqlDB);
+                    if (tableExists) {
+                        secondIDs = getTableIDs(sqlDB, childTable, childID, childDescriptorField, childTimeStamp, null, null, quicksetChoice);
+                        // don't open form if no records
+                        if (secondIDs.size() == 0) {
+                            GPLog.addLogEntry(this, "Fred DB: no records 1 " + quicksetChoice);
+                            Utilities.toast(this, "No records in DB - add one first", Toast.LENGTH_SHORT);
+                            finish();
+                        }
+                    } else {
+                        GPLog.addLogEntry(this, "Fred DB: no Table 2 " + childTable);
+                        Utilities.toast(this, "Missing table in DB - check settings", Toast.LENGTH_SHORT);
+                        finish();
+                    }
+                    sqlDB.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            boolean IsWritten = false;
+            try {
+                final SQLiteDatabase sqlDB;
+                sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
+                        .openDatabase(externalDB, null, 2);
+                IsWritten = writeGpsData(childTable, colLat, colLon,
+                        childID, recordID, latitude, longitude, sqlDB);
+                sqlDB.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            if (IsWritten) {
+                Intent resultIntent = new Intent();
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            }
 
 //        if (IsWritten){
 //            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -196,6 +234,7 @@ public class FredDataDirectActivity extends Activity {
 //        }
 
 
+        }
     }
     // TODO need an onStart() for this activity!!!
     // TODO need an onResume() for this activity!!!
@@ -298,6 +337,52 @@ public class FredDataDirectActivity extends Activity {
         }
     }
 
+    /**
+     * Checks GPS data at the external database to see if location data (just latitude for simplicity) exists already
+     *
+     * @param tbl         is the name of the table to write to
+     * @param colLat      is the column name for Latitude
+     * @param colSecondID is the column name for the child ID column
+     * @param lvlTwoID    the child ID for the record to update
+     * @param sqlDB       the DB to write to
+     * @throws IOException if a problem
+     */
+
+    private static boolean checkExistingGpsLoc(String tbl, String colLat, String colSecondID,
+                                               String lvlTwoID, SQLiteDatabase sqlDB) throws IOException {
+
+        GPLog.addLogEntry("fred", "checking for existing data at point");
+        try {
+            String query = "SELECT " + colLat + " FROM " + tbl + " WHERE " + colSecondID + "= '" + lvlTwoID + "'";
+            Cursor cursor = sqlDB.rawQuery(query, null);
+            GPLog.addLogEntry("fred", "query: " + query);
+            if(cursor!=null) {
+                //GPLog.addLogEntry("fred", "cursor not null");
+                //GPLog.addLogEntry("fred", "cursor count = " + cursor.getCount());
+                //GPLog.addLogEntry("fred", "cursor cols = " + cursor.getColumnCount());
+                //GPLog.addLogEntry("fred", "cursor cols = " + cursor.getColumnName(0));
+                if(cursor.getCount()>0) {
+                    cursor.moveToFirst();
+                    Double lat = cursor.getDouble(cursor.getColumnIndex(colLat));
+                    //String lat = cursor.getString(cursor.getColumnIndex(colLat));
+                    GPLog.addLogEntry("fred", "lat = " + lat);
+                    if(lat > 0){
+                        GPLog.addLogEntry("fred", "coords existing for this point");
+                        cursor.close();
+                        return true;
+                    }
+                }
+                cursor.close();
+            }
+
+        } catch (Exception e) {
+            GPLog.error("FredSelectQuery", e.getLocalizedMessage(),e);
+            throw new IOException(e.getLocalizedMessage());
+        } finally {
+            sqlDB.close();
+        }
+    return false;
+    }
 
     /**
      * Writes GPS data to an external database
@@ -317,8 +402,6 @@ public class FredDataDirectActivity extends Activity {
                                         SQLiteDatabase sqlDB) throws IOException {
 
         try {
-            //TODO: here would be the spot to check for existing coordinates in the record you are about to overwrite
-
             sqlDB.beginTransaction();
 
             StringBuilder sb = new StringBuilder();

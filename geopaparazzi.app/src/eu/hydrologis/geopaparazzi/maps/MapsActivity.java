@@ -178,6 +178,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
      */
     public static final int FORMUPDATE_RETURN_CODE = 669;
     public static final int FRED_POINT_DATA_WRITTEN_RETURN_CODE = 251;
+    public static final int FRED_POINT_EXISTING_LOCATION_RETURN_CODE = 252;
     private final int CONTACT_RETURN_CODE = 670;
     // private static final int MAPSDIR_FILETREE = 777;
 
@@ -1110,13 +1111,23 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 //TODO: check if point has existing coordinates
                 MapViewPosition mapPosition = mapView.getMapPosition();
                 GeoPoint mapCenter = mapPosition.getMapCenter();
-                Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
-                mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredDDIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
-                mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+
+                Intent mapFredDDIntentChk = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
+
+
+
+                //Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                //mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                //mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                //mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                //mapFredDDIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                //mapFredDDIntent.putExtra("type", "writeLocation");
+                //mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                //startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
                 return true;
             }
@@ -1456,6 +1467,34 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                         GPLog.error(this, null, e);
                         Utilities.messageDialog(this, eu.geopaparazzi.library.R.string.notenonsaved, null);
                     }
+                }
+            }
+        }
+        case (FRED_POINT_EXISTING_LOCATION_RETURN_CODE): {
+          GPLog.addLogEntry("fred","in existing location return code");
+            if (resultCode == Activity.RESULT_OK) {
+                boolean hasLoc = data.getBooleanExtra("hasLocData", false);
+                if (hasLoc){
+                    GPLog.addLogEntry("fred","in maps activity, pt has loc");
+                    Utilities.yesNoMessageDialog(MapsActivity.this, "This point has a location, overwrite?", new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                //TODO: CONTINUE AND WRITE THE POINT
+                            } catch (Exception e) {
+                                GPLog.error(this, null, e);
+                            }
+                        }
+                    }, new Runnable() {
+                        @Override
+                        public void run() {
+                            //TODO: LEAVE GRACEFULLY
+                        }
+                    });
+
+
+                } else {
+                    GPLog.addLogEntry("fred","in maps activity, pt no loc");
                 }
             }
         }
