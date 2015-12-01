@@ -1085,14 +1085,14 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 GPLog.addLogEntry("fred", "in Case gps");
                 //TODO: check if point has existing coordinates
                 GeoPoint geoPoint;
-                if (lastGpsPosition != null) {
+                if (lastGpsPosition != null && lastGpsServiceStatus == GpsServiceStatus.GPS_FIX) {
                     setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
                     geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
                             (int) (lastGpsPosition[0] * LibraryConstants.E6));
                 } else {
-                    Utilities.toast(this, "no GPS, using map center", Toast.LENGTH_SHORT);
-                    MapViewPosition mapPosition = mapView.getMapPosition();
-                    geoPoint = mapPosition.getMapCenter();
+                    Utilities.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
+                    GPLog.addLogEntry("fred","no gps");
+                    return true;
                 }
 
                 Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
