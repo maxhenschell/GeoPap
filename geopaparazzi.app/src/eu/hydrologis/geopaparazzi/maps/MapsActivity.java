@@ -371,21 +371,11 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         */
 
         if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null ) {
-            // iMapField button here
             GPLog.addLogEntry("fred", "inside mapsactivity button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-            // only enable if Observation, otherwise user might write xy to earlier obs?
-            //if(GeoPapFromDroidDb.whichFredForm.equals("Observation") || GeoPapFromDroidDb.whichFredForm.equals("ObsPnts")){
-            //    GPLog.addLogEntry("Fred","form is Observation or ObsPnts");
-
-            //TODO: check for existing values in XY fields instead of checking for form type
-                addfreddataButton.setEnabled(true);
-                addfreddataButton.setOnClickListener(this);
-                registerForContextMenu(addfreddataButton);
-            //} else {
-              //  GPLog.addLogEntry("Fred","form is NOT observation");
-              //  addfreddataButton.setEnabled(false);
-            //}
+            addfreddataButton.setEnabled(true);
+            addfreddataButton.setOnClickListener(this);
+            registerForContextMenu(addfreddataButton);
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
 
         } else {
@@ -569,22 +559,12 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
 
         //reset this button as settings could have changed on resume (re-entry)
         if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
-            // iMapField button here
             GPLog.addLogEntry("fred", "inside mapsactivity button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-            // only enable if Observation when in iMap, otherwise user might write xy to earlier obs?
-            //if(GeoPapFromDroidDb.whichFredForm.equals("Observation") || GeoPapFromDroidDb.whichFredForm.equals("ObsPnts")){
-             //TODO: check for exising XY!! and throw overwrite warning
-              //  GPLog.addLogEntry("Fred","form is observation or obspts");
-                addfreddataButton.setEnabled(true);
-                addfreddataButton.setOnClickListener(this);
-                registerForContextMenu(addfreddataButton);
-            //} else {
-             //   GPLog.addLogEntry("Fred","form is NOT observation");
-              //  addfreddataButton.setEnabled(false);
-            //}
+            addfreddataButton.setEnabled(true);
+            addfreddataButton.setOnClickListener(this);
+            registerForContextMenu(addfreddataButton);
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
-
         } else {
             // regular fred data collection here
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
@@ -1084,7 +1064,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
             }
             case MENU_PLACE_PT_GPS: {
                 GPLog.addLogEntry("fred", "in Case gps");
-                //TODO: check if point has existing coordinates
+                //check if there is gps signal
                 GeoPoint geoPoint;
                 if (lastGpsPosition != null && lastGpsServiceStatus == GpsServiceStatus.GPS_FIX) {
                     setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
@@ -1096,38 +1076,32 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     return true;
                 }
 
-                Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
-                mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
-                mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-                mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
-                mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                //check if point has existing coordinates
+                Intent mapFredDDIntentChk = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
 
                 return true;
             }
             case MENU_PLACE_PT_MAP_CENTER: {
                 GPLog.addLogEntry("fred","in Case map center");
-                //TODO: check if point has existing coordinates
+                //check if point has existing coordinates
                 MapViewPosition mapPosition = mapView.getMapPosition();
                 GeoPoint mapCenter = mapPosition.getMapCenter();
 
                 Intent mapFredDDIntentChk = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
                 mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
-
-
-
-                //Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
-                //mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                //mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                //mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                //mapFredDDIntent.putExtra("recordID",GeoPapFromDroidDb.idKey);
-                //mapFredDDIntent.putExtra("type", "writeLocation");
-                //mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
-                //startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
                 return true;
             }
@@ -1300,7 +1274,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
         return nswe;
     }
 
-    protected void onActivityResult( int requestCode, int resultCode, Intent data ) {
+    protected void onActivityResult( int requestCode, int resultCode, final Intent data ) {
         if (GPLog.LOG_ABSURD)
             GPLog.addLogEntry(this, "Activity returned"); //$NON-NLS-1$
         super.onActivityResult(requestCode, resultCode, data);
@@ -1480,7 +1454,16 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                         @Override
                         public void run() {
                             try {
-                                //TODO: CONTINUE AND WRITE THE POINT
+                                //write the point
+                                Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                                mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
+                                mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
+                                mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
+                                mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                                mapFredDDIntent.putExtra("type", "writeLocation");
+                                mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                                startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+
                             } catch (Exception e) {
                                 GPLog.error(this, null, e);
                             }
@@ -1488,13 +1471,22 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                     }, new Runnable() {
                         @Override
                         public void run() {
-                            //TODO: LEAVE GRACEFULLY
+                            //leave gracefully
+                            Utilities.toast(MapsActivity.this,"location not updated", Toast.LENGTH_SHORT);
                         }
                     });
 
 
                 } else {
                     GPLog.addLogEntry("fred","in maps activity, pt no loc");
+                    Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                    mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
+                    mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
+                    mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
+                    mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                    mapFredDDIntent.putExtra("type", "writeLocation");
+                    mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
                 }
             }
         }

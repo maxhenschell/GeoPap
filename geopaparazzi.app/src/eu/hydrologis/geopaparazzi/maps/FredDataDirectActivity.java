@@ -133,12 +133,18 @@ public class FredDataDirectActivity extends Activity {
             Intent resultIntent = new Intent();
             if (hasLocData) {
                 //Intent resultIntent = new Intent();
-                resultIntent.putExtra("hasLocData",true);
+                resultIntent.putExtra("hasLocData", true);
+                resultIntent.putExtra(LibraryConstants.LATITUDE, intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0));
+                resultIntent.putExtra(LibraryConstants.LONGITUDE, intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0));
+                resultIntent.putExtra(LibraryConstants.ELEVATION, intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0));
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             } else {
                 //Intent resultIntent = new Intent();
                 resultIntent.putExtra("hasLocData", false);
+                resultIntent.putExtra(LibraryConstants.LATITUDE, intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0));
+                resultIntent.putExtra(LibraryConstants.LONGITUDE, intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0));
+                resultIntent.putExtra(LibraryConstants.ELEVATION, intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0));
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             }
