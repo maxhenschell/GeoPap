@@ -1450,7 +1450,7 @@ public class MapsActivity extends MapActivity implements OnTouchListener, OnClic
                 boolean hasLoc = data.getBooleanExtra("hasLocData", false);
                 if (hasLoc){
                     GPLog.addLogEntry("fred","in maps activity, pt has loc");
-                    Utilities.yesNoMessageDialog(MapsActivity.this, "This point has a location, overwrite?", new Runnable() {
+                    Utilities.yesNoMessageDialog(MapsActivity.this, "This point has coordinates, overwrite?", new Runnable() {
                         @Override
                         public void run() {
                             try {

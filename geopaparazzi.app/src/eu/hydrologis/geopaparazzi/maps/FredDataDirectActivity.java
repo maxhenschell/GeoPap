@@ -369,9 +369,10 @@ public class FredDataDirectActivity extends Activity {
                 //GPLog.addLogEntry("fred", "cursor cols = " + cursor.getColumnName(0));
                 if(cursor.getCount()>0) {
                     cursor.moveToFirst();
-                    Double lat = cursor.getDouble(cursor.getColumnIndex(colLat));
-                    //String lat = cursor.getString(cursor.getColumnIndex(colLat));
-                    GPLog.addLogEntry("fred", "lat = " + lat);
+                    cursor.moveToLast();
+                    Double lat = cursor.getDouble(0);
+                    //Double lat = cursor.getDouble(cursor.getColumnIndex(colLat));
+                    //GPLog.addLogEntry("fred", "lat = " + lat);
                     if(lat > 0){
                         GPLog.addLogEntry("fred", "coords existing for this point");
                         cursor.close();
