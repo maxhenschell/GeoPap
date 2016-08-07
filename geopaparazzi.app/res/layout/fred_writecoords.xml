@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView 
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:id="@+id/scroll" 
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content">
+
+	<RelativeLayout
+	    android:id="@+id/RelativeLayout1"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:background="@color/main_background"
+	    android:orientation="vertical" >
+
+	    <TextView
+	        android:id="@+id/fredfrm_title"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	       	android:layout_alignParentTop="true"
+	        android:layout_marginTop="5dp"
+	        android:layout_marginLeft="5dp"
+	        android:text="Position"
+	        android:textAppearance="?android:attr/textAppearanceLarge"
+	        android:textColor="@color/formcolor" >
+
+	        <requestFocus />
+	    </TextView>
+
+	    <TextView
+	        android:id="@+id/fredfrm_location"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignParentRight="true"
+	        android:layout_below="@+id/fredfrm_title"
+	        android:layout_marginLeft="48dp"
+	        android:layout_marginTop="5dp"
+	        android:text="lon: XXX; lat: YYY"
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:textColor="@color/formcolor" />
+
+	    <TextView
+	        android:id="@+id/fredfrm_elevation"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignParentRight="true"
+	        android:layout_below="@+id/fredfrm_location"
+	        android:layout_marginLeft="48dp"
+	        android:layout_marginTop="5dp"
+	        android:text="elev:"
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:textColor="@color/formcolor" />
+	    
+	    <ToggleButton
+	        android:id="@+id/togglePositionTypeGps"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/fredfrm_elevation"
+	        android:layout_margin="5dp"
+	        android:textOff="position based on map center"
+	        android:textOn="position based on GPS" />
+
+	    <Button
+	        android:id="@+id/refreshPosition"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignBottom="@+id/togglePositionTypeGps"
+	        android:layout_alignParentRight="true"
+	        android:layout_alignTop="@+id/togglePositionTypeGps"
+	        android:layout_toRightOf="@+id/togglePositionTypeGps"
+	        android:text="Refresh" />
+
+	    <Button
+	        android:id="@+id/fredfrm_avgbutton"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/togglePositionTypeGps"
+	        android:layout_margin="5dp"
+	        android:text="avg." />
+
+	    <TextView
+	        android:id="@+id/fredfrm_avgcount"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignBaseline="@+id/fredfrm_avgbutton"
+	        android:layout_toRightOf="@+id/fredfrm_avgbutton"
+	        android:ems="7"
+	        android:text="count: XXX; "
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:textColor="@color/formcolor" />
+
+	    <Button
+	        android:id="@+id/fredfrm_avgstopbutton"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentRight="true"
+	        android:layout_alignTop="@+id/fredfrm_avgbutton"
+	        android:layout_toRightOf="@+id/fredfrm_avgcount"
+	        android:text="stop" />
+
+	    <TextView
+	        android:id="@+id/fredfrm_noteslabel"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_marginLeft="5dp"
+	        android:layout_below="@+id/fredfrm_avgbutton"
+	        android:text="Notes"
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:textColor="@color/formcolor" />
+
+	    <EditText
+	        android:id="@+id/fredfrm_notes"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignParentRight="true"
+	        android:layout_marginLeft="5dp"
+	        android:layout_marginRight="5dp"
+	        android:layout_below="@+id/fredfrm_noteslabel"
+	        android:inputType="textMultiLine"
+	        android:text="notes on location..." />
+
+	    <ToggleButton
+	        android:id="@+id/fredfrm_writedataToggle"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/fredfrm_notes"
+	        android:layout_centerHorizontal="true"
+	        android:layout_marginLeft="5dp"
+	        android:layout_marginTop="5dp"
+	        android:layout_alignParentLeft="true"
+	       	android:textOff="Write the data to Fred"
+	        android:textOn="data written" />
+
+	    <Button
+	        android:id="@+id/fredfrm_returntofred"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignBottom="@+id/fredfrm_writedataToggle"
+	        android:layout_marginLeft="5dp"
+	        android:layout_toRightOf="@+id/fredfrm_writedataToggle"
+	        android:text="Return to Fred" />
+
+	    <TextView
+	        android:id="@+id/fredfrm_subtitleconfirmdestination"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_marginLeft="5dp"
+	        android:layout_below="@+id/fredfrm_returntofred"
+	        android:text="Confirm destination"
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:textColor="@color/formcolor" />
+	   
+	    <EditText
+	        android:id="@+id/fredfrm_destinationDB"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignRight="@+id/fredfrm_notes"
+	        android:layout_below="@+id/fredfrm_subtitleconfirmdestination"
+	        android:layout_marginLeft="5dp"
+	        android:text="/sdcard/FRED/FRED.db" />
+
+	    <TextView
+	        android:id="@+id/fredfrm_levelonelabel"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginLeft="5dp"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/fredfrm_destinationDB"
+	        android:layout_marginTop="5dp"
+	        android:text="Table info"
+	        android:textColor="@color/formcolor" />
+
+	    <Spinner
+	        android:id="@+id/fredfrm_levelonespinner"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginLeft="5dp"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/fredfrm_levelonelabel"
+	        android:textSize="12pt" />
+
+	    <Spinner
+	        android:id="@+id/fredfrm_leveltwospinner"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginLeft="5dp"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/fredfrm_levelonespinner" />
+
+
+
+	</RelativeLayout>
+
+</ScrollView>	

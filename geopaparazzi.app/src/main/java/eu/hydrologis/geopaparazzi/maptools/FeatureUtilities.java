@@ -17,6 +17,13 @@
  */
 package eu.hydrologis.geopaparazzi.maptools;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import jsqlite.Database;
+import jsqlite.Exception;
+import jsqlite.Stmt;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -35,10 +42,6 @@ import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.noding.snapround.GeometryNoder;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.features.Feature;
@@ -97,6 +100,7 @@ public class FeatureUtilities {
      * @return the list of feature from the query.
      * @throws Exception is something goes wrong.
      */
+
     public static List<Feature> buildWithoutGeometry(String query, SpatialVectorTable spatialTable) throws Exception {
         List<Feature> featuresList = new ArrayList<>();
         Stmt stmt = null;
@@ -184,41 +188,43 @@ public class FeatureUtilities {
         return featuresList;
     }
 
-//    /**
-//     * Build the features given by a query.
-//     *
-//     * <p><b>Note that this query needs to have at least 2 arguments, the first
-//     * being the ROWID and the second the geometry. Else if will fail.</b>
-//     *
-//     * @param query the query to run.
-//     * @param spatialTable the parent Spatialtable.
-//     * @return the list of feature from the query.
-//     * @throws Exception is something goes wrong.
-//     */
-//    public static List<Feature> buildRowidGeometryFeatures( String query, SpatialVectorTable spatialTable ) throws Exception {
-//
-//        List<Feature> featuresList = new ArrayList<Feature>();
-//        AbstractSpatialDatabaseHandler vectorHandler = SpatialDatabasesManager.getInstance().getVectorHandler(spatialTable);
-//        if (vectorHandler instanceof SpatialiteDatabaseHandler) {
-//            SpatialiteDatabaseHandler spatialiteDbHandler = (SpatialiteDatabaseHandler) vectorHandler;
-//            Database database = spatialiteDbHandler.getDatabase();
-//            String tableName = spatialTable.getTableName();
-//            String uniqueNameBasedOnDbFilePath = spatialTable.getUniqueNameBasedOnDbFilePath();
-//
-//            Stmt stmt = database.prepare(query);
-//            try {
-//                while( stmt.step() ) {
-//                    String id = stmt.column_string(0);
-//                    byte[] geometryBytes = stmt.column_bytes(1);
-//                    Feature feature = new Feature(tableName, uniqueNameBasedOnDbFilePath, id, geometryBytes);
-//                    featuresList.add(feature);
-//                }
-//            } finally {
-//                stmt.close();
-//            }
-//        }
-//        return featuresList;
-//    }
+    // /**
+    // * Build the features given by a query.
+    // *
+    // * <p><b>Note that this query needs to have at least 2 arguments, the first
+    // * being the ROWID and the second the geometry. Else if will fail.</b>
+    // *
+    // * @param query the query to run.
+    // * @param spatialTable the parent Spatialtable.
+    // * @return the list of feature from the query.
+    // * @throws Exception is something goes wrong.
+    // */
+    // public static List<Feature> buildRowidGeometryFeatures( String query, SpatialVectorTable
+    // spatialTable ) throws Exception {
+    //
+    // List<Feature> featuresList = new ArrayList<Feature>();
+    // AbstractSpatialDatabaseHandler vectorHandler =
+    // SpatialDatabasesManager.getInstance().getVectorHandler(spatialTable);
+    // if (vectorHandler instanceof SpatialiteDatabaseHandler) {
+    // SpatialiteDatabaseHandler spatialiteDbHandler = (SpatialiteDatabaseHandler) vectorHandler;
+    // Database database = spatialiteDbHandler.getDatabase();
+    // String tableName = spatialTable.getTableName();
+    // String uniqueNameBasedOnDbFilePath = spatialTable.getUniqueNameBasedOnDbFilePath();
+    //
+    // Stmt stmt = database.prepare(query);
+    // try {
+    // while( stmt.step() ) {
+    // String id = stmt.column_string(0);
+    // byte[] geometryBytes = stmt.column_bytes(1);
+    // Feature feature = new Feature(tableName, uniqueNameBasedOnDbFilePath, id, geometryBytes);
+    // featuresList.add(feature);
+    // }
+    // } finally {
+    // stmt.close();
+    // }
+    // }
+    // return featuresList;
+    // }
 
     /**
      * Draw a geometry on a canvas.
@@ -229,8 +235,8 @@ public class FeatureUtilities {
      * @param geometryPaintFill   the fill.
      * @param geometryPaintStroke the stroke.
      */
-    public static void drawGeometry(Geometry geom, Canvas canvas, ShapeWriter shapeWriter, Paint geometryPaintFill,
-                                    Paint geometryPaintStroke) {
+    public static void drawGeometry( Geometry geom, Canvas canvas, ShapeWriter shapeWriter, Paint geometryPaintFill,
+            Paint geometryPaintStroke ) {
         String geometryTypeStr = geom.getGeometryType();
         int geometryTypeInt = GeometryType.forValue(geometryTypeStr);
         GeometryType geometryType = GeometryType.forValue(geometryTypeInt);
@@ -276,8 +282,6 @@ public class FeatureUtilities {
                     shape.draw(canvas, geometryPaintStroke);
             }
             break;
-            default:
-                break;
         }
     }
 
@@ -288,7 +292,7 @@ public class FeatureUtilities {
      * @return the {@link Geometry} or <code>null</code>.
      * @throws java.lang.Exception if something goes wrong.
      */
-    public static Geometry getGeometry(Feature feature) throws java.lang.Exception {
+    public static Geometry getGeometry( Feature feature ) throws java.lang.Exception {
         byte[] defaultGeometry = feature.getDefaultGeometry();
         if (defaultGeometry == null) {
             return null;
@@ -305,7 +309,7 @@ public class FeatureUtilities {
      * @return the geometries.
      */
     @SuppressWarnings("rawtypes")
-    public static Geometry invalidPolygonSplit(Geometry invalidPolygon) {
+    public static Geometry invalidPolygonSplit( Geometry invalidPolygon ) {
         PrecisionModel pm = new PrecisionModel(10000000);
         GeometryFactory geomFact = invalidPolygon.getFactory();
         List lines = LinearComponentExtracter.getLines(invalidPolygon);
@@ -326,7 +330,7 @@ public class FeatureUtilities {
      *
      * @param feature teh feature to get the table from.
      * @return the table or <code>null</code>.
-     * @throws Exception
+     * @throws Exception if error
      */
     public static SpatialVectorTable getTableFromFeature(Feature feature) throws Exception {
         SpatialVectorTable table = SpatialiteSourcesManager.INSTANCE.getTableFromFeature(feature);
@@ -340,7 +344,7 @@ public class FeatureUtilities {
      * @param text    the text to check.
      * @return <code>true</code> if the text is viewable.
      */
-    public static void viewIfApplicable(Context context, String text) {
+    public static void viewIfApplicable( Context context, String text ) {
         String textLC = text.toLowerCase();
         Intent intent = null;
         if (textLC.startsWith("http")) {

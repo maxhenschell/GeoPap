@@ -143,12 +143,115 @@
             android:order="214"
             android:title="@string/geopapcloud_server_label" />
     </PreferenceScreen>
-
     <EditTextPreference
         android:defaultValue=""
         android:key="ROUTING_API_KEY"
         android:order="220"
         android:summary="@string/routing_pref_summary"
         android:title="@string/routing_pref_title" />
-
+    <PreferenceScreen
+        android:title="@string/fred_preferences" 
+        android:order="300">
+	    <eu.hydrologis.geopaparazzi.preferences.FredQuickSets
+			android:defaultValue=""
+			android:key="PREFS_KEY_FRED_QUICK_SET"
+			android:order="301"
+			android:summary="@string/fred_quick_sets_summary"
+			android:title="@string/fred_quick_sets" />
+        <EditTextPreference 
+            android:key="EXTERNAL_DB" 
+            android:title="@string/fred_external_db_path"
+            android:defaultValue="@string/fred_defval_external_db_path" 
+            android:order="302">
+        </EditTextPreference> 
+        <EditTextPreference 
+            android:key="EXTERNAL_DB_NAME" 
+            android:title="@string/fred_external_db_name"
+            android:defaultValue="@string/fred_defval_external_db_name" 
+            android:order="303">
+        </EditTextPreference> 
+        <PreferenceScreen
+	       	android:title="@string/child_table_info" 
+	        android:order="320">   
+	        <EditTextPreference 
+	            android:key="SECOND_LEVEL_TABLE" 
+	            android:title="@string/fred_second_level_table" 
+	            android:defaultValue="@string/fred_defval_second_level_table"
+	            android:order="321">
+	        </EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_SECOND_LEVEL_ID" 
+	            android:title="@string/fred_second_level_ID" 
+	            android:defaultValue="@string/fred_defval_second_level_ID"
+	            android:order="322">          
+	        </EditTextPreference>
+	       	<EditTextPreference 
+	            android:key="COLUMN_SECOND_LEVEL_DESCRIPTOR" 
+	            android:title="@string/fred_second_level_descriptor" 
+	            android:defaultValue="@string/fred_defval_second_level_descriptor"
+	            android:order="323"
+	          	android:summary="@string/fred_descriptor_summary">
+	        </EditTextPreference>
+	       	<EditTextPreference 
+	            android:key="COLUMN_LAT" 
+	            android:title="@string/fred_column_Lat" 
+	            android:defaultValue="@string/fred_defval_column_Lat"
+	            android:order="324">
+	        </EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_LON" 
+	            android:title="@string/fred_column_Lon" 
+	            android:defaultValue="@string/fred_defval_column_Lon"
+	            android:order="325">
+	        </EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_NOTE" 
+	            android:title="@string/fred_column_note" 
+	            android:defaultValue="@string/fred_defval_column_note"
+	            android:order="326">
+	        </EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_SECOND_LEVEL_TIMESTAMP" 
+	            android:title="@string/fred_second_level_timestamp" 
+	            android:defaultValue="@string/fred_defval_second_level_timestamp"
+	            android:order="327">
+	        </EditTextPreference>
+	    </PreferenceScreen>
+        <CheckBoxPreference 
+            android:key="TABLES_TWO_LEVELS" 
+            android:defaultValue="@string/fred_defval_two_levels" 
+            android:title="@string/fred_tables_two_levels"
+            android:order="330"
+            android:summary="@string/fred_parent_table_present_summary">
+        </CheckBoxPreference>     
+        <PreferenceScreen 
+	        android:title="@string/parent_table_info" 
+	        android:order="340">
+	        <EditTextPreference 
+	            android:key="FIRST_LEVEL_TABLE" 
+	            android:title="@string/fred_first_level_table" 
+	            android:defaultValue="@string/fred_defval_first_level_table"
+	            android:order="341">
+	        </EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_FIRST_LEVEL_ID" 
+	            android:title="@string/fred_first_level_ID" 
+	            android:defaultValue="@string/fred_defval_first_level_ID"
+	            android:order="342">
+	        </EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_FIRST_LEVEL_DESCRIPTOR" 
+	            android:title="@string/fred_first_level_descriptor" 
+	            android:defaultValue="@string/fred_defval_first_level_descriptor"
+	            android:order="343"
+	            android:summary="@string/fred_descriptor_summary">
+       	 	</EditTextPreference>
+	        <EditTextPreference 
+	            android:key="COLUMN_FIRST_LEVEL_TIMESTAMP" 
+	            android:title="@string/fred_first_level_timestamp" 
+	            android:defaultValue="@string/fred_defval_first_level_timestamp"
+	            android:order="344">
+        	</EditTextPreference>
+	    </PreferenceScreen>
+    </PreferenceScreen>
 </PreferenceScreen>

@@ -15,9 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package eu.hydrologis.geopaparazzi.mapview;
+//package eu.hydrologis.geopaparazzi.maps;  //TGH this was the old way??
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.mapsforge.android.maps.DebugSettings;
+import org.mapsforge.android.maps.MapActivity;
+import org.mapsforge.android.maps.MapScaleBar;
+import org.mapsforge.android.maps.MapScaleBar.ScreenPosition;
+import org.mapsforge.android.maps.MapScaleBar.TextField;
+import org.mapsforge.android.maps.MapView;
+import org.mapsforge.android.maps.MapViewPosition;
+import org.mapsforge.android.maps.Projection;
+import org.mapsforge.android.maps.mapgenerator.MapGenerator;
+import org.mapsforge.android.maps.overlay.Overlay;
+import org.mapsforge.android.maps.overlay.OverlayItem;
+import org.mapsforge.android.maps.overlay.OverlayWay;
+import org.mapsforge.core.model.GeoPoint;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -117,14 +143,23 @@ import eu.geopaparazzi.mapsforge.BaseMapSourcesManager;
 import eu.geopaparazzi.spatialite.database.spatial.activities.EditableLayersListActivity;
 import eu.geopaparazzi.spatialite.database.spatial.activities.databasesview.SpatialiteDatabasesTreeListActivity;
 import eu.geopaparazzi.spatialite.database.spatial.core.tables.AbstractSpatialTable;
+import eu.hydrologis.geopaparazzi.GeoPapFromDroidDb;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DaoBookmarks;
+import eu.hydrologis.geopaparazzi.database.DaoFredPts;
 import eu.hydrologis.geopaparazzi.database.DaoGpsLog;
 import eu.hydrologis.geopaparazzi.database.DaoImages;
 import eu.hydrologis.geopaparazzi.database.DaoNotes;
 import eu.hydrologis.geopaparazzi.database.objects.Bookmark;
 import eu.hydrologis.geopaparazzi.database.objects.Note;
 import eu.hydrologis.geopaparazzi.maptools.MapTool;
+
+// tgh: old way
+//import eu.hydrologis.geopaparazzi.database.DatabaseManager;
+//import eu.hydrologis.geopaparazzi.maps.mapsforge.ImportMapsforgeActivity;
+//import eu.hydrologis.geopaparazzi.maps.overlays.ArrayGeopaparazziOverlay;
+//import eu.hydrologis.geopaparazzi.maptools.core.MapTool;
+
 import eu.hydrologis.geopaparazzi.maptools.tools.GpsLogInfoTool;
 import eu.hydrologis.geopaparazzi.maptools.tools.LineMainEditingToolGroup;
 import eu.hydrologis.geopaparazzi.maptools.tools.NoEditableLayerToolGroup;
@@ -153,6 +188,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
      * The form update return code.
      */
     public static final int FORMUPDATE_RETURN_CODE = 669;
+    public static final int FRED_POINT_DATA_WRITTEN_RETURN_CODE = 251;
+    public static final int FRED_POINT_EXISTING_LOCATION_RETURN_CODE = 252;
     private final int CONTACT_RETURN_CODE = 670;
     // private static final int MAPSDIR_FILETREE = 777;
 
@@ -166,8 +203,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     private final int MENU_COMPASS_ID = 8;
     private final int MENU_SHAREPOSITION_ID = 9;
     private final int MENU_LOADMAPSFORGE_VECTORS_ID = 10;
+    private final int MENU_PLACE_PT_GPS = 21;
+    private final int MENU_PLACE_PT_MAP_CENTER = 22;
 
     private static final String ARE_BUTTONSVISIBLE_OPEN = "ARE_BUTTONSVISIBLE_OPEN"; //$NON-NLS-1$
+    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
     private DecimalFormat formatter = new DecimalFormat("00"); //$NON-NLS-1$
     private MapView mMapView;
     private SharedPreferences mPeferences;
@@ -181,9 +221,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     private double[] lastGpsPosition;
 
     private TextView zoomLevelText;
-    private BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver batteryReceiver = new BroadcastReceiver(){
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive( Context context, Intent intent ) {
             int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
             int maxValue = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
             int chargedPct = (level * 100) / maxValue;
@@ -196,17 +236,30 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     private GpsLoggingStatus lastGpsLoggingStatus = GpsLoggingStatus.GPS_DATABASELOGGING_OFF;
     private ImageButton centerOnGps;
     private Button batteryButton;
+    //private Button toggleEditingButton;
     private BroadcastReceiver mapsSupportBroadcastReceiver;
     private TextView coordView;
     private String latString;
     private String lonString;
 
-    public void onCreate(Bundle icicle) {
+    public static boolean created = false;
+
+    public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
         setContentView(R.layout.activity_mapview);
 
-        mapsSupportBroadcastReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
+        created = true;
+        if (GPLog.LOG_HEAVY){
+            GPLog.addLogEntry(this, "MapsActivity.created =  " + created); //$NON-NLS-1$
+        }
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String uid = intent.getStringExtra("uid");
+        GPLog.addLogEntry(this, "Maps onCreate intent uid extra is " + uid); //$NON-NLS-1$
+
+        mapsSupportBroadcastReceiver = new BroadcastReceiver(){
+            public void onReceive( Context context, Intent intent ) {
                 if (intent.hasExtra(MapsSupportService.REREAD_MAP_REQUEST)) {
                     boolean rereadMap = intent.getBooleanExtra(MapsSupportService.REREAD_MAP_REQUEST, false);
                     if (rereadMap) {
@@ -228,8 +281,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         registerReceiver(mapsSupportBroadcastReceiver, new IntentFilter(
                 MapsSupportService.MAPSSUPPORT_SERVICE_BROADCAST_NOTIFICATION));
 
-        gpsServiceBroadcastReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
+        gpsServiceBroadcastReceiver = new BroadcastReceiver(){
+            public void onReceive( Context context, Intent intent ) {
                 onGpsServiceUpdate(intent);
             }
         };
@@ -259,6 +312,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         boolean areButtonsVisible = mPeferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, true);
+
+        //for fred
+        final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
 
         /*
          * create main mapview
@@ -316,9 +372,68 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         centerOnGps = (ImageButton) findViewById(R.id.center_on_gps_btn);
         centerOnGps.setOnClickListener(this);
 
+        /*
+        * tool buttons
+        */
+
+        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null ) {
+            GPLog.addLogEntry("fred", "inside mapsactivity button");
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            addfreddataButton.setEnabled(true);
+            addfreddataButton.setOnClickListener(this);
+            registerForContextMenu(addfreddataButton);
+            addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
+
+        } else {
+            // old style fred data collection here
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
+            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    GeoPoint mapCenter = mapPosition.getMapCenter();
+                    Intent mapFredIntent = new Intent(MapsActivity.this, FredDataActivity.class);
+                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(mapFredIntent);
+                }
+            });
+        }
+
+        ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
+        gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
+              public void onClick(View v) {
+                  // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
+                  ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                  List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+                  if (!tasklist.isEmpty()) {
+                      int nSize = tasklist.size();
+                      boolean appFound = false;
+                      for (int i = 0; i < nSize; i++) {
+                          ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+                          if (GPLog.LOG_HEAVY)
+                              GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+                          if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+                              appFound = true;
+                              am.moveTaskToFront(taskinfo.id, 0);
+                          }
+                      }
+                      if (!appFound) {
+                          Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                          intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                          intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
+                          startActivity(intent);
+                      }
+                  }
+              }
+          });
+
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         addnotebytagButton.setOnClickListener(this);
         addnotebytagButton.setOnLongClickListener(this);
+
 
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         addBookmarkButton.setOnClickListener(this);
@@ -345,12 +460,19 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         LinearLayout editingToolsLayout = (LinearLayout) findViewById(R.id.editingToolsLayout);
         EditManager.INSTANCE.setEditingView(editingView, editingToolsLayout);
 
-        // if after rotation a toolgroup is there, enable ti with its icons
+        // if after rotation a toolgroup is there, enable it with its icons
         ToolGroup activeToolGroup = EditManager.INSTANCE.getActiveToolGroup();
         if (activeToolGroup != null) {
             toggleEditingButton.setBackgroundResource(R.drawable.mapview_toggle_editing_on);
             activeToolGroup.initUI();
             setLeftButtoonsEnablement(true);
+        }
+
+        //tgh debugging
+        if (toggleEditingButton != null) {
+            GPLog.addLogEntry("fred","MapsActivity toggle Button NOT Null");
+        } else {
+            GPLog.addLogEntry("fred","MapsActivity toggle Button Is Null");
         }
 
         GpsServiceUtilities.registerForBroadcasts(this, gpsServiceBroadcastReceiver);
@@ -389,11 +511,24 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     @Override
     protected void onPause() {
         GPDialogs.dismissProgressDialog(syncProgressDialog);
+        //debugging
+        GPLog.addLogEntry(this, "Pausing ... MapsActivity.created =  " + created); //$NON-NLS-1$
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+
+        created = true;
+
+        if (GPLog.LOG_HEAVY){
+            GPLog.addLogEntry(this, "Resuming ... MapsActivity.created =  " + created); //$NON-NLS-1$
+        }
+
+        // Get intent, action
+        Intent intent = getIntent();
+        String uid = intent.getStringExtra("uid");
+        GPLog.addLogEntry(this, "Maps onResume intent uid extra is " + uid); //$NON-NLS-1$
 
         // notes type
         boolean doCustom = mPeferences.getBoolean(Constants.PREFS_KEY_NOTES_CHECK, true);
@@ -424,6 +559,33 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         List<Overlay> overlays = mMapView.getOverlays();
         overlays.clear();
         overlays.add(mDataOverlay);
+
+        //reset this button as settings could have changed on resume (re-entry)
+        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
+            GPLog.addLogEntry("fred", "inside mapsactivity button");
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            addfreddataButton.setEnabled(true);
+            addfreddataButton.setOnClickListener(this);
+            registerForContextMenu(addfreddataButton);
+            addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
+        } else {
+            // regular fred data collection here
+            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
+            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    GeoPoint mapCenter = mapPosition.getMapCenter();
+                    Intent mapFredIntent = new Intent(MapsActivity.this, FredDataActivity.class);
+                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(mapFredIntent);
+                }
+            });
+        }
+
 
         super.onResume();
     }
@@ -464,6 +626,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             }
         }
 
+        created = false;
+        GPLog.addLogEntry(this, "Destroying MapsActivity.. MapsActivity.created =  " + created); //$NON-NLS-1$
+
         super.onDestroy();
     }
 
@@ -472,11 +637,33 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             mDataOverlay.clearItems();
             mDataOverlay.clearWays();
 
+            /* gps tracks */
             List<OverlayWay> logOverlaysList = DaoGpsLog.getGpslogOverlays();
             mDataOverlay.addWays(logOverlaysList);
 
             boolean imagesVisible = mPeferences.getBoolean(Constants.PREFS_KEY_IMAGES_VISIBLE, true);
             boolean notesVisible = mPeferences.getBoolean(Constants.PREFS_KEY_NOTES_VISIBLE, true);
+
+            /* fred points (obs points, plots, zool or bot points,imap observations) */
+            // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
+            final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+            if (DataManager.getInstance().areFredPtsVisible()) {
+                //GPLog.addLogEntry(this, "External DB is " + externalDBname);  //Fred vs. ImapInvasivesField. not helpful.
+                Drawable fredPtp = getResources().getDrawable(R.drawable.trianglept_p);
+                Drawable fredPta = getResources().getDrawable(R.drawable.trianglept_a);
+                Drawable fredPtc = getResources().getDrawable(R.drawable.trianglept_c);
+                Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
+                Context fredContext = getApplicationContext();
+                List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
+                if (fredPtOverlays != null) {
+                    int numPts = fredPtOverlays.size();
+                    if (numPts == 0) {
+                        Utilities.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
+                    } else {
+                        dataOverlay.addItems(fredPtOverlays);
+                    }
+                }
+            }
 
             /* images */
             if (imagesVisible) {
@@ -513,7 +700,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
     }
 
-    public boolean onTouch(View v, MotionEvent event) {
+    public boolean onTouch( View v, MotionEvent event ) {
         int action = event.getAction();
         if (GPLog.LOG_ABSURD)
             GPLog.addLogEntry(this, "onTouch issued with motionevent: " + action); //$NON-NLS-1$
@@ -536,14 +723,14 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             // update zoom ui a bit later. This is ugly but
             // found no way until there is not event handling
             // in mapsforge
-            new Thread(new Runnable() {
+            new Thread(new Runnable(){
                 public void run() {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable(){
                         public void run() {
                             int zoom = mMapView.getMapPosition().getZoomLevel();
                             setZoom(zoom);
@@ -555,9 +742,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         return false;
     }
 
-
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
+    public void onWindowFocusChanged( boolean hasFocus ) {
         if (hasFocus) {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             double[] lastCenter = PositionUtilities.getMapCenterFromPreferences(preferences, true, true);
@@ -585,7 +771,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         saveCenterPref();
     }
 
-    private void setGuiZoomText(int newZoom) {
+    private void setGuiZoomText( int newZoom ) {
         zoomLevelText.setText(formatter.format(newZoom));
     }
 
@@ -639,26 +825,30 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu( ContextMenu menu, View v, ContextMenuInfo menuInfo ) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(Menu.NONE, MENU_GPSDATA, 1, R.string.mainmenu_gpsdataselect);//.setIcon(android.R.drawable.ic_menu_compass);
-        menu.add(Menu.NONE, MENU_DATA, 2, R.string.base_maps);//.setIcon(android.R.drawable.ic_menu_compass);
-        menu.add(Menu.NONE, MENU_SCALE_ID, 3, R.string.mapsactivity_menu_toggle_scalebar);//.setIcon(R.drawable.ic_menu_scalebar);
-        menu.add(Menu.NONE, MENU_COMPASS_ID, 4, R.string.mapsactivity_menu_toggle_compass);//.setIcon(                android.R.drawable.ic_menu_compass);
-        boolean centerOnGps = mPeferences.getBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, false);
-        if (centerOnGps) {
-            menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.disable_center_on_gps);//.setIcon(                    android.R.drawable.ic_menu_mylocation);
-        } else {
-            menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.enable_center_on_gps);//.setIcon(                     android.R.drawable.ic_menu_mylocation);
+        if (v.getId() == R.id.menu_map_btn) {
+            menu.add(Menu.NONE, MENU_GPSDATA, 1, R.string.mainmenu_gpsdataselect);//.setIcon(android.R.drawable.ic_menu_compass);
+            menu.add(Menu.NONE, MENU_DATA, 2, R.string.base_maps);//.setIcon(android.R.drawable.ic_menu_compass);
+            menu.add(Menu.NONE, MENU_SCALE_ID, 3, R.string.mapsactivity_menu_toggle_scalebar);//.setIcon(R.drawable.ic_menu_scalebar);
+            menu.add(Menu.NONE, MENU_COMPASS_ID, 4, R.string.mapsactivity_menu_toggle_compass);//.setIcon(android.R.drawable.ic_menu_compass);
+            boolean centerOnGps = mPeferences.getBoolean(Constants.PREFS_KEY_AUTOMATIC_CENTER_GPS, false);
+            if (centerOnGps) {
+                menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.disable_center_on_gps);//.setIcon(android.R.drawable.ic_menu_mylocation);
+            } else {
+                menu.add(Menu.NONE, MENU_CENTER_ON_GPS, 6, R.string.enable_center_on_gps);//.setIcon(android.R.drawable.ic_menu_mylocation);
+            }
+
+            menu.add(Menu.NONE, MENU_CENTER_ON_MAP, 7, R.string.center_on_map);//.setIcon(android.R.drawable.ic_menu_mylocation);
+            menu.add(Menu.NONE, MENU_GO_TO, 8, R.string.go_to);//.setIcon(android.R.drawable.ic_menu_myplaces);
+            menu.add(Menu.NONE, MENU_SHAREPOSITION_ID, 8, R.string.share_position);//.setIcon(android.R.drawable.ic_menu_send);
+            menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare);//.setIcon(R.drawable.icon_datasource);
+            menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, getString(R.string.menu_extract_mapsforge_data));//"Import mapsforge data");//.setIcon(R.drawable.icon_datasource);
+        } else if (v.getId() == R.id.addfreddata){
+            menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 1, "Place point at GPS");//.setIcon(android.R.drawable.ic_menu_compass);;
+            menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 2, "Place point at map center");//.setIcon(android.R.drawable.ic_menu_compass);;
         }
-
-        menu.add(Menu.NONE, MENU_CENTER_ON_MAP, 7, R.string.center_on_map);//.setIcon(android.R.drawable.ic_menu_mylocation);
-        menu.add(Menu.NONE, MENU_GO_TO, 8, R.string.go_to);//.setIcon(android.R.drawable.ic_menu_myplaces);
-        menu.add(Menu.NONE, MENU_SHAREPOSITION_ID, 8, R.string.share_position);//.setIcon(android.R.drawable.ic_menu_send);
-        menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare);//.setIcon(R.drawable.icon_datasource);
-        menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, getString(R.string.menu_extract_mapsforge_data));//"Import mapsforge data");//.setIcon(R.drawable.icon_datasource);
     }
-
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case MENU_GPSDATA:
@@ -751,6 +941,49 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 edit.apply();
                 return true;
             }
+            case MENU_PLACE_PT_GPS: {
+                GPLog.addLogEntry("fred", "in Case gps");
+                //check if there is gps signal
+                GeoPoint geoPoint;
+                if (lastGpsPosition != null && lastGpsServiceStatus == GpsServiceStatus.GPS_FIX) {
+                    setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
+                    geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+                            (int) (lastGpsPosition[0] * LibraryConstants.E6));
+                } else {
+                    Utilities.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
+                    GPLog.addLogEntry("fred","no gps");
+                    return true;
+                }
+
+                //check if point has existing coordinates
+                Intent mapFredDDIntentChk = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
+
+                return true;
+            }
+            case MENU_PLACE_PT_MAP_CENTER: {
+                GPLog.addLogEntry("fred","in Case map center");
+                //check if point has existing coordinates
+                MapViewPosition mapPosition = mapView.getMapPosition();
+                GeoPoint mapCenter = mapPosition.getMapCenter();
+
+                Intent mapFredDDIntentChk = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
+
+                return true;
+            }
             default:
         }
         return super.onContextItemSelected(item);
@@ -760,9 +993,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         String[] items = new String[]{getString(R.string.goto_coordinate), getString(R.string.geocoding)};
 
         new AlertDialog.Builder(this).setSingleChoiceItems(items, 0, null)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener(){
 
-                    public void onClick(DialogInterface dialog, int whichButton) {
+                    public void onClick( DialogInterface dialog, int whichButton ) {
                         dialog.dismiss();
 
                         int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
@@ -813,7 +1046,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         return nswe;
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult( int requestCode, int resultCode, final Intent data ) {
         if (GPLog.LOG_ABSURD)
             GPLog.addLogEntry(this, "Activity returned"); //$NON-NLS-1$
         super.onActivityResult(requestCode, resultCode, data);
@@ -833,7 +1066,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             SQLiteDatabase sqliteDatabase = logDumper.getDatabase();
                             long now = new java.util.Date().getTime();
                             long newLogId = logDumper.addGpsLog(now, now, 0, name, DEFAULT_LOG_WIDTH, ColorUtilities.BLUE.getHex(), true); //$NON-NLS-1$
-
                             sqliteDatabase.beginTransaction();
                             try {
                                 long nowPlus10Secs = now;
@@ -841,12 +1073,10 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                                     double lon = routePoints[i];
                                     double lat = routePoints[i + 1];
                                     double altim = -1;
-
                                     // dummy time increment
                                     nowPlus10Secs = nowPlus10Secs + 10000;
                                     logDumper.addGpsLogDataPoint(sqliteDatabase, newLogId, lon, lat, altim, nowPlus10Secs);
                                 }
-
                                 sqliteDatabase.setTransactionSuccessful();
                             } finally {
                                 sqliteDatabase.endTransaction();
@@ -854,7 +1084,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         } catch (Exception e) {
                             GPLog.error(this, "Cannot draw route.", e); //$NON-NLS-1$
                         }
-
                     } else {
                         // it is a single point geocoding request
                         double lon = data.getDoubleExtra(LONGITUDE, 0d);
@@ -873,6 +1102,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 }
                 break;
             }
+        }
 //            case (GPSDATAPROPERTIES_RETURN_CODE): {
 //                if (resultCode == Activity.RESULT_OK) {
 //                    double lon = data.getDoubleExtra(LibraryConstants.LONGITUDE, 0d);
@@ -888,31 +1118,31 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     int zoom = data.getIntExtra(ZOOMLEVEL, 1);
                     setCenterAndZoomForMapWindowFocus(lon, lat, zoom);
                 }
-                break;
-            }
-            case (CONTACT_RETURN_CODE): {
-                if (resultCode == Activity.RESULT_OK) {
-                    Uri uri = data.getData();
-                    String number = null;
-                    if (smsString != null && uri != null) {
-                        Cursor c = null;
-                        try {
-                            c = getContentResolver().query(
-                                    uri,
-                                    new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER,
-                                            ContactsContract.CommonDataKinds.Phone.TYPE}, null, null, null
-                            );
 
-                            if (c != null && c.moveToFirst()) {
-                                number = c.getString(0);
-                                // int type = c.getInt(1);
-                                // showSelectedNumber(type, number);
-                            }
-                        } finally {
-                            if (c != null) {
-                                c.close();
-                            }
+            break;
+        }
+        case (CONTACT_RETURN_CODE): {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri uri = data.getData();
+                String number = null;
+                if (smsString != null && uri != null) {
+                    Cursor c = null;
+                    try {
+                        c = getContentResolver().query(
+                                uri,
+                                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                        ContactsContract.CommonDataKinds.Phone.TYPE}, null, null, null);
+
+                        if (c != null && c.moveToFirst()) {
+                            number = c.getString(0);
+                            // int type = c.getInt(1);
+                            // showSelectedNumber(type, number);
                         }
+                    } finally {
+                        if (c != null) {
+                            c.close();
+                        }
+                    }
 
                         if (number != null) {
                             int count = 1;
@@ -925,7 +1155,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
-                break;
             }
             case (FORMUPDATE_RETURN_CODE): {
                 if (resultCode == Activity.RESULT_OK) {
@@ -943,10 +1172,58 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
-                break;
             }
         }
-    }
+        case (FRED_POINT_EXISTING_LOCATION_RETURN_CODE): {
+          GPLog.addLogEntry("fred","in existing location return code");
+            if (resultCode == Activity.RESULT_OK) {
+                boolean hasLoc = data.getBooleanExtra("hasLocData", false);
+                if (hasLoc){
+                    GPLog.addLogEntry("fred","in maps activity, pt has loc");
+                    Utilities.yesNoMessageDialog(MapsActivity.this, "This point has coordinates, overwrite?", new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                //write the point
+                                Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                                mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
+                                mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
+                                mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
+                                mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                                mapFredDDIntent.putExtra("type", "writeLocation");
+                                mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                                startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+
+                            } catch (Exception e) {
+                                GPLog.error(this, null, e);
+                            }
+                        }
+                    }, new Runnable() {
+                        @Override
+                        public void run() {
+                            //leave gracefully
+                            Utilities.toast(MapsActivity.this,"location not updated", Toast.LENGTH_SHORT);
+                        }
+                    });
+
+
+                } else {
+                    GPLog.addLogEntry("fred","in maps activity, pt no loc");
+                    Intent mapFredDDIntent = new Intent(MapsActivity.this, FredDataDirectActivity.class);
+                    mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
+                    mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
+                    mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
+                    mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                    mapFredDDIntent.putExtra("type", "writeLocation");
+                    mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                }
+            }
+        }
+        break;
+        }
+        }
+
 
     private void addBookmark() {
         GeoPoint mapCenter = mMapView.getMapPosition().getMapCenter();
@@ -985,7 +1262,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     }
 
 
-    private boolean boundsContain(int latE6, int lonE6, int nE6, int sE6, int wE6, int eE6) {
+    private boolean boundsContain( int latE6, int lonE6, int nE6, int sE6, int wE6, int eE6 ) {
         return lonE6 > wE6 && lonE6 < eE6 && latE6 > sE6 && latE6 < nE6;
     }
 
@@ -1056,7 +1333,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         PositionUtilities.putMapCenterInPreferences(mPeferences, cx, cy, zoomLevel);
     }
 
-    private void updateBatteryCondition(int level) {
+    private void updateBatteryCondition( int level ) {
         if (GPLog.LOG_ABSURD)
             GPLog.addLogEntry(this, "BATTERY LEVEL GEOPAP: " + level); //$NON-NLS-1$
         StringBuilder sb = new StringBuilder();
@@ -1184,7 +1461,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         ImageButton toggleLoginfoButton;
 //        ImageButton toggleViewingconeButton;
         switch (v.getId()) {
-            case R.id.menu_map_button:
+            case R.id.addfreddata:
+                ImageButton fredPtMenuButton = (ImageButton) findViewById(R.id.addfreddata);
+                openContextMenu(fredPtMenuButton);
+                break;
+            case R.id.menu_map_btn:
                 FloatingActionButton menuButton = (FloatingActionButton) findViewById(R.id.menu_map_button);
                 openContextMenu(menuButton);
                 break;
@@ -1317,9 +1598,14 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             case R.id.toggleEditingButton:
                 toggleEditing();
                 break;
+            case R.id.gobacktofred:
+                //todo work here
 
-            default:
+
                 break;
+
+        default:
+            break;
         }
     }
 
@@ -1350,17 +1636,20 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
     }
 
-    private void setLeftButtoonsEnablement(boolean enable) {
+    private void setLeftButtoonsEnablement( boolean enable ) {
+        ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
         ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         if (enable) {
+            addfreddataButton.setVisibility(View.VISIBLE);
             addnotebytagButton.setVisibility(View.VISIBLE);
             addBookmarkButton.setVisibility(View.VISIBLE);
             toggleLoginfoButton.setVisibility(View.VISIBLE);
             toggleMeasuremodeButton.setVisibility(View.VISIBLE);
         } else {
+            addfreddataButton.setVisibility(View.GONE);
             addnotebytagButton.setVisibility(View.GONE);
             addBookmarkButton.setVisibility(View.GONE);
             toggleLoginfoButton.setVisibility(View.GONE);
@@ -1368,7 +1657,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
     }
 
-    private void setAllButtoonsEnablement(boolean enable) {
+    private void setAllButtoonsEnablement( boolean enable ) {
+        ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
@@ -1382,6 +1672,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         if (!enable) {
             visibility = View.GONE;
         }
+        addfreddataButton.setVisibility(visibility);
         addnotebytagButton.setVisibility(visibility);
         addBookmarkButton.setVisibility(visibility);
         toggleLoginfoButton.setVisibility(visibility);
@@ -1397,11 +1688,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // force to exit through the exit button
         // System.out.println(keyCode + "/" + KeyEvent.KEYCODE_BACK);
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_BACK:
-                if (EditManager.INSTANCE.getActiveToolGroup() != null) {
-                    return true;
-                }
+        switch( keyCode ) {
+        case KeyEvent.KEYCODE_BACK:
+            if (EditManager.INSTANCE.getActiveToolGroup() != null) {
+                return true;
+            }
         }
         return super.onKeyDown(keyCode, event);
     }

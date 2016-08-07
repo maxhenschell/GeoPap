@@ -262,6 +262,76 @@
     <string name="last_modification_user">Last project modification user</string>
     <string name="preview_mode_save_warning">Preview mode. Once the save button is tapped, the geometry will be saved into the database</string>
     <string name="reset_string">reset</string>
+
+    <!-- Fred strings -->
+    <string name="fred_preferences">FRED preferences</string>
+    <string name="fred_external_db_path">External database path</string>
+    <string name="fred_external_db_name">External database name</string>
+    <string name="parent_table_info">Parent table info</string>
+    <string name="fred_parent_table_present_summary">Is there a parent table that the table holding GPS data is related to? Check if yes.</string>   
+    <string name="child_table_info">Child table info</string>
+    <string name="fred_first_level_table">Parent table name</string>
+    <string name="fred_second_level_table">Child table name</string>
+    <string name="fred_first_level_ID">ID column name</string>
+    <string name="fred_second_level_ID">ID column name</string>
+    <string name="fred_first_level_descriptor">Descriptor column name</string>
+    <string name="fred_second_level_descriptor">Descriptor column name</string>
+    <string name="fred_descriptor_summary">A location descriptor field, e.g. sitename, point number, etc.</string>
+    <string name="fred_first_level_timestamp">Timestamp column name</string>
+    <string name="fred_second_level_timestamp">Timestamp column name</string>
+    <string name="fred_column_Lat">Latitude column name</string>
+    <string name="fred_column_Lon">Longitude column name</string>
+    <string name="fred_column_note">Notes column name</string>
+    <string name="fred_tables_two_levels">Parent-Child table structure</string>
+    <string name="fred_quick_sets_summary">Change all preferences at once here with quick-sets.</string>
+    <string name="fred_quick_sets">Quick-sets</string>
+    <string name="fred_choose_settings">Choose a group of predefined settings</string>
+    <!-- Fred default values: change these to change defaults-->    
+    <string name="fred_defval_external_db_path">/FRED/FRED.db</string>
+    <string name="fred_defval_external_db_name">FRED</string>
+    <string name="fred_defval_first_level_table">IPAQ_surveysite</string>
+    <string name="fred_defval_first_level_ID">Site_ID</string>
+    <string name="fred_defval_first_level_descriptor">Surveysite</string>
+    <string name="fred_defval_first_level_timestamp">dtmRecCreate</string>
+    <string name="fred_defval_second_level_table">IPAQ_Obspts</string>
+    <string name="fred_defval_second_level_ID">Obspts_ID</string>
+    <string name="fred_defval_column_Lat">latitude</string>
+    <string name="fred_defval_column_Lon">longitude</string>
+    <string name="fred_defval_column_note">Comments</string>
+    <string name="fred_defval_two_levels">true</string>
+    <string name="fred_defval_second_level_descriptor">Obspt</string>    
+    <string name="fred_defval_second_level_timestamp">dtmRecCreate</string>
+    <!-- Two other quick-sets: Botany/zoology and iMap -->
+    <string name="fred_BotZoo_external_db_path">/FRED/FRED.db</string>
+    <string name="fred_BotZoo_external_db_name">FRED</string>
+    <string name="fred_BotZoo_two_levels">true</string>      
+    <string name="fred_BotZoo_first_level_table">IPAQ_SppSurvArea</string>
+    <string name="fred_BotZoo_first_level_ID">intArea_id</string>
+    <string name="fred_BotZoo_first_level_descriptor">strAreaComment</string>
+    <string name="fred_BotZoo_first_level_timestamp">TIMESTAMP</string>  <!-- want last modified, not last created -->
+    <string name="fred_BotZoo_second_level_table">IPAQ_SppSurvUtmList</string>
+    <string name="fred_BotZoo_second_level_ID">intUtm_ID</string>
+    <string name="fred_BotZoo_column_Lat">intlatitude</string>
+    <string name="fred_BotZoo_column_Lon">intlongitude</string>
+    <string name="fred_BotZoo_column_note">StrComment</string>
+    <string name="fred_BotZoo_second_level_descriptor">strPointName</string>
+    <string name="fred_BotZoo_second_level_timestamp">dtmRecCreate</string>
+    
+    <string name="fred_iMap_external_db_path">/ImapInvasivesField/ImapInvasivesField.db</string>
+    <string name="fred_iMap_external_db_name">iMapInvasivesField</string>
+    <string name="fred_iMap_two_levels">false</string>
+    <string name="fred_iMap_first_level_table">noParent</string>
+    <string name="fred_iMap_first_level_ID">noParent</string>
+    <string name="fred_iMap_first_level_descriptor">noParent</string>
+    <string name="fred_iMap_first_level_timestamp">noParent</string>
+    <string name="fred_iMap_second_level_table">Observation</string>
+    <string name="fred_iMap_second_level_ID">mobsid</string>
+    <string name="fred_iMap_column_Lat">State_Y</string>
+    <string name="fred_iMap_column_Lon">State_X</string>
+    <string name="fred_iMap_column_note">obscomments_long</string>
+    <string name="fred_iMap_second_level_descriptor">projectid</string>
+    <string name="fred_iMap_second_level_timestamp">obsdate</string>
+    <!-- More Geopap strings -->
     <string name="avaiable_layers">Available layers</string>
     <string name="geometry_saved">Geometry saved.</string>
     <string name="unique_constraint_violation_message">A unique constraint violation occurred. Databases with unique constraints are not supported.</string>
@@ -393,3 +463,4 @@
     <string name="interrupted_by_user">Interrupted by user</string>
 
 </resources>
+

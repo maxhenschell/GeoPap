@@ -49,7 +49,22 @@ public class DatabaseManager {
     */
     public static final float BUFFER = 0.001f;
 
+    private static DatabaseManager dbManager = null; // added back by tgh 5/17/2014
+
     private DatabaseOpenHelper databaseHelper;
+
+    /**
+     * Singleton access.
+     * 
+     * @return the {@link DatabaseManager}.
+     */
+    // added back by tgh 5/17/2014
+    public static DatabaseManager getInstance() {
+        if (dbManager == null) {
+            dbManager = new DatabaseManager();
+        }
+        return dbManager;
+    }
 
     /**
      * @param context the {@link Context} to use.
@@ -109,7 +124,8 @@ public class DatabaseManager {
             if (databaseFile.exists()) {
                 if (Debug.D)
                     Log.i("SQLiteHelper", "Opening database at " + databaseFile);
-                db = SQLiteDatabase.openOrCreateDatabase(databaseFile, null);
+                //db = SQLiteDatabase.openOrCreateDatabase(databaseFile, null);
+                db = SQLiteDatabase.openDatabase(databaseFile.getPath(), null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
                 int dbVersion = db.getVersion();
                 if (DATABASE_VERSION > dbVersion)
                     upgrade(DATABASE_VERSION, dbVersion, context);
@@ -119,7 +135,8 @@ public class DatabaseManager {
                     Log.i("SQLiteHelper", "db folder exists: " + databaseFile.getParentFile().exists());
                     Log.i("SQLiteHelper", "db folder is writable: " + databaseFile.getParentFile().canWrite());
                 }
-                db = SQLiteDatabase.openOrCreateDatabase(databaseFile, null);
+                //db = SQLiteDatabase.openOrCreateDatabase(databaseFile, null);
+                db = SQLiteDatabase.openDatabase(databaseFile.getPath(), null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
                 create(context);
             }
         }

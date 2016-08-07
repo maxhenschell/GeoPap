@@ -67,6 +67,7 @@ import eu.geopaparazzi.spatialite.database.spatial.core.enums.GeometryType;
 import eu.geopaparazzi.spatialite.database.spatial.core.layers.SpatialVectorTableLayer;
 import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
 import eu.geopaparazzi.spatialite.database.spatial.util.JtsUtilities;
+import eu.hydrologis.geopaparazzi.GeoPapFromDroidDb;
 import eu.hydrologis.geopaparazzi.GeopaparazziApplication;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
@@ -276,8 +277,21 @@ public class PolygonCreateFeatureToolGroup implements ToolGroup, OnClickListener
                     SpatialVectorTableLayer spatialVectorTableLayer = (SpatialVectorTableLayer) editLayer;
                     try {
                         for (Geometry geometry : geomsList) {
-                            DaoSpatialite.addNewFeatureByGeometry(geometry, LibraryConstants.SRID_WGS84_4326,
-                                    spatialVectorTableLayer.getSpatialVectorTable());
+                            //todo: tgh added the fred parts here
+                            String fredIDVal = null;
+                            GPLog.addLogEntry(this, "DAOSP idKey is " + GeoPapFromDroidDb.idKey);
+                            if(GeoPapFromDroidDb.idKey != null){
+                                fredIDVal = GeoPapFromDroidDb.idKey;
+                            }
+                            if(fredIDVal == null) {
+                                GPLog.addLogEntry(this, "DAOSP .. in newFeatByGeom ..");
+                                DaoSpatialite.addNewFeatureByGeometry(geometry, LibraryConstants.SRID_WGS84_4326,
+                                        spatialVectorTableLayer.getSpatialVectorTable());
+                            } else {
+                                GPLog.addLogEntry(this, "DAOSP .. in newFeatByGeomFred");
+                                DaoSpatialite.addNewFeatureByGeometryFredId(geometry, LibraryConstants.SRID_WGS84_4326,
+                                        spatialVectorTableLayer.getSpatialVectorTable(), "guid", fredIDVal);
+                            }
                         }
                         GPDialogs.toast(commitButton.getContext(), commitButton.getContext().getString(R.string.geometry_saved), Toast.LENGTH_SHORT);
                         coordinatesList.clear();

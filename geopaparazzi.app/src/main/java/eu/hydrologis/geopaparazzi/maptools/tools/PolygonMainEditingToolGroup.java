@@ -17,6 +17,9 @@
  */
 package eu.hydrologis.geopaparazzi.maptools.tools;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -26,6 +29,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
@@ -56,6 +60,9 @@ import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTabl
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.maptools.FeatureUtilities;
 import eu.hydrologis.geopaparazzi.mapview.MapsSupportService;
+import eu.hydrologis.geopaparazzi.GeoPapFromDroidDb;
+//import eu.hydrologis.geopaparazzi.maps.MapsActivity;
+//import eu.hydrologis.geopaparazzi.maps.MapsSupportService;
 
 /**
  * The main polygon layer editing tool group, which just shows the tool palette.
@@ -63,7 +70,6 @@ import eu.hydrologis.geopaparazzi.mapview.MapsSupportService;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, OnTouchListener {
-
     private ImageButton selectAllButton;
     private MapView mapView;
 
@@ -73,6 +79,8 @@ public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, 
     private ImageButton cutButton;
     private ImageButton extendButton;
     private ImageButton commitButton;
+
+    private ImageButton backToFredButton;
 
     private ImageButton undoButton;
     private Feature cutExtendProcessedFeature;
@@ -136,6 +144,18 @@ public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, 
             selectEditableButton.setOnClickListener(this);
             selectEditableButton.setOnTouchListener(this);
             parent.addView(selectEditableButton);
+
+            GPLog.addLogEntry("fred", "ddb is " + GeoPapFromDroidDb.whichFredDb);
+
+            if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredDb.equals("iMapField")) {
+                backToFredButton = new ImageButton(context);
+                backToFredButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+                backToFredButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_editing_goback_fred));
+                backToFredButton.setPadding(0, padding, 0, padding);
+                backToFredButton.setOnClickListener(this);
+                backToFredButton.setOnTouchListener(this);
+                parent.addView(backToFredButton);
+            }
         }
 
         selectAllButton = new ImageButton(context);
@@ -263,6 +283,7 @@ public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, 
                         return;
                     }
 
+
                     EditManager.INSTANCE.setActiveTool(null);
                     commitButton.setVisibility(View.GONE);
                     undoButton.setVisibility(View.GONE);
@@ -277,6 +298,32 @@ public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, 
                 commitButton.setVisibility(View.GONE);
                 undoButton.setVisibility(View.GONE);
                 EditManager.INSTANCE.invalidateEditingView();
+            }
+        } else if (v == backToFredButton) {
+            //todo edit in here
+            GPLog.addLogEntry("fred", "button pressed");
+            Context context = v.getContext();
+            // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+            if (!tasklist.isEmpty()) {
+                int nSize = tasklist.size();
+                boolean appFound = false;
+                for (int i = 0; i < nSize; i++) {
+                    ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+                    if (GPLog.LOG_HEAVY)
+                        GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+                    if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+                        appFound = true;
+                        am.moveTaskToFront(taskinfo.id, 0);
+                    }
+                }
+                if (!appFound) {
+                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("parameter", GeoPapFromDroidDb.whichFredDb); //$NON-NLS-1$
+                    context.startActivity(intent);
+                }
             }
         }
 
@@ -368,4 +415,5 @@ public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, 
     public void onGpsUpdate(double lon, double lat) {
         // ignore
     }
+
 }
