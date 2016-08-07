@@ -19,6 +19,7 @@ package eu.geopaparazzi.spatialite.database.spatial.core.daos;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.features.Feature;
 import eu.geopaparazzi.library.util.types.EDataType;
 import eu.geopaparazzi.spatialite.database.spatial.SpatialiteSourcesManager;
+import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.AbstractSpatialDatabaseHandler;
 import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.SpatialiteDatabaseHandler;
 import eu.geopaparazzi.spatialite.database.spatial.core.enums.GeometryType;
 import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
@@ -321,8 +323,10 @@ public class DaoSpatialite implements ISpatialiteTableAndFieldsNames {
     public static int addNewFeatureByGeometryFredId(Geometry geometry, String geometrySrid, SpatialVectorTable spatialVectorTable,
                                                     String fredID, String fredIDVal)
             throws Exception {
-        String uniqueTableName = spatialVectorTable.getUniqueNameBasedOnDbFilePath();
-        Database database = getDatabaseFromUniqueTableName(uniqueTableName);
+
+        SpatialiteDatabaseHandler dbHandler = SpatialiteSourcesManager.INSTANCE.getExistingDatabaseHandlerByTable(spatialVectorTable);
+        Database database = dbHandler.getDatabase();
+
         String tableName = spatialVectorTable.getTableName();
         String geometryFieldName = spatialVectorTable.getGeomName();
         String srid = spatialVectorTable.getSrid();
@@ -403,7 +407,6 @@ public class DaoSpatialite implements ISpatialiteTableAndFieldsNames {
         return(33);
 
     }
-
 
 
     /**
