@@ -343,7 +343,7 @@ public class DaoSpatialite implements ISpatialiteTableAndFieldsNames {
             boolean ignore = SpatialiteUtilities.doIgnoreField(field);
             if(field.equals(fredID)){ignore = true;};
             if (!ignore) {
-                DataType tableFieldType = spatialVectorTable.getTableFieldType(field);
+                EDataType tableFieldType = spatialVectorTable.getTableFieldType(field);
                 if (tableFieldType != null) {
                     nonGeomFieldsNames = nonGeomFieldsNames + "," + field;
                     nonGeomFieldsValues = nonGeomFieldsValues + "," + tableFieldType.getDefaultValueForSql();
