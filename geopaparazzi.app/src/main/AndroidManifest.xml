@@ -322,7 +322,7 @@
 
 
         <activity
-            android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb"
+            android:name=".GeoPapFromDroidDb"
             android:noHistory="true"
             android:launchMode="singleTask">
             <intent-filter>
@@ -336,7 +336,7 @@
             android:name=".mapview.overlays.FredDataActivity"
             android:launchMode="singleTop">
             <intent-filter>
-                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDS" />
+                <action android:name="eu.hydrologis.geopaparazzi.mapview.overlays.FRED_WRITECOORDS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -345,7 +345,7 @@
             android:launchMode="singleTop"
             android:noHistory="true">
             <intent-filter>
-                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_IMAP_WRITECOORDS" />
+                <action android:name="eu.hydrologis.geopaparazzi.mapview.overlays.FRED_IMAP_WRITECOORDS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -354,7 +354,7 @@
             android:launchMode="singleTop"
             android:noHistory="true">
             <intent-filter>
-                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDSDIRECT" />
+                <action android:name="eu.hydrologis.geopaparazzi.mapview.overlays.FRED_WRITECOORDSDIRECT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
