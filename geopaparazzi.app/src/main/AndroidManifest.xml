@@ -321,6 +321,44 @@
         <activity android:name="eu.geopaparazzi.library.core.activities.DirectoryBrowserActivity" />
 
 
+        <activity
+            android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb"
+            android:noHistory="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.GeoPapFromDroidDb" />
+                <action android:name="JUMP_TO_GEOPAP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".mapview.overlays.FredDataActivity"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".mapview.overlays.FredIMapDataActivity"
+            android:launchMode="singleTop"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_IMAP_WRITECOORDS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".mapview.overlays.FredDataDirectActivity"
+            android:launchMode="singleTop"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="eu.hydrologis.geopaparazzi.maps.FRED_WRITECOORDSDIRECT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <provider
             android:name=".providers.SourceUrlsContentProvider"
             android:authorities="eu.geopaparazzi.provider.sourceurls"
