@@ -393,7 +393,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
             addfreddataButton.setOnClickListener(new Button.OnClickListener() {
                 public void onClick(View v) {
-                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    MapViewPosition mapPosition = mMapView.getMapPosition();
                     GeoPoint mapCenter = mapPosition.getMapCenter();
                     Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
                     mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
@@ -577,7 +577,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
             addfreddataButton.setOnClickListener(new Button.OnClickListener() {
                 public void onClick(View v) {
-                    MapViewPosition mapPosition = mapView.getMapPosition();
+                    MapViewPosition mapPosition = mMapView.getMapPosition();
                     GeoPoint mapCenter = mapPosition.getMapCenter();
                     Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
                     mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
@@ -646,26 +646,27 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
             boolean imagesVisible = mPeferences.getBoolean(Constants.PREFS_KEY_IMAGES_VISIBLE, true);
             boolean notesVisible = mPeferences.getBoolean(Constants.PREFS_KEY_NOTES_VISIBLE, true);
+            boolean fredPtsVisible = mPeferences.getBoolean(Constants.PREFS_KEY_FRED_POINTS_VISIBLE,true);
 
             /* fred points (obs points, plots, zool or bot points,imap observations) */
             // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
-            final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-            if (DataManager.getInstance().areFredPtsVisible()) {
-                //GPLog.addLogEntry(this, "External DB is " + externalDBname);  //Fred vs. ImapInvasivesField. not helpful.
-                Drawable fredPtp = getResources().getDrawable(R.drawable.trianglept_p);
-                Drawable fredPta = getResources().getDrawable(R.drawable.trianglept_a);
-                Drawable fredPtc = getResources().getDrawable(R.drawable.trianglept_c);
-                Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
-                Context fredContext = getApplicationContext();
-                List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
-                if (fredPtOverlays != null) {
-                    int numPts = fredPtOverlays.size();
-                    if (numPts == 0) {
-                        GPDialogs.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
-                    } else {
-                        dataOverlay.addItems(fredPtOverlays);
+            final String externalDBname = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+            if(fredPtsVisible) {
+                    //GPLog.addLogEntry(this, "External DB is " + externalDBname);  //Fred vs. ImapInvasivesField. not helpful.
+                    Drawable fredPtp = Compat.getDrawable(this, R.drawable.trianglept_p);
+                    Drawable fredPta = Compat.getDrawable(this, R.drawable.trianglept_a);
+                    Drawable fredPtc = Compat.getDrawable(this, R.drawable.trianglept_c);
+                    Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
+                    Context fredContext = getApplicationContext();
+                    List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
+                    if (fredPtOverlays != null) {
+                        int numPts = fredPtOverlays.size();
+                        if (numPts == 0) {
+                            GPDialogs.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
+                        } else {
+                            mDataOverlay.addItems(fredPtOverlays);
+                        }
                     }
-                }
             }
 
             /* images */
@@ -973,7 +974,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             case MENU_PLACE_PT_MAP_CENTER: {
                 GPLog.addLogEntry("fred","in Case map center");
                 //check if point has existing coordinates
-                MapViewPosition mapPosition = mapView.getMapPosition();
+                MapViewPosition mapPosition = mMapView.getMapPosition();
                 GeoPoint mapCenter = mapPosition.getMapCenter();
 
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
@@ -1182,7 +1183,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     boolean hasLoc = data.getBooleanExtra("hasLocData", false);
                     if (hasLoc){
                         GPLog.addLogEntry("fred","in maps activity, pt has loc");
-                        Utilities.yesNoMessageDialog(MapviewActivity.this, "This point has coordinates, overwrite?", new Runnable() {
+                        GPDialogs.yesNoMessageDialog(MapviewActivity.this, "This point has coordinates, overwrite?", new Runnable() {
                             @Override
                             public void run() {
                                 try {
