@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 import eu.geopaparazzi.library.core.maps.SpatialiteMap;
 import eu.geopaparazzi.library.database.GPLog;
@@ -305,26 +306,47 @@ public class PolygonMainEditingToolGroup implements ToolGroup, OnClickListener, 
             Context context = v.getContext();
             // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
             ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
-            if (!tasklist.isEmpty()) {
-                int nSize = tasklist.size();
-                boolean appFound = false;
-                for (int i = 0; i < nSize; i++) {
-                    ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-                    if (GPLog.LOG_HEAVY)
-                        GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-                    if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-                        appFound = true;
-                        am.moveTaskToFront(taskinfo.id, 0);
-                    }
-                }
-                if (!appFound) {
-                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("parameter", GeoPapFromDroidDb.whichFredDb); //$NON-NLS-1$
-                    context.startActivity(intent);
-                }
-            }
+//            List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+//            if (! appList.isEmpty()){
+//                int nSize = appList.size();
+//                boolean appFound = false;
+//                for (int i = 0; i < nSize; i++){
+//                    ActivityManager.RunningAppProcessInfo appinfo = appList.get(i);
+//                    if (GPLog.LOG_HEAVY)
+//                        GPLog.addLogEntry(this, "RunningApp " + i + " is " + appinfo.processName);
+//                    if (appinfo.processName.equals("com.syware.droiddb")){
+//                        appFound = true:
+//                        //stuck here with this method, I think.
+//                    }
+//                }
+//            }
+
+            // perhaps just start a new intent in all cases
+            Intent intent = new Intent("com.syware.droiddb");
+            intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.putExtra("parameter", GeoPapFromDroidDb.whichFredDb);
+            context.startActivity(intent);
+            //// this below, is what I was using but is deprecated now (so would work on the current tablets still)
+//            List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+//            if (!tasklist.isEmpty()) {
+//                int nSize = tasklist.size();
+//                boolean appFound = false;
+//                for (int i = 0; i < nSize; i++) {
+//                    ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+//                    if (GPLog.LOG_HEAVY)
+//                        GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+//                    if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+//                        appFound = true;
+//                        am.moveTaskToFront(taskinfo.id, 0);
+//                    }
+//                }
+//                if (!appFound) {
+//                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+//                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra("parameter", GeoPapFromDroidDb.whichFredDb); //$NON-NLS-1$
+//                    context.startActivity(intent);
+//                }
+//            }
         }
 
         handleToolIcons(v);

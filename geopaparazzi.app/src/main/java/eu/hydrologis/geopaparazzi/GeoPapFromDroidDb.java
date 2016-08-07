@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import eu.geopaparazzi.library.database.GPLog;
-import eu.hydrologis.geopaparazzi.maps.MapsActivity;
+import eu.hydrologis.geopaparazzi.mapview.MapviewActivity;
 
 /**
  * A way to handle inconsistent activity opening in the activity stack
@@ -102,22 +102,22 @@ public class GeoPapFromDroidDb extends Activity{
          * check to see if maps activity is running
          */
 
-        if (MapsActivity.created) {
+        if (MapviewActivity.created) {
             //run maps activity here
-            Intent intent = new Intent(this, MapsActivity.class);
+            Intent intent = new Intent(this, MapviewActivity.class);
 
             if (GPLog.LOG_HEAVY){
-                GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
+                GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapviewActivity.created); //$NON-NLS-1$
                 GPLog.addLogEntry(this, "GPFDDB starting maps"); //$NON-NLS-1$
             }
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
 
         } else {
-            Intent intent = new Intent(this, GeoPaparazziActivity.class);
+            Intent intent = new Intent(this, GeopaparazziActivity.class);
 
             if (GPLog.LOG_HEAVY){
-                GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapsActivity.created); //$NON-NLS-1$
+                GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapviewActivity.created); //$NON-NLS-1$
                 GPLog.addLogEntry(this, "GPFDDB starting main"); //$NON-NLS-1$
             }
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TASK);

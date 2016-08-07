@@ -35,6 +35,7 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import eu.geopaparazzi.library.database.GPLog;
+import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.Utilities;
 
 /**
@@ -98,7 +99,7 @@ public class DaoFredPts {
                                 fredPts.add(pt);
                             } catch (IllegalArgumentException e) {
                                 GPLog.addLogEntry(context, "Exception during Fred geopoints query and display");
-                                Utilities.toast(context, "At least one Fred point out of possible range", Toast.LENGTH_SHORT);
+                                GPDialogs.toast(context, "At least one Fred point out of possible range", Toast.LENGTH_SHORT);
                             }
 
                             c.moveToNext();
@@ -108,17 +109,17 @@ public class DaoFredPts {
                         c.close();
                     }
                 } else {
-                    Utilities.toast(context, "no Fred points to display", Toast.LENGTH_SHORT);
+                    GPDialogs.toast(context, "no Fred points to display", Toast.LENGTH_SHORT);
                 }
             } catch (SQLiteException e) {
                 //print and catch the exception
                 GPLog.addLogEntry(context, "Exception during Fred points query and display");
-                Utilities.toast(context, "Fred settings wrong", Toast.LENGTH_SHORT);
+                GPDialogs.toast(context, "Fred settings wrong", Toast.LENGTH_SHORT);
             }
             sqlDB.close();
         } else {
-            Utilities.toast(context, "Fred DB settings wrong", Toast.LENGTH_SHORT);
-            Utilities.toast(context, extDB + " does not exist", Toast.LENGTH_SHORT);
+            GPDialogs.toast(context, "Fred DB settings wrong", Toast.LENGTH_SHORT);
+            GPDialogs.toast(context, extDB + " does not exist", Toast.LENGTH_SHORT);
         }
 
         return fredPts;  // can be empty .. ok?
