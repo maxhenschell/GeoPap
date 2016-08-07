@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package eu.hydrologis.geopaparazzi.maps;
+package eu.hydrologis.geopaparazzi.mapview.overlays;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -44,11 +44,13 @@ import java.util.List;
 
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
+import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.Utilities;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DatabaseManager;
-import eu.hydrologis.geopaparazzi.maps.overlays.GpsData;
+import eu.hydrologis.geopaparazzi.mapview.MapviewActivity;
+import eu.hydrologis.geopaparazzi.mapview.overlays.GpsData;
 import jsqlite.*;
 //import eu.geopaparazzi.library.gps.GpsManager;
 
@@ -87,7 +89,7 @@ public class FredDataDirectActivity extends Activity {
         super.onCreate(icicle);
 
         // get preferences
-        PreferenceManager.setDefaultValues(this, R.xml.my_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
@@ -182,12 +184,12 @@ public class FredDataDirectActivity extends Activity {
                         // don't open form if no records
                         if (secondIDs.size() == 0) {
                             GPLog.addLogEntry(this, "Fred DB: no records 1 " + quicksetChoice);
-                            Utilities.toast(this, "No records in DB - add one first", Toast.LENGTH_SHORT);
+                            GPDialogs.toast(this, "No records in DB - add one first", Toast.LENGTH_SHORT);
                             finish();
                         }
                     } else {
                         GPLog.addLogEntry(this, "Fred DB: no Table 2 " + childTable);
-                        Utilities.toast(this, "Missing table in DB - check settings", Toast.LENGTH_SHORT);
+                        GPDialogs.toast(this, "Missing table in DB - check settings", Toast.LENGTH_SHORT);
                         finish();
                     }
                     sqlDB.close();
@@ -248,8 +250,8 @@ public class FredDataDirectActivity extends Activity {
     @Override
     public void onPause() {
         //maintain this boolean
-        MapsActivity.created = true;
-        GPLog.addLogEntry(this, "Pausing Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
+        MapviewActivity.created = true;
+        GPLog.addLogEntry(this, "Pausing Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
 
         super.onPause();
     }
@@ -257,8 +259,8 @@ public class FredDataDirectActivity extends Activity {
     @Override
     public void onStop() {
         //maintain this boolean
-        MapsActivity.created = true;
-        GPLog.addLogEntry(this, "Stopping Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
+        MapviewActivity.created = true;
+        GPLog.addLogEntry(this, "Stopping Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
 
         super.onStop();
     }
@@ -270,8 +272,8 @@ public class FredDataDirectActivity extends Activity {
             GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
 
         //maintain this boolean
-        MapsActivity.created = true;
-        GPLog.addLogEntry(this, "Destroying Fred ... MapsActivity.created =  " + MapsActivity.created); //$NON-NLS-1$
+        MapviewActivity.created = true;
+        GPLog.addLogEntry(this, "Destroying Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
 
         super.onDestroy();
     }
