@@ -17,7 +17,6 @@
  */
 
 package eu.hydrologis.geopaparazzi.mapview;
-//package eu.hydrologis.geopaparazzi.maps;  //TGH this was the old way??
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1602,9 +1601,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 toggleEditing();
                 break;
             case R.id.gobacktofred:
-                //todo work here
-
-
+                Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                startActivity(intent);
                 break;
 
         default:
