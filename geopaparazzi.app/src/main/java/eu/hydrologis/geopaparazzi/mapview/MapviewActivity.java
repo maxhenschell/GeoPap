@@ -657,13 +657,13 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     Drawable fredPtc = Compat.getDrawable(this, R.drawable.trianglept_c);
                     Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
                     Context fredContext = getApplicationContext();
-                    List<OverlayItem> fredPtOverlays = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
-                    if (fredPtOverlays != null) {
-                        int numPts = fredPtOverlays.size();
+                    List<OverlayItem> fredPtOverlaysList = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
+                    if (fredPtOverlaysList != null) {
+                        int numPts = fredPtOverlaysList.size();
                         if (numPts == 0) {
                             GPDialogs.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
                         } else {
-                            mDataOverlay.addItems(fredPtOverlays);
+                            mDataOverlay.addItems(fredPtOverlaysList);
                         }
                     }
             }
