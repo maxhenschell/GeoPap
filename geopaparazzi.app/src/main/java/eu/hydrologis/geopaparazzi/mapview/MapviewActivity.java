@@ -221,6 +221,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     private ProgressDialog syncProgressDialog;
     private BroadcastReceiver gpsServiceBroadcastReceiver;
     private double[] lastGpsPosition;
+    private float lastGpsPositionAccuracy;
 
     private TextView zoomLevelText;
     private BroadcastReceiver batteryReceiver = new BroadcastReceiver(){
@@ -957,12 +958,14 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     GPLog.addLogEntry("fred","no gps");
                     return true;
                 }
-
                 //check if point has existing coordinates
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
                 mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
                 mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
                 mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntentChk.putExtra("gpsAccuracy", lastGpsPositionAccuracy);
+                mapFredDDIntentChk.putExtra("gpsAccuracyUnits", "m");
+                mapFredDDIntentChk.putExtra("coordSource","GPS");
                 mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
@@ -975,11 +978,13 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 //check if point has existing coordinates
                 MapViewPosition mapPosition = mMapView.getMapPosition();
                 GeoPoint mapCenter = mapPosition.getMapCenter();
-
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
                 mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
                 mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
+                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1);
+                mapFredDDIntentChk.putExtra("gpsAccuracy", -1);
+                mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
+                mapFredDDIntentChk.putExtra("coordSource", "mapCenter");
                 mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
@@ -1191,7 +1196,10 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                                     mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
                                     mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
                                     mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
-                                    mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                                    mapFredDDIntent.putExtra("gpsAccuracy", data.getDoubleExtra("gpsAccuracy",0.0));
+                                    mapFredDDIntent.putExtra("gpsAccuracyUnits",data.getStringExtra("gpsAccuracyUnits"));
+                                    mapFredDDIntent.putExtra("coordSource",data.getStringExtra("coordSource"));
+                                    mapFredDDIntent.putExtra("recordID", data.getStringExtra("recordID"));
                                     mapFredDDIntent.putExtra("type", "writeLocation");
                                     mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
                                     startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
@@ -1215,7 +1223,10 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
                         mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
                         mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
-                        mapFredDDIntent.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                        mapFredDDIntent.putExtra("gpsAccuracy", data.getDoubleExtra("gpsAccuracy",0.0));
+                        mapFredDDIntent.putExtra("gpsAccuracyUnits",data.getStringExtra("gpsAccuracyUnits"));
+                        mapFredDDIntent.putExtra("coordSource",data.getStringExtra("coordSource"));
+                        mapFredDDIntent.putExtra("recordID", data.getStringExtra("recordID"));
                         mapFredDDIntent.putExtra("type", "writeLocation");
                         mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
                         startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
@@ -1370,9 +1381,10 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
 
         float[] lastGpsPositionExtras = GpsServiceUtilities.getPositionExtras(intent);
-        float accuracy = 0;
+        //float accuracy = 0;
+        lastGpsPositionAccuracy = 0;
         if (lastGpsPositionExtras != null) {
-            accuracy = lastGpsPositionExtras[0];
+            lastGpsPositionAccuracy = lastGpsPositionExtras[0];
         }
 
         if (this.mMapView.getWidth() <= 0 || this.mMapView.getWidth() <= 0) {
@@ -1399,7 +1411,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             if (boundsContain(latE6, lonE6, nE6, sE6, wE6, eE6)) {
                 GeoPoint point = toGeopoint(lonE6, latE6);
                 if (point != null) {
-                    mDataOverlay.setGpsPosition(point, accuracy, lastGpsServiceStatus, lastGpsLoggingStatus);
+                    mDataOverlay.setGpsPosition(point, lastGpsPositionAccuracy, lastGpsServiceStatus, lastGpsLoggingStatus);
                     mDataOverlay.requestRedraw();
                 }
             }
