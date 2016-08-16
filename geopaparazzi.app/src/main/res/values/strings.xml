@@ -281,6 +281,10 @@
     <string name="fred_second_level_timestamp">Timestamp column name</string>
     <string name="fred_column_Lat">Latitude column name</string>
     <string name="fred_column_Lon">Longitude column name</string>
+    <string name="fred_column_acc">GPS accuracy column name</string>
+    <string name="fred_column_acc_units">GPS accuracy units column name</string>
+    <string name="fred_column_coord_source">Source of Coordinates (map center or GPS) column name</string>
+    <string name="fred_column_elev">Elevation column name</string>
     <string name="fred_column_note">Notes column name</string>
     <string name="fred_tables_two_levels">Parent-Child table structure</string>
     <string name="fred_quick_sets_summary">Change all preferences at once here with quick-sets.</string>
@@ -297,6 +301,10 @@
     <string name="fred_defval_second_level_ID">Obspts_ID</string>
     <string name="fred_defval_column_Lat">latitude</string>
     <string name="fred_defval_column_Lon">longitude</string>
+    <string name="fred_defval_column_acc">colAcc</string>
+    <string name="fred_defval_column_acc_units">colAccUnits</string>
+    <string name="fred_defval_column_coord_source">colCoordSo</string>
+    <string name="fred_defval_column_elev">colElev</string>
     <string name="fred_defval_column_note">Comments</string>
     <string name="fred_defval_two_levels">true</string>
     <string name="fred_defval_second_level_descriptor">Obspt</string>    
@@ -313,6 +321,10 @@
     <string name="fred_BotZoo_second_level_ID">intUtm_ID</string>
     <string name="fred_BotZoo_column_Lat">intlatitude</string>
     <string name="fred_BotZoo_column_Lon">intlongitude</string>
+    <string name="fred_BotZoo_column_acc">colAcc</string>
+    <string name="fred_BotZoo_column_acc_units">colAccUnits</string>
+    <string name="fred_BotZoo_column_coord_source">colCoordSo</string>
+    <string name="fred_BotZoo_column_elev">colElev</string>
     <string name="fred_BotZoo_column_note">StrComment</string>
     <string name="fred_BotZoo_second_level_descriptor">strPointName</string>
     <string name="fred_BotZoo_second_level_timestamp">dtmRecCreate</string>
@@ -328,6 +340,10 @@
     <string name="fred_iMap_second_level_ID">mobsid</string>
     <string name="fred_iMap_column_Lat">State_Y</string>
     <string name="fred_iMap_column_Lon">State_X</string>
+    <string name="fred_iMap_column_acc">colAcc</string>
+    <string name="fred_iMap_column_acc_units">colAccUnits</string>
+    <string name="fred_iMap_column_coord_source">colCoordSo</string>
+    <string name="fred_iMap_column_elev">colElev</string>
     <string name="fred_iMap_column_note">obscomments_long</string>
     <string name="fred_iMap_second_level_descriptor">projectid</string>
     <string name="fred_iMap_second_level_timestamp">obsdate</string>

@@ -55,6 +55,10 @@ public class FredQuickSets extends DialogPreference {
     private static String TABLES_TWO_LEVELS = "TABLES_TWO_LEVELS";//$NON-NLS-1$
     private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
     private static String COLUMN_LON = "COLUMN_LON";//$NON-NLS-1$
+    private static String COLUMN_ACC = "COLUMN_ACC";
+    private static String COLUMN_ACC_UNITS = "COLUMN_ACC_UNITS";
+    private static String COLUMN_COORD_SOURCE = "COLUMN_COORD_SOURCE";
+    private static String COLUMN_ELEV = "COLUMN_ELEV";
     private static String COLUMN_NOTE = "COLUMN_NOTE";//$NON-NLS-1$
     private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
@@ -179,6 +183,10 @@ public class FredQuickSets extends DialogPreference {
         String childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_ID);
         String colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lat);
         String colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lon);
+        String colAcc = "dblGpsAcc";
+        String colAccUnits = "strGpsAccUnits";
+        String colCoordSo = "strPositionMethod";
+        String colElev = "dblElev";
         String colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
         String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
         String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
@@ -195,6 +203,10 @@ public class FredQuickSets extends DialogPreference {
             childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_ID);
             colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lat);
             colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lon);
+            colAcc = "dblGpsAcc"; //placeholder; not in iMapField, need to get from Brent
+            colAccUnits = "strGpsAccUnits"; //placeholder; not in iMapField, need to get from Brent
+            colCoordSo = "strPositionMethod";  //placeholder; not in iMapField, need to get from Brent
+            colElev = "dblElev"; //placeholder; not in iMapField, need to get from Brent
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
@@ -210,6 +222,10 @@ public class FredQuickSets extends DialogPreference {
             childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_ID);
             colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_Lat);
             colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_Lon);
+            colAcc = "dblGpsAcc";
+            colAccUnits = "strGpsAccUnits";
+            colCoordSo = "strPositionMethod";
+            colElev = "dblElev";
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
@@ -225,6 +241,10 @@ public class FredQuickSets extends DialogPreference {
             childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_second_level_ID);
             colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_column_Lat);
             colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_column_Lon);
+            colAcc = "dblGpsAcc";
+            colAccUnits = "strGpsAccUnits";
+            colCoordSo = "strPositionMethod";
+            colElev = "dblElev";
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_second_level_timestamp);
@@ -243,6 +263,10 @@ public class FredQuickSets extends DialogPreference {
         editor.putString(COLUMN_SECOND_LEVEL_ID, childID);
         editor.putString(COLUMN_LAT, colLat);
         editor.putString(COLUMN_LON, colLon);
+        editor.putString(COLUMN_ACC, colAcc);
+        editor.putString(COLUMN_ACC_UNITS,colAccUnits);
+        editor.putString(COLUMN_COORD_SOURCE,colCoordSo);
+        editor.putString(COLUMN_ELEV,colElev);
         editor.putString(COLUMN_NOTE, colNote);
         editor.putString(COLUMN_FIRST_LEVEL_DESCRIPTOR, parentDescriptorField);
         editor.putString(COLUMN_FIRST_LEVEL_TIMESTAMP, parentTimeStamp);

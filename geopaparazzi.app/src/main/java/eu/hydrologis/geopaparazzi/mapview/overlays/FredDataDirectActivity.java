@@ -69,6 +69,9 @@ public class FredDataDirectActivity extends Activity {
     private double latitude;
     private double longitude;
     private double elevation;
+    private double gpsAccuracy;
+    private String gpsAccuracyUnits;
+    private String coordSource;
     private String recordID;
     private double[] gpsLocation;
     private BroadcastReceiver gpsBroadcastReceiver;
@@ -244,6 +247,7 @@ public class FredDataDirectActivity extends Activity {
 
         }
     }
+
     // TODO need an onStart() for this activity!!!
     // TODO need an onResume() for this activity!!!
 
@@ -403,11 +407,17 @@ public class FredDataDirectActivity extends Activity {
      * @param lvlTwoID    the child ID for the record to update
      * @param ddLon       decimal degrees longitude
      * @param ddLat       decimal degrees latitude
+     * @param gpsAcc        gps accuracy as reported by gps
+     * @param elev          elevation
+     * @param gpsAccUnits   gps accuracy units
+     * @param coordSo       coordinates source, manual from crosshairs on map or gps?
      * @param sqlDB       the DB to write to
      * @throws IOException if a problem
      */
-    private static boolean writeGpsData(String tbl, String colLat, String colLon,
+    private static boolean writeGpsData(String tbl, String colLat, String colLon,String colElev, String colAcc,
+                                        String colAccUnits, String colCoordSo,
                                         String colSecondID, String lvlTwoID, double ddLat, double ddLon,
+                                        double gpsAcc, double elev, String gpsAccUnits, String coordSo,
                                         SQLiteDatabase sqlDB) throws IOException {
 
         try {
@@ -418,7 +428,11 @@ public class FredDataDirectActivity extends Activity {
             sb.append(tbl);
             sb.append(" SET "); //$NON-NLS-1$
             sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colLon).append("=").append(ddLon).append(" "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colAcc).append("=").append(gpsAcc).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colAccUnits).append("=").append(gpsAccUnits).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colElev).append("=").append(elev).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colCoordSo).append("=").append(coordSo).append(" "); //$NON-NLS-1$ //$NON-NLS-2$
 
             sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
 
