@@ -114,10 +114,17 @@ public class FredDataDirectActivity extends Activity {
 
         // Get intent, action
         Intent intent = getIntent();
-        GPLog.addLogEntry("fred","extra, type = " + intent.getStringExtra("type"));
-        String intentType = intent.getStringExtra("type");
 
+        String intentType = intent.getStringExtra("type");
         recordID = intent.getStringExtra("recordID");
+        latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
+        longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
+        elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
+        gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1);
+        gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
+        coordSource = intent.getStringExtra("coordSource");
+
+        GPLog.addLogEntry("fred","extra, type = " + intentType);
         GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
 
         if (intentType.equals("checkForExistingLocation")){
@@ -136,20 +143,19 @@ public class FredDataDirectActivity extends Activity {
             }
 
             Intent resultIntent = new Intent();
+            resultIntent.putExtra(LibraryConstants.LATITUDE, latitude);
+            resultIntent.putExtra(LibraryConstants.LONGITUDE, longitude);
+            resultIntent.putExtra(LibraryConstants.ELEVATION, elevation);
+            resultIntent.putExtra("gpsAccuracy", gpsAccuracy);
+            resultIntent.putExtra("gpsAccuracyUnits", gpsAccuracyUnits);
+            resultIntent.putExtra("coordSource", coordSource);
+
             if (hasLocData) {
-                //Intent resultIntent = new Intent();
                 resultIntent.putExtra("hasLocData", true);
-                resultIntent.putExtra(LibraryConstants.LATITUDE, intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0));
-                resultIntent.putExtra(LibraryConstants.LONGITUDE, intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0));
-                resultIntent.putExtra(LibraryConstants.ELEVATION, intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0));
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             } else {
-                //Intent resultIntent = new Intent();
                 resultIntent.putExtra("hasLocData", false);
-                resultIntent.putExtra(LibraryConstants.LATITUDE, intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0));
-                resultIntent.putExtra(LibraryConstants.LONGITUDE, intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0));
-                resultIntent.putExtra(LibraryConstants.ELEVATION, intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0));
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             }
@@ -157,9 +163,6 @@ public class FredDataDirectActivity extends Activity {
         } else {
             GPLog.addLogEntry("fred", "writing location data");
 
-            latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
-            longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
-            elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
 
             //        if (GPLog.LOG_HEAVY){
 //            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
@@ -206,7 +209,7 @@ public class FredDataDirectActivity extends Activity {
                 final SQLiteDatabase sqlDB;
                 sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
                         .openDatabase(externalDB, null, 2);
-                IsWritten = writeGpsData(childTable, colLat, colLon,
+                IsWritten = writeGpsData(childTable, colLat, colLon, colElev
                         childID, recordID, latitude, longitude, sqlDB);
                 sqlDB.close();
             } catch (IOException e) {
