@@ -83,6 +83,10 @@ public class FredDataDirectActivity extends Activity {
     private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";//$NON-NLS-1$
     private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
     private static String COLUMN_LON = "COLUMN_LON";//$NON-NLS-1$
+    private static String COLUMN_ELEV = "COLUMN_ELEV";//$NON-NLS-1$
+    private static String COLUMN_ACC = "COLUMN_ACC";//$NON-NLS-1$
+    private static String COLUMN_ACC_UNITS = "COLUMN_ACC_UNITS";//$NON-NLS-1$
+    private static String COLUMN_COORD_SOURCE = "COLUMN_COORD_SOURCE";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String PREFS_KEY_FRED_QUICK_SET = "PREFS_KEY_FRED_QUICK_SET";//$NON-NLS-1$
@@ -100,10 +104,14 @@ public class FredDataDirectActivity extends Activity {
         final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$
         final String childID = preferences.getString(COLUMN_SECOND_LEVEL_ID, "default4"); //$NON-NLS-1$
         final String colLat = preferences.getString(COLUMN_LAT, "default5"); //$NON-NLS-1$  
-        final String colLon = preferences.getString(COLUMN_LON, "default6"); //$NON-NLS-1$  
-        final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default10"); //$NON-NLS-1$
-        final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default11"); //$NON-NLS-1$
-        final String quicksetChoice = preferences.getString(PREFS_KEY_FRED_QUICK_SET, "default11"); //$NON-NLS-1$
+        final String colLon = preferences.getString(COLUMN_LON, "default6"); //$NON-NLS-1$
+        final String colElev = preferences.getString(COLUMN_ELEV, "default7"); //$NON-NLS-1$
+        final String colAcc = preferences.getString(COLUMN_ACC, "default8"); //$NON-NLS-1$
+        final String colAccUnits = preferences.getString(COLUMN_ACC_UNITS, "default9"); //$NON-NLS-1$
+        final String colCoordSo = preferences.getString(COLUMN_COORD_SOURCE, "default10"); //$NON-NLS-1$
+        final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default11"); //$NON-NLS-1$
+        final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default12"); //$NON-NLS-1$
+        final String quicksetChoice = preferences.getString(PREFS_KEY_FRED_QUICK_SET, "default13"); //$NON-NLS-1$
 
         // debug some of the defaults in case of problems
         if (GPLog.LOG_HEAVY) {
@@ -120,7 +128,7 @@ public class FredDataDirectActivity extends Activity {
         latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
         longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
         elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
-        gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1);
+        gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1.0);
         gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
         coordSource = intent.getStringExtra("coordSource");
 
@@ -149,6 +157,7 @@ public class FredDataDirectActivity extends Activity {
             resultIntent.putExtra("gpsAccuracy", gpsAccuracy);
             resultIntent.putExtra("gpsAccuracyUnits", gpsAccuracyUnits);
             resultIntent.putExtra("coordSource", coordSource);
+            resultIntent.putExtra("recordID", recordID);
 
             if (hasLocData) {
                 resultIntent.putExtra("hasLocData", true);
@@ -209,13 +218,13 @@ public class FredDataDirectActivity extends Activity {
                 final SQLiteDatabase sqlDB;
                 sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
                         .openDatabase(externalDB, null, 2);
-                IsWritten = writeGpsData(childTable, colLat, colLon, colElev
-                        childID, recordID, latitude, longitude, sqlDB);
+                IsWritten = writeGpsData(childTable, colLat, colLon, colElev, colAcc, colAccUnits, colCoordSo,
+                        childID, recordID, latitude, longitude, gpsAccuracy, elevation, gpsAccuracyUnits, coordSource,
+                        sqlDB);
                 sqlDB.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
 
             if (IsWritten) {
                 Intent resultIntent = new Intent();
@@ -433,9 +442,9 @@ public class FredDataDirectActivity extends Activity {
             sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colAcc).append("=").append(gpsAcc).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colAccUnits).append("=").append(gpsAccUnits).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colAccUnits).append("= '").append(gpsAccUnits).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colElev).append("=").append(elev).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colCoordSo).append("=").append(coordSo).append(" "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colCoordSo).append("= '").append(coordSo).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
 
             sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
 

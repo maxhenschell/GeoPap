@@ -963,7 +963,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
                 mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
                 mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
-                mapFredDDIntentChk.putExtra("gpsAccuracy", lastGpsPositionAccuracy);
+                double posAc = lastGpsPositionAccuracy;
+                mapFredDDIntentChk.putExtra("gpsAccuracy", posAc);
                 mapFredDDIntentChk.putExtra("gpsAccuracyUnits", "m");
                 mapFredDDIntentChk.putExtra("coordSource","GPS");
                 mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
@@ -981,8 +982,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
                 mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
                 mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1);
-                mapFredDDIntentChk.putExtra("gpsAccuracy", -1);
+                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1.0);
+                mapFredDDIntentChk.putExtra("gpsAccuracy", -1.0);
                 mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
                 mapFredDDIntentChk.putExtra("coordSource", "mapCenter");
                 mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
