@@ -572,7 +572,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             registerForContextMenu(addfreddataButton);
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
         } else {
-            // regular fred data collection here
+            // old style fred data collection here
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
             addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
             addfreddataButton.setOnClickListener(new Button.OnClickListener() {
@@ -650,10 +650,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
             /* fred points (obs points, plots, zool or bot points,imap observations) */
             // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
-            final String externalDBname = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+            //final String externalDBname = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
             if(fredPtsVisible) {
                     //GPLog.addLogEntry(this, "External DB is " + externalDBname);  //Fred vs. ImapInvasivesField. not helpful.
-                    Drawable fredPtp = Compat.getDrawable(this, R.drawable.trianglept_p);
+                    Drawable fredPtp = Compat.getDrawable(this, R.drawable.ic_bookmarks_48dp_fred);
+                    //Drawable fredPtp = Compat.getDrawable(this, R.drawable.trianglept_p);
                     Drawable fredPta = Compat.getDrawable(this, R.drawable.trianglept_a);
                     Drawable fredPtc = Compat.getDrawable(this, R.drawable.trianglept_c);
                     Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
