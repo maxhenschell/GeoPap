@@ -21,6 +21,7 @@ package eu.hydrologis.geopaparazzi.mapview;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -430,6 +431,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                           startActivity(intent);
                       }
                   }
+
               }
           });
 
@@ -1615,8 +1617,28 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 toggleEditing();
                 break;
             case R.id.gobacktofred:
-                Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                startActivity(intent);
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+                if (!tasklist.isEmpty()) {
+                    int nSize = tasklist.size();
+                    boolean appFound = false;
+                    for (int i = 0; i < nSize; i++) {
+                        ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+                        if (GPLog.LOG_HEAVY)
+                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+                            appFound = true;
+                            am.moveTaskToFront(taskinfo.id, 0);
+                        }
+                    }
+                    if (!appFound) {
+                        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+                        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+                        startActivity(intent);
+                    }
+                }
                 break;
 
         default:
