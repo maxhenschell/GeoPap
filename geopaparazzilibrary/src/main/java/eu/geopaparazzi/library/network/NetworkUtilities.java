@@ -267,8 +267,8 @@ public class NetworkUtilities {
         FileInputStream fis = null;
         HttpURLConnection conn = null;
         try {
-            fis = new FileInputStream(file);
             long fileSize = file.length();
+            fis = new FileInputStream(file);
             // Authenticator.setDefault(new Authenticator(){
             // protected PasswordAuthentication getPasswordAuthentication() {
             // return new PasswordAuthentication("test", "test".toCharArray());
@@ -279,13 +279,13 @@ public class NetworkUtilities {
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setDoInput(true);
-            // conn.setChunkedStreamingMode(0);
+//            conn.setChunkedStreamingMode(0);
             conn.setUseCaches(true);
 
             // conn.setRequestProperty("Accept-Encoding", "gzip ");
             // conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             conn.setRequestProperty("Content-Type", "application/octet-stream");
-            // conn.setRequestProperty("Content-Length", "" + fileSize);
+            conn.setRequestProperty("Content-Length", "" + fileSize);
             // conn.setRequestProperty("Connection", "Keep-Alive");
 
             if (user != null && password != null && user.trim().length() > 0 && password.trim().length() > 0) {
@@ -456,6 +456,7 @@ public class NetworkUtilities {
      * @throws Exception if something goes wrong.
      */
     public static String sendGetRequest(String urlStr, String requestParameters, String user, String password) throws Exception {
+        if (!urlStr.startsWith("http")) urlStr = "http://" + urlStr;
         if (requestParameters != null && requestParameters.length() > 0) {
             urlStr += "?" + requestParameters;
         }
@@ -489,7 +490,7 @@ public class NetworkUtilities {
 
     /**
      * Download a bitmap from a given url.
-     *
+     * <p/>
      * http://android-developers.blogspot.it/2010/07/multithreading-for-performance.html
      *
      * @param url the url.
