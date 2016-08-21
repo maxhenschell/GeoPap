@@ -477,6 +477,11 @@ public abstract class GeopaparazziOverlay extends Overlay {
                 right = this.itemPosition.x + intrinsicWidth;
                 top = this.itemPosition.y - intrinsicHeight;
                 itemBottom = this.itemPosition.y + intrinsicHeight;
+            } else if (overlayItem.getTitle() == "fredPt") {
+                left = this.itemPosition.x - intrinsicWidth;
+                right = this.itemPosition.x + intrinsicWidth;
+                top = this.itemPosition.y - intrinsicHeight - 3; //shift up a bit for triangles (also they are odd size, should be even)
+                itemBottom = this.itemPosition.y + intrinsicHeight - 3;
             } else {
                 left = this.itemPosition.x + intrinsicWidth / 2 - intrinsicWidth;
                 right = this.itemPosition.x + intrinsicWidth / 2 + intrinsicWidth;

@@ -37,6 +37,7 @@ import android.widget.Toast;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.Utilities;
+import eu.hydrologis.geopaparazzi.database.objects.NoteOverlayItem;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
@@ -95,7 +96,11 @@ public class DaoFredPts {
                             //GPLog.addLogEntry("fredPts","coords are lon lat: " + String.valueOf(lon) + " " + String.valueOf(lat));
                             try {
                                 GeoPoint gp = new GeoPoint(lat, lon);
-                                OverlayItem pt = new OverlayItem(gp, null, text, marker);
+                                //label fredPt is used in GeopaparazziOverlay.java:483
+                                OverlayItem pt = new OverlayItem(gp, "fredPt", text, marker);
+                                //todo if we want labeled points, change to noteoverlayitem, get label via query, attach label
+                                //todo as second item in NoteOverlayItem, below
+                                //NoteOverlayItem pt = new NoteOverlayItem(gp, "", text, marker);
                                 fredPts.add(pt);
                             } catch (IllegalArgumentException e) {
                                 GPLog.addLogEntry(context, "Exception during Fred geopoints query and display");

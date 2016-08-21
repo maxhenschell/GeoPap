@@ -650,11 +650,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
             /* fred points (obs points, plots, zool or bot points,imap observations) */
             // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
-            //final String externalDBname = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
             if(fredPtsVisible) {
-                    //GPLog.addLogEntry(this, "External DB is " + externalDBname);  //Fred vs. ImapInvasivesField. not helpful.
-                    Drawable fredPtp = Compat.getDrawable(this, R.drawable.ic_bookmarks_48dp_fred);
-                    //Drawable fredPtp = Compat.getDrawable(this, R.drawable.trianglept_p);
+                    //Drawable fredPtp = Compat.getDrawable(this, R.drawable.ic_bookmarks_48dp_fred);
+                    Drawable fredPtp = Compat.getDrawable(this, R.drawable.trianglept_p);
                     Drawable fredPta = Compat.getDrawable(this, R.drawable.trianglept_a);
                     Drawable fredPtc = Compat.getDrawable(this, R.drawable.trianglept_c);
                     Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
@@ -680,8 +678,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
             /* gps notes */
             if (notesVisible) {
-                notesDrawable.setBounds(notesDrawable.getIntrinsicWidth() , notesDrawable.getIntrinsicHeight() / -2, notesDrawable.getIntrinsicWidth() / 2,
-                        notesDrawable.getIntrinsicHeight() / 2);
+                //notesDrawable.setBounds(notesDrawable.getIntrinsicWidth() , notesDrawable.getIntrinsicHeight() / -2, notesDrawable.getIntrinsicWidth() / 2,
+                  //      notesDrawable.getIntrinsicHeight() / 2);
                 Drawable newNotesMarker = ArrayGeopaparazziOverlay.boundCenter(notesDrawable);
                 List<OverlayItem> noteOverlaysList = DaoNotes.getNoteOverlaysList(newNotesMarker);
                 mDataOverlay.addItems(noteOverlaysList);
