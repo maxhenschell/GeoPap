@@ -1624,37 +1624,71 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             case R.id.gobacktofred:
 // TODO
                 /// working on new approach, see http://stackoverflow.com/questions/26431795/how-to-use-usagestatsmanager
-                Calendar beginCal = Calendar.getInstance();
-                beginCal.add(Calendar.HOUR, -1);
+                ///// don't think this is going to work because I think it will only ID the package name, but I need the task name
+//                Calendar beginCal = Calendar.getInstance();
+//                beginCal.add(Calendar.HOUR, -1);
+//
+//                Calendar endCal = Calendar.getInstance();
+//                UsageStatsManager usageStatsManager = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
+//                final List<UsageStats> usageStatsList=usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginCal.getTimeInMillis(), endCal.getTimeInMillis());
+//
+//                if (!usageStatsList.isEmpty()) {
+//                    int nSize = usageStatsList.size();
+//                    boolean appFound = false;
+//                    for (int i = 0; i < nSize; i++) {
+//                        usageStatsManager.queryConfigurations()
+//                        ActivityManager.RunningTaskInfo taskinfo = usageStatsList.get(i);
+//                        if (GPLog.LOG_HEAVY)
+//                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+//                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+//                            appFound = true;
+//                            am.moveTaskToFront(taskinfo.id, 0);
+//                        }
+//                    }
+//                    if (!appFound) {
+//                        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+//                        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+//                        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+//                        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+//                        startActivity(intent);
+//                    }
+//                }
 
-                Calendar endCal = Calendar.getInstance();
-                UsageStatsManager usageStatsManager = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
-                final List<UsageStats> usageStatsList=usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, beginCal.getTimeInMillis(), endCal.getTimeInMillis());
 
+// would be amazing if this works -- need to check on tablet.
+                if (GeoPapFromDroidDb.whichFredCallingActivity == null) {
+                    String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(GeoPapFromDroidDb.whichFredCallingActivity);
+                }
 
                 // old approach
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
-                if (!tasklist.isEmpty()) {
-                    int nSize = tasklist.size();
-                    boolean appFound = false;
-                    for (int i = 0; i < nSize; i++) {
-                        ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-                        if (GPLog.LOG_HEAVY)
-                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-                            appFound = true;
-                            am.moveTaskToFront(taskinfo.id, 0);
-                        }
-                    }
-                    if (!appFound) {
-                        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-                        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
-                        startActivity(intent);
-                    }
-                }
+//                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+//                List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
+//                if (!tasklist.isEmpty()) {
+//                    int nSize = tasklist.size();
+//                    boolean appFound = false;
+//                    for (int i = 0; i < nSize; i++) {
+//                        ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
+//                        if (GPLog.LOG_HEAVY)
+//                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
+//                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
+//                            appFound = true;
+//                            am.moveTaskToFront(taskinfo.id, 0);
+//                        }
+//                    }
+//                    if (!appFound) {
+//                        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+//                        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+//                        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+//                        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+//                        startActivity(intent);
+//                    }
+//                }
                 break;
 
         default:

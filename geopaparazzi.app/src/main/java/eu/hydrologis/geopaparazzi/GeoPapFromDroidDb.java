@@ -44,15 +44,23 @@ public class GeoPapFromDroidDb extends Activity{
     public static String whichFredDb = null;
     public static String idKey = null;
     public static String whichFredForm = null;
+    public static String whichFredCallingActivity = null;
+    //public static Class whichFredClass = null;
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
+
         // Get intent, action
         Intent intent = getIntent();
         String extraParam = intent.getStringExtra("parameter");
         // parameter should map as "key: value; key: value; key: value" with or without spaces
 
         GPLog.addLogEntry(this, "GPFDDB onCreate extra string " + extraParam);
+
+
+        whichFredCallingActivity = getCallingActivity().flattenToString();
+        //whichFredClass = getCallingActivity().getClass();
+
 
         if (extraParam != null) {
             String[] extraParams = extraParam.split(";");
