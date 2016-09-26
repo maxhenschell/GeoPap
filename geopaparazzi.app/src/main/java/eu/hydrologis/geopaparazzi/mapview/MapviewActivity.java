@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +47,8 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -248,6 +251,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
     public static boolean created = false;
 
+    public static final String USAGE_STATS_SERVICE = "usagestats";
+
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
         setContentView(R.layout.activity_mapview);
@@ -409,7 +414,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
         gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
               public void onClick(View v) {
-                  // find the droiddb task in order to switch to it. Needs API 11 or greater (noted at top)
+                  // find the droiddb task in order to switch to it.
                   ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                   List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
                   if (!tasklist.isEmpty()) {
@@ -1617,6 +1622,17 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 toggleEditing();
                 break;
             case R.id.gobacktofred:
+// TODO
+                /// working on new approach, see http://stackoverflow.com/questions/26431795/how-to-use-usagestatsmanager
+                Calendar beginCal = Calendar.getInstance();
+                beginCal.add(Calendar.HOUR, -1);
+
+                Calendar endCal = Calendar.getInstance();
+                UsageStatsManager usageStatsManager = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
+                final List<UsageStats> usageStatsList=usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, beginCal.getTimeInMillis(), endCal.getTimeInMillis());
+
+
+                // old approach
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
                 if (!tasklist.isEmpty()) {
