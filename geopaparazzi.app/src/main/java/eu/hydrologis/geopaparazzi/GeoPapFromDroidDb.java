@@ -45,7 +45,7 @@ public class GeoPapFromDroidDb extends Activity{
     public static String idKey = null;
     public static String whichFredForm = null;
     public static String whichFredCallingActivity = null;
-    //public static Class whichFredClass = null;
+    public static String whichFredClass = null;
 
     public void onCreate( Bundle icicle ) {
         super.onCreate(icicle);
@@ -58,8 +58,20 @@ public class GeoPapFromDroidDb extends Activity{
         GPLog.addLogEntry(this, "GPFDDB onCreate extra string " + extraParam);
 
 
-        whichFredCallingActivity = getCallingActivity().flattenToString();
-        //whichFredClass = getCallingActivity().getClass();
+        //whichFredCallingActivity = getCallingActivity().flattenToShortString();
+        //whichFredClass = getCallingActivity().getClassName().toString();
+
+        if (whichFredCallingActivity != null) {
+            GPLog.addLogEntry(this, "GPFDDB calling activity " + whichFredCallingActivity);
+        } else {
+            GPLog.addLogEntry(this, "GPFDDB calling activity is null");
+        }
+
+        if (whichFredClass != null) {
+            GPLog.addLogEntry(this, "GPFDDB calling class name " + whichFredClass);
+        } else {
+            GPLog.addLogEntry(this, "GPFDDB calling class name is null");
+        }
 
 
         if (extraParam != null) {

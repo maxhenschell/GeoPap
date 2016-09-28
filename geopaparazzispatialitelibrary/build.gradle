@@ -42,7 +42,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 18
     }
     buildTypes {
         release {

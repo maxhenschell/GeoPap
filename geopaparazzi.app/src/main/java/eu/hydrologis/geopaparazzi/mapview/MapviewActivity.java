@@ -414,7 +414,27 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
         gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
               public void onClick(View v) {
-                  // find the droiddb task in order to switch to it.
+//            Intent intent = new Intent("com.syware.droiddb.DroidDBMain");
+//                  Intent i = new Intent();
+//                  i.
+//            //intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//            intent.putExtra("parameter",externalDBname);
+//            startActivity(intent);
+
+                ActivityManager am2 = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                  List<ActivityManager.RunningAppProcessInfo> processInfoList = am2.getRunningAppProcesses();
+                  if(!processInfoList.isEmpty()) {
+                      int nSiz = processInfoList.size();
+                      for(int i = 0; i < nSiz; i++) {
+                          ActivityManager.RunningAppProcessInfo processInfo = processInfoList.get(i);
+                          String procname = processInfo.processName.toString();
+                          GPLog.addLogEntry(this, "process info name: " + procname);
+                      }
+                  }
+
+
+
+                // find the droiddb task in order to switch to it.
                   ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                   List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
                   if (!tasklist.isEmpty()) {
@@ -426,6 +446,10 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                               GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
                           if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
                               appFound = true;
+                              String nowPackageName = taskinfo.topActivity.getPackageName();
+                              GPLog.addLogEntry(this, "taskinfo description: " + nowPackageName);
+                              String nowClassName = taskinfo.topActivity.getClassName();
+                              GPLog.addLogEntry(this, "taskinfo Classname: " + nowClassName);
                               am.moveTaskToFront(taskinfo.id, 0);
                           }
                       }
@@ -1656,15 +1680,17 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
 
 // would be amazing if this works -- need to check on tablet.
-                if (GeoPapFromDroidDb.whichFredCallingActivity == null) {
-                    String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
-                    startActivity(intent);
-                } else {
-                    Intent intent = new Intent(GeoPapFromDroidDb.whichFredCallingActivity);
-                }
+//                if (GeoPapFromDroidDb.whichFredCallingActivity == null) {
+//                    String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+//                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+//                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+//                    startActivity(intent);
+//                } else {
+//                    Intent intent = new Intent(GeoPapFromDroidDb.whichFredCallingActivity);
+//                    intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//                    startActivity(intent);
+//                }
 
                 // old approach
 //                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
