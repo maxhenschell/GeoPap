@@ -57,23 +57,6 @@ public class GeoPapFromDroidDb extends Activity{
 
         GPLog.addLogEntry(this, "GPFDDB onCreate extra string " + extraParam);
 
-
-        //whichFredCallingActivity = getCallingActivity().flattenToShortString();
-        //whichFredClass = getCallingActivity().getClassName().toString();
-
-        if (whichFredCallingActivity != null) {
-            GPLog.addLogEntry(this, "GPFDDB calling activity " + whichFredCallingActivity);
-        } else {
-            GPLog.addLogEntry(this, "GPFDDB calling activity is null");
-        }
-
-        if (whichFredClass != null) {
-            GPLog.addLogEntry(this, "GPFDDB calling class name " + whichFredClass);
-        } else {
-            GPLog.addLogEntry(this, "GPFDDB calling class name is null");
-        }
-
-
         if (extraParam != null) {
             String[] extraParams = extraParam.split(";");
 

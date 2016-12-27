@@ -414,53 +414,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
         gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
               public void onClick(View v) {
-//            Intent intent = new Intent("com.syware.droiddb.DroidDBMain");
-//                  Intent i = new Intent();
-//                  i.
-//            //intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-//            intent.putExtra("parameter",externalDBname);
-//            startActivity(intent);
-
-                ActivityManager am2 = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                  List<ActivityManager.RunningAppProcessInfo> processInfoList = am2.getRunningAppProcesses();
-                  if(!processInfoList.isEmpty()) {
-                      int nSiz = processInfoList.size();
-                      for(int i = 0; i < nSiz; i++) {
-                          ActivityManager.RunningAppProcessInfo processInfo = processInfoList.get(i);
-                          String procname = processInfo.processName.toString();
-                          GPLog.addLogEntry(this, "process info name: " + procname);
-                      }
-                  }
-
-
-
-                // find the droiddb task in order to switch to it.
-                  ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                  List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
-                  if (!tasklist.isEmpty()) {
-                      int nSize = tasklist.size();
-                      boolean appFound = false;
-                      for (int i = 0; i < nSize; i++) {
-                          ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-                          if (GPLog.LOG_HEAVY)
-                              GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-                          if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-                              appFound = true;
-                              String nowPackageName = taskinfo.topActivity.getPackageName();
-                              GPLog.addLogEntry(this, "taskinfo description: " + nowPackageName);
-                              String nowClassName = taskinfo.topActivity.getClassName();
-                              GPLog.addLogEntry(this, "taskinfo Classname: " + nowClassName);
-                              am.moveTaskToFront(taskinfo.id, 0);
-                          }
-                      }
-                      if (!appFound) {
-                          Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-                          intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                          intent.putExtra("parameter", externalDBname); //$NON-NLS-1$
-                          startActivity(intent);
-                      }
-                  }
-
+                  returnToDroidDB();
               }
           });
 
@@ -1646,75 +1600,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 toggleEditing();
                 break;
             case R.id.gobacktofred:
-// TODO
-                /// working on new approach, see http://stackoverflow.com/questions/26431795/how-to-use-usagestatsmanager
-                ///// don't think this is going to work because I think it will only ID the package name, but I need the task name
-//                Calendar beginCal = Calendar.getInstance();
-//                beginCal.add(Calendar.HOUR, -1);
-//
-//                Calendar endCal = Calendar.getInstance();
-//                UsageStatsManager usageStatsManager = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
-//                final List<UsageStats> usageStatsList=usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginCal.getTimeInMillis(), endCal.getTimeInMillis());
-//
-//                if (!usageStatsList.isEmpty()) {
-//                    int nSize = usageStatsList.size();
-//                    boolean appFound = false;
-//                    for (int i = 0; i < nSize; i++) {
-//                        usageStatsManager.queryConfigurations()
-//                        ActivityManager.RunningTaskInfo taskinfo = usageStatsList.get(i);
-//                        if (GPLog.LOG_HEAVY)
-//                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-//                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-//                            appFound = true;
-//                            am.moveTaskToFront(taskinfo.id, 0);
-//                        }
-//                    }
-//                    if (!appFound) {
-//                        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-//                        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-//                        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-//                        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
-//                        startActivity(intent);
-//                    }
-//                }
-
-
-// would be amazing if this works -- need to check on tablet.
-//                if (GeoPapFromDroidDb.whichFredCallingActivity == null) {
-//                    String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-//                    Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-//                    intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-//                    intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
-//                    startActivity(intent);
-//                } else {
-//                    Intent intent = new Intent(GeoPapFromDroidDb.whichFredCallingActivity);
-//                    intent.addFlags(intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-//                    startActivity(intent);
-//                }
-
-                // old approach
-//                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-//                List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
-//                if (!tasklist.isEmpty()) {
-//                    int nSize = tasklist.size();
-//                    boolean appFound = false;
-//                    for (int i = 0; i < nSize; i++) {
-//                        ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-//                        if (GPLog.LOG_HEAVY)
-//                            GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-//                        if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-//                            appFound = true;
-//                            am.moveTaskToFront(taskinfo.id, 0);
-//                        }
-//                    }
-//                    if (!appFound) {
-//                        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-//                        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-//                        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-//                        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
-//                        startActivity(intent);
-//                    }
-//                }
+                returnToDroidDB();
                 break;
 
         default:
@@ -1813,5 +1699,16 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     @Override
     public void onCoordinateInserted(double lon, double lat) {
         setNewCenter(lon, lat);
+    }
+
+
+    private void returnToDroidDB( ) {
+        GPLog.addLogEntry(this, String.format("cameFromFred: " + GeoPapFromDroidDb.cameFromFred));
+        // this seems to work on Android 6. I was overthinking!
+        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+        startActivity(intent);
     }
 }
