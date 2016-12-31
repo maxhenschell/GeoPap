@@ -199,8 +199,11 @@ public class GpsService extends Service implements LocationListener, Listener {
         }
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            //if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //    return Service.START_FLAG_RETRY;
+            //tgh altered to deal with android studio error
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return Service.START_FLAG_RETRY;
+                return Service.START_STICKY;
             }
             locationManager.addGpsStatusListener(this);
             isProviderEnabled = isGpsOn();
@@ -598,6 +601,17 @@ public class GpsService extends Service implements LocationListener, Listener {
     }
 
     public void onGpsStatusChanged(int event) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //tgh: this if statement added because android studio requested it
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mStatus = locationManager.getGpsStatus(mStatus);
 
         // check fix
