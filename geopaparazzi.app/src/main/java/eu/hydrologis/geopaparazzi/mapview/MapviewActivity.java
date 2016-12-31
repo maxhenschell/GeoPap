@@ -211,6 +211,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     private final int MENU_LOADMAPSFORGE_VECTORS_ID = 10;
     private final int MENU_PLACE_PT_GPS = 21;
     private final int MENU_PLACE_PT_MAP_CENTER = 22;
+    private final int MENU_PLACE_PT_AVG = 23;
 
     private static final String ARE_BUTTONSVISIBLE_OPEN = "ARE_BUTTONSVISIBLE_OPEN"; //$NON-NLS-1$
     private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
@@ -837,6 +838,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         } else if (v.getId() == R.id.addfreddata){
             menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 1, "Place point at GPS");//.setIcon(android.R.drawable.ic_menu_compass);;
             menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 2, "Place point at map center");//.setIcon(android.R.drawable.ic_menu_compass);;
+            menu.add(Menu.NONE, MENU_PLACE_PT_AVG, 3, "Place point using GPS averaging");
         }
     }
     public boolean onContextItemSelected(MenuItem item) {
@@ -946,14 +948,14 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 }
                 //check if point has existing coordinates
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
-                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
-                double posAc = lastGpsPositionAccuracy;
-                mapFredDDIntentChk.putExtra("gpsAccuracy", posAc);
-                mapFredDDIntentChk.putExtra("gpsAccuracyUnits", "m");
+                //mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+                //mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+                //mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
+                //double posAc = lastGpsPositionAccuracy;
+                //mapFredDDIntentChk.putExtra("gpsAccuracy", posAc);
+                //mapFredDDIntentChk.putExtra("gpsAccuracyUnits", "m");
                 mapFredDDIntentChk.putExtra("coordSource","GPS");
-                mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
+                //mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
@@ -963,16 +965,52 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             case MENU_PLACE_PT_MAP_CENTER: {
                 GPLog.addLogEntry("fred","in Case map center");
                 //check if point has existing coordinates
-                MapViewPosition mapPosition = mMapView.getMapPosition();
-                GeoPoint mapCenter = mapPosition.getMapCenter();
+                //MapViewPosition mapPosition = mMapView.getMapPosition();
+                //GeoPoint mapCenter = mapPosition.getMapCenter();
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1.0);
-                mapFredDDIntentChk.putExtra("gpsAccuracy", -1.0);
-                mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
+                //mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+                //mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+                //mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1.0);
+                //mapFredDDIntentChk.putExtra("gpsAccuracy", -1.0);
+                //mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
                 mapFredDDIntentChk.putExtra("coordSource", "mapCenter");
-                mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                //mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
+
+                return true;
+            }
+            case MENU_PLACE_PT_AVG: {
+                GPLog.addLogEntry("fred","in Case GPS avg");
+                //check if there is gps signal
+                GeoPoint geoPoint;
+                if (lastGpsPosition != null && lastGpsServiceStatus == GpsServiceStatus.GPS_FIX) {
+                    setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
+                    geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+                            (int) (lastGpsPosition[0] * LibraryConstants.E6));
+                } else {
+                    GPDialogs.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
+                    GPLog.addLogEntry("fred","no gps");
+                    return true;
+                }
+
+                GPDialogs.toast(this, "GPS averaging not implemented yet. Try something else.", Toast.LENGTH_LONG);
+
+                //TODO: strategy: quick check for existing coords, then ask to continue
+                // if OK, then commence averaging.
+
+                //check if point has existing coordinates
+//                MapViewPosition mapPosition = mMapView.getMapPosition();
+//                GeoPoint mapCenter = mapPosition.getMapCenter();
+                Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+//                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+//                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+//                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1.0);
+//                mapFredDDIntentChk.putExtra("gpsAccuracy", -1.0);
+//                mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
+                mapFredDDIntentChk.putExtra("coordSource", "gpsAvg");
+//                mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
@@ -1172,25 +1210,50 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
               GPLog.addLogEntry("fred","in existing location return code");
                 if (resultCode == Activity.RESULT_OK) {
                     boolean hasLoc = data.getBooleanExtra("hasLocData", false);
+                    final String coordSource = data.getStringExtra("coordSource");
                     if (hasLoc){
                         GPLog.addLogEntry("fred","in maps activity, pt has loc");
                         GPDialogs.yesNoMessageDialog(MapviewActivity.this, "This point has coordinates, overwrite?", new Runnable() {
                             @Override
                             public void run() {
                                 try {
-                                    //write the point
-                                    Intent mapFredDDIntent = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-                                    mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
-                                    mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
-                                    mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
-                                    mapFredDDIntent.putExtra("gpsAccuracy", data.getDoubleExtra("gpsAccuracy",0.0));
-                                    mapFredDDIntent.putExtra("gpsAccuracyUnits",data.getStringExtra("gpsAccuracyUnits"));
-                                    mapFredDDIntent.putExtra("coordSource",data.getStringExtra("coordSource"));
-                                    mapFredDDIntent.putExtra("recordID", data.getStringExtra("recordID"));
-                                    mapFredDDIntent.putExtra("type", "writeLocation");
-                                    mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
-                                    startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                                    if (coordSource == "GPS") {
+                                        //todo move this down to its own function
+                                        writeGpsDataToFred();
+//
+//                                        geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+//                                                (int) (lastGpsPosition[0] * LibraryConstants.E6));
+//                                        Intent mapGpsPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+//                                        mapGpsPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+//                                        mapGpsPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+//                                        mapGpsPt.putExtra(LibraryConstants.ELEVATION, 0.0);
+//                                        double posAc = lastGpsPositionAccuracy;
+//                                        mapGpsPt.putExtra("gpsAccuracy", posAc);
+//                                        mapGpsPt.putExtra("gpsAccuracyUnits", "m");
+//                                        mapGpsPt.putExtra("coordSource", "GPS");
+//                                        mapGpsPt.putExtra("recordID", GeoPapFromDroidDb.idKey);
+//                                        mapGpsPt.putExtra("type", "writeLocation");
+//                                        mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
+//                                        startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                                    } else if (coordSource == "mapCenter"){
+                                        writeMapCenterToFred();
+//                                        MapViewPosition mapPosition = mMapView.getMapPosition();
+//                                        geoPoint = mapPosition.getMapCenter();
+//                                        Intent mapMapPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+//                                        mapMapPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+//                                        mapMapPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+//                                        mapMapPt.putExtra(LibraryConstants.ELEVATION, -1.0);
+//                                        mapMapPt.putExtra("gpsAccuracy", -1.0);
+//                                        mapMapPt.putExtra("gpsAccuracyUnits","unk");
+//                                        mapMapPt.putExtra("coordSource", "mapCenter");
+//                                        mapMapPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
+//                                        mapMapPt.putExtra("type", "writeLocation");
+//                                        mapMapPt.addFlags(mapMapPt.FLAG_ACTIVITY_NO_HISTORY);
+//                                        startActivityForResult(mapMapPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
 
+                                    } else if (coordSource == "gpsAvg"){
+
+                                    }
                                 } catch (Exception e) {
                                     GPLog.error(this, null, e);
                                 }
@@ -1205,18 +1268,13 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
 
                     } else {
-                        GPLog.addLogEntry("fred","in maps activity, pt no loc");
-                        Intent mapFredDDIntent = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-                        mapFredDDIntent.putExtra(LibraryConstants.LATITUDE, data.getDoubleExtra(LibraryConstants.LATITUDE,0.0));
-                        mapFredDDIntent.putExtra(LibraryConstants.LONGITUDE, data.getDoubleExtra(LibraryConstants.LONGITUDE,0.0));
-                        mapFredDDIntent.putExtra(LibraryConstants.ELEVATION, data.getDoubleExtra(LibraryConstants.ELEVATION,0.0));
-                        mapFredDDIntent.putExtra("gpsAccuracy", data.getDoubleExtra("gpsAccuracy",0.0));
-                        mapFredDDIntent.putExtra("gpsAccuracyUnits",data.getStringExtra("gpsAccuracyUnits"));
-                        mapFredDDIntent.putExtra("coordSource",data.getStringExtra("coordSource"));
-                        mapFredDDIntent.putExtra("recordID", data.getStringExtra("recordID"));
-                        mapFredDDIntent.putExtra("type", "writeLocation");
-                        mapFredDDIntent.addFlags(mapFredDDIntent.FLAG_ACTIVITY_NO_HISTORY);
-                        startActivityForResult(mapFredDDIntent, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+                        if (coordSource == "GPS") {
+                            writeGpsDataToFred();
+                        } else if (coordSource == "mapCenter"){
+                            writeMapCenterToFred();
+                        } else if (coordSource == "gpsAvg"){
+
+                        }
                     }
                 }
             }
@@ -1703,12 +1761,46 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
 
     private void returnToDroidDB( ) {
-        GPLog.addLogEntry(this, String.format("cameFromFred: " + GeoPapFromDroidDb.cameFromFred));
         // this seems to work on Android 6. I was overthinking!
         String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
         Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
         intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
         startActivity(intent);
+    }
+
+    private void writeGpsDataToFred() {
+        GeoPoint geoPoint;
+        geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+                (int) (lastGpsPosition[0] * LibraryConstants.E6));
+        Intent mapGpsPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+        mapGpsPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+        mapGpsPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+        mapGpsPt.putExtra(LibraryConstants.ELEVATION, 0.0);
+        double posAc = lastGpsPositionAccuracy;
+        mapGpsPt.putExtra("gpsAccuracy", posAc);
+        mapGpsPt.putExtra("gpsAccuracyUnits", "m");
+        mapGpsPt.putExtra("coordSource", "GPS");
+        mapGpsPt.putExtra("recordID", GeoPapFromDroidDb.idKey);
+        mapGpsPt.putExtra("type", "writeLocation");
+        mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
+        startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+    }
+
+    private void writeMapCenterToFred() {
+        GeoPoint geoPoint;
+        MapViewPosition mapPosition = mMapView.getMapPosition();
+        geoPoint = mapPosition.getMapCenter();
+        Intent mapMapPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+        mapMapPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+        mapMapPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+        mapMapPt.putExtra(LibraryConstants.ELEVATION, -1.0);
+        mapMapPt.putExtra("gpsAccuracy", -1.0);
+        mapMapPt.putExtra("gpsAccuracyUnits","unk");
+        mapMapPt.putExtra("coordSource", "mapCenter");
+        mapMapPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
+        mapMapPt.putExtra("type", "writeLocation");
+        mapMapPt.addFlags(mapMapPt.FLAG_ACTIVITY_NO_HISTORY);
+        startActivityForResult(mapMapPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
     }
 }

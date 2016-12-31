@@ -47,6 +47,7 @@ import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.Utilities;
+import eu.hydrologis.geopaparazzi.GeoPapFromDroidDb;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DatabaseManager;
 import eu.hydrologis.geopaparazzi.mapview.MapviewActivity;
@@ -124,12 +125,13 @@ public class FredDataDirectActivity extends Activity {
         Intent intent = getIntent();
 
         String intentType = intent.getStringExtra("type");
-        recordID = intent.getStringExtra("recordID");
-        latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
-        longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
-        elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
-        gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1.0);
-        gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
+
+        recordID = GeoPapFromDroidDb.idKey;
+//        latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
+//        longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
+//        elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
+//        gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1.0);
+//        gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
         coordSource = intent.getStringExtra("coordSource");
 
         GPLog.addLogEntry("fred","extra, type = " + intentType);
@@ -151,20 +153,22 @@ public class FredDataDirectActivity extends Activity {
             }
 
             Intent resultIntent = new Intent();
-            resultIntent.putExtra(LibraryConstants.LATITUDE, latitude);
-            resultIntent.putExtra(LibraryConstants.LONGITUDE, longitude);
-            resultIntent.putExtra(LibraryConstants.ELEVATION, elevation);
-            resultIntent.putExtra("gpsAccuracy", gpsAccuracy);
-            resultIntent.putExtra("gpsAccuracyUnits", gpsAccuracyUnits);
-            resultIntent.putExtra("coordSource", coordSource);
-            resultIntent.putExtra("recordID", recordID);
+//            resultIntent.putExtra(LibraryConstants.LATITUDE, latitude);
+//            resultIntent.putExtra(LibraryConstants.LONGITUDE, longitude);
+//            resultIntent.putExtra(LibraryConstants.ELEVATION, elevation);
+//            resultIntent.putExtra("gpsAccuracy", gpsAccuracy);
+//            resultIntent.putExtra("gpsAccuracyUnits", gpsAccuracyUnits);
+//            resultIntent.putExtra("coordSource", coordSource);
+//            resultIntent.putExtra("recordID", recordID);
 
             if (hasLocData) {
                 resultIntent.putExtra("hasLocData", true);
+                resultIntent.putExtra("coordSource", coordSource);
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             } else {
                 resultIntent.putExtra("hasLocData", false);
+                resultIntent.putExtra("coordSource", coordSource);
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             }
