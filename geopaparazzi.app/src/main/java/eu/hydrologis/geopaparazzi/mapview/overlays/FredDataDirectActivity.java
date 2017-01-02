@@ -127,11 +127,6 @@ public class FredDataDirectActivity extends Activity {
         String intentType = intent.getStringExtra("type");
 
         recordID = GeoPapFromDroidDb.idKey;
-//        latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
-//        longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
-//        elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
-//        gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1.0);
-//        gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
         coordSource = intent.getStringExtra("coordSource");
 
         GPLog.addLogEntry("fred","extra, type = " + intentType);
@@ -175,7 +170,11 @@ public class FredDataDirectActivity extends Activity {
 
         } else {
             GPLog.addLogEntry("fred", "writing location data");
-
+            latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
+            longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
+            elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
+            gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1.0);
+            gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
 
             //        if (GPLog.LOG_HEAVY){
 //            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$

@@ -1213,46 +1213,18 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     final String coordSource = data.getStringExtra("coordSource");
                     if (hasLoc){
                         GPLog.addLogEntry("fred","in maps activity, pt has loc");
+                        GPLog.addLogEntry("fred","coordSource = " + coordSource);
                         GPDialogs.yesNoMessageDialog(MapviewActivity.this, "This point has coordinates, overwrite?", new Runnable() {
                             @Override
                             public void run() {
                                 try {
-                                    if (coordSource == "GPS") {
-                                        //todo move this down to its own function
+                                    if (coordSource.equals("GPS")) {
                                         writeGpsDataToFred();
-//
-//                                        geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
-//                                                (int) (lastGpsPosition[0] * LibraryConstants.E6));
-//                                        Intent mapGpsPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-//                                        mapGpsPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
-//                                        mapGpsPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-//                                        mapGpsPt.putExtra(LibraryConstants.ELEVATION, 0.0);
-//                                        double posAc = lastGpsPositionAccuracy;
-//                                        mapGpsPt.putExtra("gpsAccuracy", posAc);
-//                                        mapGpsPt.putExtra("gpsAccuracyUnits", "m");
-//                                        mapGpsPt.putExtra("coordSource", "GPS");
-//                                        mapGpsPt.putExtra("recordID", GeoPapFromDroidDb.idKey);
-//                                        mapGpsPt.putExtra("type", "writeLocation");
-//                                        mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
-//                                        startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
-                                    } else if (coordSource == "mapCenter"){
+                                    } else if (coordSource.equals("mapCenter")){
                                         writeMapCenterToFred();
-//                                        MapViewPosition mapPosition = mMapView.getMapPosition();
-//                                        geoPoint = mapPosition.getMapCenter();
-//                                        Intent mapMapPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-//                                        mapMapPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
-//                                        mapMapPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-//                                        mapMapPt.putExtra(LibraryConstants.ELEVATION, -1.0);
-//                                        mapMapPt.putExtra("gpsAccuracy", -1.0);
-//                                        mapMapPt.putExtra("gpsAccuracyUnits","unk");
-//                                        mapMapPt.putExtra("coordSource", "mapCenter");
-//                                        mapMapPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
-//                                        mapMapPt.putExtra("type", "writeLocation");
-//                                        mapMapPt.addFlags(mapMapPt.FLAG_ACTIVITY_NO_HISTORY);
-//                                        startActivityForResult(mapMapPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
-
-                                    } else if (coordSource == "gpsAvg"){
-
+                                    } else if (coordSource.equals("gpsAvg")){
+                                        //todo add gps avg here
+                                        GPLog.addLogEntry("fred","inside YES answer to has coords, coordsource = gpsAvg");
                                     }
                                 } catch (Exception e) {
                                     GPLog.error(this, null, e);
@@ -1266,14 +1238,13 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             }
                         });
 
-
                     } else {
-                        if (coordSource == "GPS") {
+                        if (coordSource.equals("GPS")) {
                             writeGpsDataToFred();
-                        } else if (coordSource == "mapCenter"){
+                        } else if (coordSource.equals("mapCenter")){
                             writeMapCenterToFred();
-                        } else if (coordSource == "gpsAvg"){
-
+                        } else if (coordSource.equals("gpsAvg")){
+                            //todo gps averaging here
                         }
                     }
                 }
@@ -1770,6 +1741,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     }
 
     private void writeGpsDataToFred() {
+        GPLog.addLogEntry("fred", "inside writeGPSDataToFred");
         GeoPoint geoPoint;
         geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
                 (int) (lastGpsPosition[0] * LibraryConstants.E6));
@@ -1788,6 +1760,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     }
 
     private void writeMapCenterToFred() {
+        GPLog.addLogEntry("fred", "inside writeMapCenterToFred");
         GeoPoint geoPoint;
         MapViewPosition mapPosition = mMapView.getMapPosition();
         geoPoint = mapPosition.getMapCenter();
