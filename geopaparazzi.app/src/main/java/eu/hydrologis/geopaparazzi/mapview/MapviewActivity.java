@@ -1733,10 +1733,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
     private void returnToDroidDB( ) {
         // this seems to work on Android 6. I was overthinking!
-        String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
+        // drat - only seems to work if starting fred from geopap. If Fred is started first, it does not work properly. 
+        //String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
         Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
         intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
+        //intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
         startActivity(intent);
     }
 
