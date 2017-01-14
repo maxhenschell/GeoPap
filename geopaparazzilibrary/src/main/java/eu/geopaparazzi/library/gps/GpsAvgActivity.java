@@ -17,12 +17,14 @@
  */
 package eu.geopaparazzi.library.gps;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteFullException;
 import android.location.GpsStatus;
@@ -32,6 +34,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
@@ -123,7 +126,8 @@ public class GpsAvgActivity extends Activity {
 
     public void onCreate(Bundle icicle, Intent intent) {
         super.onCreate(icicle);
-        setContentView(R.layout.note);
+        //the following was R.layout.note  but that has gone away. Not sure what it should be right now
+        setContentView(R.layout.activity_form);
 
         Bundle extras = getIntent().getExtras();
 
@@ -244,6 +248,7 @@ public class GpsAvgActivity extends Activity {
     public void startAveraging() {
         isAveraging = true;
         //Toast.makeText(GpsService.this, "Starting GPS Averaging", Toast.LENGTH_SHORT).show();
+
         gpsavgmeasurements.clean();
         final int averagingDelaySeconds = 1;
 
@@ -268,7 +273,12 @@ public class GpsAvgActivity extends Activity {
                             GPLog.addLogEntry("GPSAVG", "In avg loop");
                             // can't figure out how to use lastGpsLocation from this class
                             // need to sample immediate gps location, not delayed or stored
+                            if (ActivityCompat.checkSelfPermission(GpsAvgActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                return;
+                            }
+
                             Location location = locationManager.getLastKnownLocation("gps");
+
                             if (location != null) {
                                 gpsavgmeasurements.add(location);
                             }
@@ -310,7 +320,7 @@ public class GpsAvgActivity extends Activity {
         if (nBuilder == null) {
             String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ".";
             nBuilder =  new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.action_bar_logo)
+                            .setSmallIcon(R.drawable.ic_place_accent_24dp)
                             .setContentTitle("GPS Position Averaging")
                             .setContentText(msg)
                             .setContentIntent(pendingIntent)

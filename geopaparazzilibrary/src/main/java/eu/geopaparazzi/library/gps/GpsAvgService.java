@@ -20,16 +20,19 @@ package eu.geopaparazzi.library.gps;
 import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_GPSAVG_NUMBER_SAMPLES;
 import static eu.geopaparazzi.library.util.LibraryConstants.GPS_AVERAGING_SAMPLE_NUMBER;
 
+import android.Manifest;
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
 import android.app.NotificationManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.app.PendingIntent;
 import eu.geopaparazzi.library.R;
@@ -257,6 +260,11 @@ public class GpsAvgService extends IntentService {
      */
     public void startAveraging() {
         isAveraging = true;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
         gpsavgmeasurements.clean();
         //final int averagingDelaySeconds = 1;
 
@@ -317,7 +325,7 @@ public class GpsAvgService extends IntentService {
         if (nBuilder == null) {
             String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ".";
             nBuilder =  new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.action_bar_logo)
+                            .setSmallIcon(R.drawable.ic_place_accent_24dp)
                             .setContentTitle("GPS Position Averaging")
                             .setContentText(msg)
                             .setContentIntent(pendingIntent)
