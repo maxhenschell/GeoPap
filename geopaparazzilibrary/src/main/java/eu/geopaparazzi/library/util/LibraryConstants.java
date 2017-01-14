@@ -347,10 +347,11 @@ public interface LibraryConstants {
     /**
      * default number of points to average when averaging
      */
-    int GPS_AVERAGING_SAMPLE_NUMBER = 10;
+    int GPS_AVERAGING_SAMPLE_NUMBER = 5;
+
     /**
-     * Key for sample number
+     * Key used to store and retrieve the number of samples for gps position averaging.
      */
-    String PREFS_KEY_GPSAVG_NUMBER_SAMPLES = "PREFS_KEY_GOSAVG_NUMBER_SAMPLES";
+    String PREFS_KEY_GPSAVG_NUMBER_SAMPLES = "PREFS_KEY_GPSAVG_NUMBER_SAMPLES";
 
 }
