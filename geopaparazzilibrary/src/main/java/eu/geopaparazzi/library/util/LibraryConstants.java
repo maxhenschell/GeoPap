@@ -343,4 +343,14 @@ public interface LibraryConstants {
      * Key used to define the last picked path.
      */
     String PREFS_KEY_LASTPATH = "PREFS_KEY_LASTPATH";
+
+    /**
+     * default number of points to average when averaging
+     */
+    int GPS_AVERAGING_SAMPLE_NUMBER = 10;
+    /**
+     * Key for sample number
+     */
+    String PREFS_KEY_GPSAVG_NUMBER_SAMPLES = "PREFS_KEY_GOSAVG_NUMBER_SAMPLES";
+
 }
