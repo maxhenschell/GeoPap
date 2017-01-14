@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import android.app.ProgressDialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -69,6 +71,7 @@ import android.graphics.drawable.shapes.OvalShape;
 import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
@@ -1732,13 +1735,25 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
 
     private void returnToDroidDB( ) {
-        // this seems to work on Android 6. I was overthinking!
-        // drat - only seems to work if starting fred from geopap. If Fred is started first, it does not work properly. 
+        // drat - only seems to work if starting fred from geopap. If Fred is started first, it does not work properly.
         //String externalDBnm = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-        //intent.putExtra("parameter", externalDBnm); //$NON-NLS-1$
-        startActivity(intent);
+//        Intent intent = new Intent("com.syware.droiddb"); //$NON-NLS-1$
+//        intent.addFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
+
+        // Seems like kind of a hack, but this *does* get the recents window. Which can work for now!
+        try{
+            Class serviceManagerClass = Class.forName("android.os.ServiceManager");
+            Method getService = serviceManagerClass.getMethod("getService", String.class);
+            IBinder retbinder = (IBinder) getService.invoke(serviceManagerClass, "statusbar");
+            Class statusBarClass = Class.forName(retbinder.getInterfaceDescriptor());
+            Object statusBarObject = statusBarClass.getClasses()[0].getMethod("asInterface", IBinder.class).invoke(null, new Object[] { retbinder });
+            Method clearAll = statusBarClass.getMethod("toggleRecentApps");
+            clearAll.setAccessible(true);
+            clearAll.invoke(statusBarObject);
+        } catch (Exception e) {
+            GPLog.error(this, null, e);
+        }
     }
 
     private void writeGpsDataToFred() {
