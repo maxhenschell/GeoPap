@@ -130,6 +130,7 @@ import eu.geopaparazzi.library.features.ToolGroup;
 import eu.geopaparazzi.library.forms.FormInfoHolder;
 import eu.geopaparazzi.library.gps.GpsLoggingStatus;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
+import eu.geopaparazzi.library.gps.GpsAvgService;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.mixare.MixareHandler;
 import eu.geopaparazzi.library.network.NetworkUtilities;
@@ -159,12 +160,6 @@ import eu.hydrologis.geopaparazzi.database.DaoNotes;
 import eu.hydrologis.geopaparazzi.database.objects.Bookmark;
 import eu.hydrologis.geopaparazzi.database.objects.Note;
 import eu.hydrologis.geopaparazzi.maptools.MapTool;
-
-// tgh: old way
-//import eu.hydrologis.geopaparazzi.database.DatabaseManager;
-//import eu.hydrologis.geopaparazzi.maps.mapsforge.ImportMapsforgeActivity;
-//import eu.hydrologis.geopaparazzi.maps.overlays.ArrayGeopaparazziOverlay;
-//import eu.hydrologis.geopaparazzi.maptools.core.MapTool;
 
 import eu.hydrologis.geopaparazzi.mapview.overlays.FredDataActivity;
 import eu.hydrologis.geopaparazzi.mapview.overlays.FredDataDirectActivity;
@@ -245,6 +240,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
     private GpsServiceStatus lastGpsServiceStatus = GpsServiceStatus.GPS_OFF;
     private GpsLoggingStatus lastGpsLoggingStatus = GpsLoggingStatus.GPS_DATABASELOGGING_OFF;
+
+    private BroadcastReceiver gpsAvgReceiver;
+    private double[] gpsAvgLocation;
+    private int gpsAvgNumberPointsSampled;
+
     private ImageButton centerOnGps;
     private Button batteryButton;
     //private Button toggleEditingButton;
@@ -997,21 +997,12 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     GPLog.addLogEntry("fred","no gps");
                     return true;
                 }
-
-                GPDialogs.toast(this, "GPS averaging not implemented yet. Try something else.", Toast.LENGTH_LONG);
+//                GPDialogs.toast(this, "GPS averaging not implemented yet. Try something else.", Toast.LENGTH_LONG);
 
                 //TODO: strategy: quick check for existing coords, then ask to continue
                 // if OK, then commence averaging.
 
-                //check if point has existing coordinates
-//                MapViewPosition mapPosition = mMapView.getMapPosition();
-//                GeoPoint mapCenter = mapPosition.getMapCenter();
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-//                mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-//                mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-//                mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1.0);
-//                mapFredDDIntentChk.putExtra("gpsAccuracy", -1.0);
-//                mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
                 mapFredDDIntentChk.putExtra("coordSource", "gpsAvg");
 //                mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
@@ -1228,6 +1219,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                                     } else if (coordSource.equals("gpsAvg")){
                                         //todo add gps avg here
                                         GPLog.addLogEntry("fred","inside YES answer to has coords, coordsource = gpsAvg");
+                                        writeGpsAvgToFred();
                                     }
                                 } catch (Exception e) {
                                     GPLog.error(this, null, e);
@@ -1247,7 +1239,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         } else if (coordSource.equals("mapCenter")){
                             writeMapCenterToFred();
                         } else if (coordSource.equals("gpsAvg")){
-                            //todo gps averaging here
+                            writeGpsAvgToFred();
                         }
                     }
                 }
@@ -1791,5 +1783,30 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         mapMapPt.putExtra("type", "writeLocation");
         mapMapPt.addFlags(mapMapPt.FLAG_ACTIVITY_NO_HISTORY);
         startActivityForResult(mapMapPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+    }
+
+    private void writeGpsAvgToFred() {
+        GPLog.addLogEntry("fred","inside writeGpsAvgToFred");
+
+        Intent avgServiceIntent = new Intent(this, GpsAvgService.class);
+        avgServiceIntent.putExtra("START_GPS_AVERAGING", 1);
+        this.startService(avgServiceIntent);
+
+        gpsAvgReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                GPLog.addLogEntry("GPSAVG", "inside gpsAvBR receiver");
+                if (intent.getIntExtra("GPS_AVG_COMPLETE", 0) == 1) {
+                    GPLog.addLogEntry("GPSAVG", "inside gpsAvBR intent getIntExtraGPLog");
+                    gpsAvgLocation = intent.getDoubleArrayExtra("GPS_SERVICE_AVERAGED_POSITION");
+                }
+                ;
+            }
+        };
+
+    // define a new filter for the broadcast receiver
+    IntentFilter gpsAvgIntentFilter = new IntentFilter("eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST");
+    //IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
+    this.registerReceiver(gpsAvgReceiver,gpsAvgIntentFilter);
+
     }
 }
