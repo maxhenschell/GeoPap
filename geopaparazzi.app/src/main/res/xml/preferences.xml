@@ -204,48 +204,78 @@
 	            android:defaultValue="@string/fred_defval_column_Lon"
 	            android:order="325">
 	        </EditTextPreference>
+			<EditTextPreference
+				android:key="COLUMN_ELEV"
+				android:title="@string/fred_column_elev"
+				android:defaultValue="@string/fred_defval_column_elev"
+				android:order="326">
+			</EditTextPreference>
             <EditTextPreference
                 android:key="COLUMN_ACC"
                 android:title="@string/fred_column_acc"
                 android:defaultValue="@string/fred_defval_column_acc"
-                android:order="326">
+                android:order="327">
             </EditTextPreference>
+			<EditTextPreference
+				android:key="COLUMN_PDOP"
+				android:title="@string/fred_column_Pdop"
+				android:defaultValue="@string/fred_defval_column_Pdop"
+				android:order="328">
+			</EditTextPreference>
             <EditTextPreference
                 android:key="COLUMN_ACC_UNITS"
                 android:title="@string/fred_column_acc_units"
                 android:defaultValue="@string/fred_defval_column_acc_units"
-                android:order="327">
+                android:order="329">
             </EditTextPreference>
             <EditTextPreference
                 android:key="COLUMN_COORD_SOURCE"
                 android:title="@string/fred_column_coord_source"
                 android:defaultValue="@string/fred_defval_column_coord_source"
-                android:order="328">
+                android:order="330">
             </EditTextPreference>
-            <EditTextPreference
-                android:key="COLUMN_ELEV"
-                android:title="@string/fred_column_elev"
-                android:defaultValue="@string/fred_defval_column_elev"
-                android:order="329">
-            </EditTextPreference>
-	        <EditTextPreference 
+			<EditTextPreference
+				android:key="COLUMN_GPS_UNIT"
+				android:title="@string/fred_column_gps_unit"
+				android:defaultValue="@string/fred_defval_column_gps_unit"
+				android:order="331">
+			</EditTextPreference>
+			<EditTextPreference
+				android:key="COLUMN_GPS_AVG_TIME_MIN"
+				android:title="@string/fred_column_gps_average_time_min"
+				android:defaultValue="@string/fred_defval_column_gps_average_time_min"
+				android:order="332">
+			</EditTextPreference>
+			<EditTextPreference
+				android:key="COLUMN_GPS_AVG_TIME_SEC"
+				android:title="@string/fred_column_gps_average_time_sec"
+				android:defaultValue="@string/fred_defval_column_gps_average_time_sec"
+				android:order="333">
+			</EditTextPreference>
+			<EditTextPreference
+				android:key="COLUMN_GPS_AVG_COUNT"
+				android:title="@string/fred_column_gps_average_count"
+				android:defaultValue="@string/fred_defval_column_gps_avg_count"
+				android:order="334">
+			</EditTextPreference>
+			<EditTextPreference
 	            android:key="COLUMN_NOTE" 
 	            android:title="@string/fred_column_note" 
 	            android:defaultValue="@string/fred_defval_column_note"
-	            android:order="330">
+	            android:order="335">
 	        </EditTextPreference>
 	        <EditTextPreference 
 	            android:key="COLUMN_SECOND_LEVEL_TIMESTAMP" 
 	            android:title="@string/fred_second_level_timestamp" 
 	            android:defaultValue="@string/fred_defval_second_level_timestamp"
-	            android:order="331">
+	            android:order="336">
 	        </EditTextPreference>
 	    </PreferenceScreen>
         <CheckBoxPreference 
             android:key="TABLES_TWO_LEVELS" 
             android:defaultValue="@string/fred_defval_two_levels" 
             android:title="@string/fred_tables_two_levels"
-            android:order="335"
+            android:order="337"
             android:summary="@string/fred_parent_table_present_summary">
         </CheckBoxPreference>     
         <PreferenceScreen 

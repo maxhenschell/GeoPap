@@ -28,6 +28,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.Spinner;
@@ -72,6 +73,8 @@ public class FredDataDirectActivity extends Activity {
     private double elevation;
     private double gpsAccuracy;
     private String gpsAccuracyUnits;
+    private int numberPointsSampled;
+    private String gpsUnit;
     private String coordSource;
     private String recordID;
     private double[] gpsLocation;
@@ -87,6 +90,8 @@ public class FredDataDirectActivity extends Activity {
     private static String COLUMN_ELEV = "COLUMN_ELEV";//$NON-NLS-1$
     private static String COLUMN_ACC = "COLUMN_ACC";//$NON-NLS-1$
     private static String COLUMN_ACC_UNITS = "COLUMN_ACC_UNITS";//$NON-NLS-1$
+    private static String COLUMN_GPS_AVG_COUNT = "COLUMN_GPS_AVG_COUNT";
+    private static String COLUMN_GPS_UNIT = "COLUMN_GPS_UNIT";
     private static String COLUMN_COORD_SOURCE = "COLUMN_COORD_SOURCE";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
@@ -109,6 +114,8 @@ public class FredDataDirectActivity extends Activity {
         final String colElev = preferences.getString(COLUMN_ELEV, "default7"); //$NON-NLS-1$
         final String colAcc = preferences.getString(COLUMN_ACC, "default8"); //$NON-NLS-1$
         final String colAccUnits = preferences.getString(COLUMN_ACC_UNITS, "default9"); //$NON-NLS-1$
+        final String colGpsAvgCount = preferences.getString(COLUMN_GPS_AVG_COUNT, "default14");
+        final String colGpsUnit = preferences.getString(COLUMN_GPS_UNIT, "default15");
         final String colCoordSo = preferences.getString(COLUMN_COORD_SOURCE, "default10"); //$NON-NLS-1$
         final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default11"); //$NON-NLS-1$
         final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default12"); //$NON-NLS-1$
@@ -175,6 +182,8 @@ public class FredDataDirectActivity extends Activity {
             elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
             gpsAccuracy = intent.getDoubleExtra("gpsAccuracy",-1.0);
             gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
+            numberPointsSampled = intent.getIntExtra("numberPointsSampled",0);
+            gpsUnit = "Tablet: " + Build.MODEL;
 
             //        if (GPLog.LOG_HEAVY){
 //            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
@@ -221,8 +230,9 @@ public class FredDataDirectActivity extends Activity {
                 final SQLiteDatabase sqlDB;
                 sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
                         .openDatabase(externalDB, null, 2);
-                IsWritten = writeGpsData(childTable, colLat, colLon, colElev, colAcc, colAccUnits, colCoordSo,
-                        childID, recordID, latitude, longitude, gpsAccuracy, elevation, gpsAccuracyUnits, coordSource,
+                IsWritten = writeGpsData(childTable,childID,colLat, colLon, colElev, colAcc, colAccUnits, colCoordSo,
+                        colGpsUnit, colGpsAvgCount, recordID, latitude, longitude, elevation, gpsAccuracy, gpsAccuracyUnits,
+                        coordSource, gpsUnit, numberPointsSampled,
                         sqlDB);
                 sqlDB.close();
             } catch (IOException e) {
@@ -416,23 +426,33 @@ public class FredDataDirectActivity extends Activity {
      * Writes GPS data to an external database
      *
      * @param tbl         is the name of the table to write to
+     * @param colSecondID is the column name for the child ID column
      * @param colLat      is the column name for Latitude
      * @param colLon      is the column name for Longitude
-     * @param colSecondID is the column name for the child ID column
+     * @param colElev     is the column name for elevation
+     * @param colAcc      is the column name for point accuracy
+     * @param colAccUnits is the column name for accuracy units
+     * @param colCoordSo  is the column name for how coordinates were obtained (gps, map, gps avg)
+     * @param colGpsUnit  is the column name for gps unit
+     * @param colAvgCount is the column name for gps averaging count
      * @param lvlTwoID    the child ID for the record to update
      * @param ddLon       decimal degrees longitude
      * @param ddLat       decimal degrees latitude
-     * @param gpsAcc        gps accuracy as reported by gps
      * @param elev          elevation
+     * @param gpsAcc        gps accuracy as reported by gps
      * @param gpsAccUnits   gps accuracy units
-     * @param coordSo       coordinates source, manual from crosshairs on map or gps?
+     * @param coordSo       coordinates source, manual from crosshairs on map or gps or gps average?
+     * @param gpsUnit       the name of the gps unit used
+     * @param numPtsSampled number of points sampled when gps averaging
      * @param sqlDB       the DB to write to
      * @throws IOException if a problem
      */
-    private static boolean writeGpsData(String tbl, String colLat, String colLon,String colElev, String colAcc,
-                                        String colAccUnits, String colCoordSo,
-                                        String colSecondID, String lvlTwoID, double ddLat, double ddLon,
-                                        double gpsAcc, double elev, String gpsAccUnits, String coordSo,
+    private static boolean writeGpsData(String tbl, String colSecondID,
+                                        String colLat, String colLon,String colElev, String colAcc, String colAccUnits, String colCoordSo,
+                                        String colGpsUnit, String colAvgCount,
+                                        String lvlTwoID,
+                                        double ddLat, double ddLon, double elev, double gpsAcc, String gpsAccUnits, String coordSo,
+                                        String gpsUnit, int numPtsSampled,
                                         SQLiteDatabase sqlDB) throws IOException {
 
         try {
@@ -444,10 +464,12 @@ public class FredDataDirectActivity extends Activity {
             sb.append(" SET "); //$NON-NLS-1$
             sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colElev).append("=").append(elev).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colAcc).append("=").append(gpsAcc).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
             sb.append(colAccUnits).append("= '").append(gpsAccUnits).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colElev).append("=").append(elev).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colCoordSo).append("= '").append(coordSo).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colCoordSo).append("= '").append(coordSo).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colGpsUnit).append("= '").append(gpsUnit).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colAvgCount).append("= '").append(numPtsSampled).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
 
             sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
 

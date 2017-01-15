@@ -59,6 +59,11 @@ public class FredQuickSets extends DialogPreference {
     private static String COLUMN_ACC_UNITS = "COLUMN_ACC_UNITS";
     private static String COLUMN_COORD_SOURCE = "COLUMN_COORD_SOURCE";
     private static String COLUMN_ELEV = "COLUMN_ELEV";
+    private static String COLUMN_GPS_UNIT = "COLUMN_GPS_UNIT";
+    private static String COLUMN_GPS_AVG_TIME_MIN = "COLUMN_GPS_AVG_TIME_MIN";
+    private static String COLUMN_GPS_AVG_TIME_SEC = "COLUMN_GPS_AVG_TIME_SEC";
+    private static String COLUMN_GPS_AVG_COUNT = "COLUMN_GPS_AVG_COUNT";
+    private static String COLUMN_PDOP = "COLUMN_PDOP";
     private static String COLUMN_NOTE = "COLUMN_NOTE";//$NON-NLS-1$
     private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
@@ -172,22 +177,27 @@ public class FredQuickSets extends DialogPreference {
         // get the base path
         String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         // set defaults to something real
-        String externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
-        String externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
-        Boolean haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
-        String parentTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_table);
-        String parentID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_ID);
-        String parentDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_descriptor);
-        String parentTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_timestamp);
-        String childTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_table);
-        String childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_ID);
-        String colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lat);
-        String colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lon);
-        String colAcc = "dblGpsAcc";
-        String colAccUnits = "strGpsAccUnits";
-        String colCoordSo = "strPositionMethod";
-        String colElev = "dblElev";
-        String colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
+        String externalDB = baseDir + context.getString(R.string.fred_defval_external_db_path);
+        String externalDBname = context.getString(R.string.fred_defval_external_db_name);
+        Boolean haveParentTable = Boolean.valueOf(context.getString(R.string.fred_defval_two_levels));
+        String parentTable = context.getString(R.string.fred_defval_first_level_table);
+        String parentID = context.getString(R.string.fred_defval_first_level_ID);
+        String parentDescriptorField = context.getString(R.string.fred_defval_first_level_descriptor);
+        String parentTimeStamp = context.getString(R.string.fred_defval_first_level_timestamp);
+        String childTable = context.getString(R.string.fred_defval_second_level_table);
+        String childID = context.getString(R.string.fred_defval_second_level_ID);
+        String colLat = context.getString(R.string.fred_defval_column_Lat);
+        String colLon = context.getString(R.string.fred_defval_column_Lon);
+        String colAcc = context.getString(R.string.fred_defval_column_acc);
+        String colAccUnits = context.getString(R.string.fred_defval_column_acc_units);
+        String colCoordSo = context.getString(R.string.fred_defval_column_coord_source);
+        String colElev = context.getString(R.string.fred_defval_column_elev);
+        String colGpsUnit = context.getString(R.string.fred_defval_column_gps_unit);
+        String colGpsAvgTimeMinutes = context.getString(R.string.fred_defval_column_gps_average_time_min);
+        String colGpsAvgTimeSeconds = context.getString(R.string.fred_defval_column_gps_average_time_sec);
+        String colGpsAvgCount = context.getString(R.string.fred_defval_column_gps_avg_count);
+        String colPdop = context.getString(R.string.fred_defval_column_Pdop);
+        String colNote = context.getString(R.string.fred_defval_column_note);
         String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
         String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
 
@@ -222,10 +232,15 @@ public class FredQuickSets extends DialogPreference {
             childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_ID);
             colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_Lat);
             colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_Lon);
-            colAcc = "dblGpsAcc";
-            colAccUnits = "strGpsAccUnits";
-            colCoordSo = "strPositionMethod";
-            colElev = "dblElev";
+            colAcc = context.getString(R.string.fred_defval_column_acc);
+            colAccUnits = context.getString(R.string.fred_defval_column_acc_units);
+            colCoordSo = context.getString(R.string.fred_defval_column_coord_source);
+            colElev = context.getString(R.string.fred_defval_column_elev);
+            colGpsUnit = context.getString(R.string.fred_defval_column_gps_unit);
+            colGpsAvgTimeMinutes = context.getString(R.string.fred_defval_column_gps_average_time_min);
+            colGpsAvgTimeSeconds = context.getString(R.string.fred_defval_column_gps_average_time_sec);
+            colGpsAvgCount = context.getString(R.string.fred_defval_column_gps_avg_count);
+            colPdop = context.getString(R.string.fred_defval_column_Pdop);
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
@@ -241,10 +256,15 @@ public class FredQuickSets extends DialogPreference {
             childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_second_level_ID);
             colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_column_Lat);
             colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_column_Lon);
-            colAcc = "dblGpsAcc";
-            colAccUnits = "strGpsAccUnits";
-            colCoordSo = "strPositionMethod";
-            colElev = "dblElev";
+            colAcc = context.getString(R.string.fred_BotZoo_column_acc);
+            colAccUnits = context.getString(R.string.fred_BotZoo_column_acc_units);
+            colCoordSo = context.getString(R.string.fred_BotZoo_column_coord_source);
+            colElev = context.getString(R.string.fred_BotZoo_column_elev);
+            colGpsUnit = context.getString(R.string.fred_BotZoo_column_gps_unit);
+            colGpsAvgTimeMinutes = context.getString(R.string.fred_BotZoo_column_gps_average_time_min);
+            colGpsAvgTimeSeconds = context.getString(R.string.fred_BotZoo_column_gps_average_time_sec);
+            colGpsAvgCount = context.getString(R.string.fred_BotZoo_column_gps_avg_count);
+            colPdop = context.getString(R.string.fred_BotZoo_column_Pdop);
             colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_column_note);
             childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_second_level_descriptor);
             childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_BotZoo_second_level_timestamp);
@@ -267,6 +287,11 @@ public class FredQuickSets extends DialogPreference {
         editor.putString(COLUMN_ACC_UNITS,colAccUnits);
         editor.putString(COLUMN_COORD_SOURCE,colCoordSo);
         editor.putString(COLUMN_ELEV,colElev);
+        editor.putString(COLUMN_GPS_UNIT,colGpsUnit);
+        editor.putString(COLUMN_GPS_AVG_TIME_MIN,colGpsAvgTimeMinutes);
+        editor.putString(COLUMN_GPS_AVG_TIME_SEC,colGpsAvgTimeSeconds);
+        editor.putString(COLUMN_GPS_AVG_COUNT,colGpsAvgCount);
+        editor.putString(COLUMN_PDOP,colPdop);
         editor.putString(COLUMN_NOTE, colNote);
         editor.putString(COLUMN_FIRST_LEVEL_DESCRIPTOR, parentDescriptorField);
         editor.putString(COLUMN_FIRST_LEVEL_TIMESTAMP, parentTimeStamp);
