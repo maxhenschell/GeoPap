@@ -1798,15 +1798,29 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 if (intent.getIntExtra("GPS_AVG_COMPLETE", 0) == 1) {
                     GPLog.addLogEntry("GPSAVG", "inside gpsAvBR intent getIntExtraGPLog");
                     gpsAvgLocation = intent.getDoubleArrayExtra("GPS_SERVICE_AVERAGED_POSITION");
+
+                    Intent mapAvgPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+                    mapAvgPt.putExtra(LibraryConstants.LATITUDE,  (gpsAvgLocation[1]));
+                    mapAvgPt.putExtra(LibraryConstants.LONGITUDE, (gpsAvgLocation[0]));
+                    mapAvgPt.putExtra(LibraryConstants.ELEVATION, (gpsAvgLocation[2]));
+                    //mapAvgPt.putExtra("gpsAccuracy", -1.0);
+                    //mapAvgPt.putExtra("gpsAccuracyUnits","unk");
+                    mapAvgPt.putExtra("numberPointsSampled", (int) gpsAvgLocation[3]);
+                    mapAvgPt.putExtra("coordSource", "gpsAverage");
+                    mapAvgPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
+                    mapAvgPt.putExtra("type", "writeLocation");
+                    mapAvgPt.addFlags(mapAvgPt.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivityForResult(mapAvgPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+
+                    GPLog.addLogEntry("GPSAVG","gpsAc lat is " + gpsAvgLocation[1]);
                 }
-                ;
             }
         };
 
-    // define a new filter for the broadcast receiver
-    IntentFilter gpsAvgIntentFilter = new IntentFilter("eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST");
-    //IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
-    this.registerReceiver(gpsAvgReceiver,gpsAvgIntentFilter);
+        // define a new filter for the broadcast receiver
+        IntentFilter gpsAvgIntentFilter = new IntentFilter("eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST");
+        //IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
+        this.registerReceiver(gpsAvgReceiver,gpsAvgIntentFilter);
 
     }
 }
