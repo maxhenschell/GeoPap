@@ -152,6 +152,7 @@ public class GpsAvgService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+
         // Gets data from the incoming Intent
         String dataString = intent.getDataString();
 

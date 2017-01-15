@@ -374,6 +374,7 @@
             android:exported="false" />
 
         <service android:name="eu.geopaparazzi.library.gps.GpsService" />
+        <service android:name="eu.geopaparazzi.library.gps.GpsAvgService" />
         <service android:name=".mapview.MapsSupportService" />
     </application>
 
