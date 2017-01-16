@@ -232,8 +232,9 @@ public class GpsAvgService extends IntentService {
             lon = loc.getLongitude();
             lat = loc.getLatitude();
             elev = loc.getAltitude();
+            accuracy = loc.getAccuracy();
             int numSamples = numberSamplesUsedInAvg;
-            double[] GpsAvgPositionArray = new double[]{lon, lat, elev, numSamples};
+            double[] GpsAvgPositionArray = new double[]{lon, lat, elev, numSamples, accuracy};
             intent.putExtra(GPS_SERVICE_AVERAGED_POSITION, GpsAvgPositionArray);
             if(message == "GPS Averaging complete") {
                 intent.putExtra(GPS_AVG_COMPLETE, 1);

@@ -608,6 +608,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         if (gpsServiceBroadcastReceiver != null)
             GpsServiceUtilities.unregisterFromBroadcasts(this, gpsServiceBroadcastReceiver);
 
+        if (gpsAvgReceiver != null)
+            GpsServiceUtilities.unregisterFromBroadcasts(this, gpsAvgReceiver);
+
         if (mDataOverlay != null)
             mDataOverlay.dispose();
 
@@ -1802,8 +1805,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     mapAvgPt.putExtra(LibraryConstants.LATITUDE,  (gpsAvgLocation[1]));
                     mapAvgPt.putExtra(LibraryConstants.LONGITUDE, (gpsAvgLocation[0]));
                     mapAvgPt.putExtra(LibraryConstants.ELEVATION, (gpsAvgLocation[2]));
-                    //mapAvgPt.putExtra("gpsAccuracy", -1.0);
-                    //mapAvgPt.putExtra("gpsAccuracyUnits","unk");
+                    mapAvgPt.putExtra("gpsAccuracy", gpsAvgLocation[4]);
+                    mapAvgPt.putExtra("gpsAccuracyUnits","m");
                     mapAvgPt.putExtra("numberPointsSampled", (int) gpsAvgLocation[3]);
                     mapAvgPt.putExtra("coordSource", "gpsAverage");
                     mapAvgPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
