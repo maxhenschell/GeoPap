@@ -35,6 +35,7 @@ import android.app.NotificationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.app.PendingIntent;
+
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
 
@@ -309,6 +310,7 @@ public class GpsAvgService extends IntentService {
         }
         broadcast("GPS Averaging complete");
         cancelAvgNotify(notifyMgr);
+
     }
 
 

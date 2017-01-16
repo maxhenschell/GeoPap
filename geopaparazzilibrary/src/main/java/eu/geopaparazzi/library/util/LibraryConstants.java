@@ -347,7 +347,7 @@ public interface LibraryConstants {
     /**
      * default number of points to average when averaging
      */
-    int GPS_AVERAGING_SAMPLE_NUMBER = 5;
+    int GPS_AVERAGING_SAMPLE_NUMBER = 50;
 
     /**
      * Key used to store and retrieve the number of samples for gps position averaging.

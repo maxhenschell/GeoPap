@@ -1217,7 +1217,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                                     } else if (coordSource.equals("mapCenter")){
                                         writeMapCenterToFred();
                                     } else if (coordSource.equals("gpsAvg")){
-                                        //todo add gps avg here
                                         GPLog.addLogEntry("fred","inside YES answer to has coords, coordsource = gpsAvg");
                                         writeGpsAvgToFred();
                                     }
@@ -1787,7 +1786,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
     private void writeGpsAvgToFred() {
         GPLog.addLogEntry("fred","inside writeGpsAvgToFred");
-
+        GPDialogs.toast(MapviewActivity.this,"Averaging starting. Keep GPS stationary.", Toast.LENGTH_SHORT);
         Intent avgServiceIntent = new Intent(this, GpsAvgService.class);
         avgServiceIntent.putExtra("START_GPS_AVERAGING", 1);
         this.startService(avgServiceIntent);
@@ -1811,8 +1810,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     mapAvgPt.putExtra("type", "writeLocation");
                     mapAvgPt.addFlags(mapAvgPt.FLAG_ACTIVITY_NO_HISTORY);
                     startActivityForResult(mapAvgPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
-
-                    GPLog.addLogEntry("GPSAVG","gpsAc lat is " + gpsAvgLocation[1]);
+                    GPDialogs.toast(MapviewActivity.this,"Averaging complete.", Toast.LENGTH_SHORT);
+                    //GPLog.addLogEntry("GPSAVG","gpsAc lat is " + gpsAvgLocation[1]);
                 }
             }
         };
