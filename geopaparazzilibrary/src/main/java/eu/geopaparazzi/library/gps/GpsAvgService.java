@@ -326,7 +326,7 @@ public class GpsAvgService extends IntentService {
         if (nBuilder == null) {
             String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ".";
             nBuilder =  new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.ic_place_accent_24dp)
+                            .setSmallIcon(R.drawable.map_marker_circle)
                             .setContentTitle("GPS Position Averaging")
                             .setContentText(msg)
                             .setContentIntent(pendingIntent)
