@@ -73,7 +73,6 @@ public class GpsAvgService extends IntentService {
      * Intent key to use for long time.
      */
     public static final String GPS_SERVICE_POSITION_TIME = "GPS_SERVICE_POSITION_TIME";
-
     /**
      * Intent key to pass the boolean to start gps averaging.
      */
@@ -101,7 +100,7 @@ public class GpsAvgService extends IntentService {
      * GPS time interval between averaging samples.
      * 1000 ms = 1 second
      */
-        private static long WAIT_MILLISECONDS = 1000L;
+    private static long WAIT_MILLISECONDS = 1000L;
 
 
     /**
@@ -118,12 +117,11 @@ public class GpsAvgService extends IntentService {
         super("GpsAvgService");
     }
 
-
     // can't usually cancel an intentService, need these overrides to make it possible
     private class CancelReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            GPLog.addLogEntry("GPSAVG", "custom receiver onReceive");
+            //GPLog.addLogEntry("GPSAVG", "custom receiver onReceive");
             stopAveragingRequest = true;
             stopSelf();
         }
@@ -135,7 +133,7 @@ public class GpsAvgService extends IntentService {
         cReceiver = new CancelReceiver();
         IntentFilter filter = new IntentFilter(GpsAvgService.STOP_AVERAGING_NOW);
         registerReceiver(cReceiver, filter);
-        GPLog.addLogEntry("GPSAVG","custom receiver registered");
+        //GPLog.addLogEntry("GPSAVG","cancel receiver registered");
     }
 
 
@@ -149,7 +147,6 @@ public class GpsAvgService extends IntentService {
 
     //TODO: When gps signal is lost, geopap switches to location on map center, messing things up.
     //todo: need to handle gps signal coming in and out of connection
-    //todo: extract other gps averaging data.
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -159,16 +156,16 @@ public class GpsAvgService extends IntentService {
 
         if (preferences == null) {
             preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            GPLog.addLogEntry("GPSAVG", "onHandleIntent: Preferences created");
+            //GPLog.addLogEntry("GPSAVG", "onHandleIntent: Preferences created");
         }
 
         if (locationManager == null) {
-            GPLog.addLogEntry("GPSAVG", "onHandleIntent: start locationManager");
+            //GPLog.addLogEntry("GPSAVG", "onHandleIntent: start locationManager");
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         }
 
         if (intent.hasExtra(START_GPS_AVERAGING)){
-            GPLog.addLogEntry("GPSAVG", "onHandleIntent: Start GPS averaging called");
+            //GPLog.addLogEntry("GPSAVG", "onHandleIntent: Start GPS averaging called");
             stopAveragingRequest = false;
             numberSamplesUsedInAvg = -1;
             gpsavgmeasurements = GpsAvgMeasurements.getInstance();
@@ -178,11 +175,10 @@ public class GpsAvgService extends IntentService {
         }
 
         if (intent.hasExtra(STOP_AVERAGING_NOW)){
-            GPLog.addLogEntry("GPSAVG", "onHandleIntent: stop averaging called via intent");
+            //GPLog.addLogEntry("GPSAVG", "onHandleIntent: stop averaging called via intent");
             stopAveragingRequest = true;
             stopSelf();
         }
-
     }
 
     /**
@@ -209,24 +205,6 @@ public class GpsAvgService extends IntentService {
             intent.putExtra(GPS_SERVICE_POSITION_TIME, time);
         }
 
-//        if (DOLOGPOSITION) {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("GPS SERVICE INFO: ").append(message).append("\n");
-//            sb.append("---------------------------\n");
-//            sb.append("gps status=").append(GpsServiceStatus.getStatusForCode(status)).append("(" + status).append(")\n");
-//            sb.append("lon=").append(lon).append("\n");
-//            sb.append("lat=").append(lat).append("\n");
-//            sb.append("elev=").append(elev).append("\n");
-//            sb.append("accuracy=").append(accuracy).append("\n");
-//            sb.append("speed=").append(speed).append("\n");
-//            sb.append("bearing=").append(bearing).append("\n");
-//            sb.append("time=").append(time).append("\n");
-//            sb.append("maxSatellites=").append(maxSatellites).append("\n");
-//            sb.append("satCount=").append(satCount).append("\n");
-//            sb.append("satUsedInFix=").append(satUsedInFixCount).append("\n");
-//            GPLog.addLogEntry("GPSAVGSERVICE", sb.toString());
-//        }
-
         if (isAveraging) {
             Location loc = gpsavgmeasurements.getAveragedLocation();
             lon = loc.getLongitude();
@@ -238,20 +216,20 @@ public class GpsAvgService extends IntentService {
             intent.putExtra(GPS_SERVICE_AVERAGED_POSITION, GpsAvgPositionArray);
             if(message == "GPS Averaging complete") {
                 intent.putExtra(GPS_AVG_COMPLETE, 1);
-                GPLog.addLogEntry("GPSAVG", "put extra AVGCOMPLETE");
+                //GPLog.addLogEntry("GPSAVG", "put extra AVGCOMPLETE");
                 isAveraging = false;
             } else {
                 intent.putExtra(GPS_AVG_COMPLETE,0);
             }
-            GPLog.addLogEntry("GPSAVG","put extra AVERAGED POSITION");
+            //GPLog.addLogEntry("GPSAVG","put extra AVERAGED POSITION");
         }
 
         if (message == "GPS Averaging complete" & isAveraging == false){
-            GPLog.addLogEntry("GPSAVG","sendBroadcast in Av complete and av=False");
+            //GPLog.addLogEntry("GPSAVG","sendBroadcast in Av complete and av=False");
             sendBroadcast(intent);
             stopSelf();
         } else {
-            GPLog.addLogEntry("GPSAVG","sendBroadcast av not complete");
+            //GPLog.addLogEntry("GPSAVG","sendBroadcast av not complete");
             sendBroadcast(intent);
         }
 
@@ -285,29 +263,27 @@ public class GpsAvgService extends IntentService {
 
         //run the averaging
         for (int i = 0; i < numSamps; i++) {
-            GPLog.addLogEntry("GPSAVG", "In avg loop, i=" + i);
+            //GPLog.addLogEntry("GPSAVG", "In avg loop, i=" + i);
             Location location = locationManager.getLastKnownLocation("gps");
             if (location != null) {
                 gpsavgmeasurements.add(location);
             }
 
             try {
-//                for (int j = 0; j < averagingDelaySeconds; j++) {
-                    Thread.sleep(WAIT_MILLISECONDS);
- //               }
+                Thread.sleep(WAIT_MILLISECONDS);
             } catch (InterruptedException e) {
                 break;
             }
             notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
             if(stopAveragingRequest){
                 numberSamplesUsedInAvg = i + 1;
-                GPLog.addLogEntry("GPSAVG", "stop avg req in avg loop. samps is " + i);
+                //GPLog.addLogEntry("GPSAVG", "stop avg req in avg loop. samps is " + i);
                 break;
             }
         }
         if(numberSamplesUsedInAvg == -1){
             numberSamplesUsedInAvg = numSamps;
-            GPLog.addLogEntry("GPSAVG", "set numberSamples to " + numberSamplesUsedInAvg);
+            //GPLog.addLogEntry("GPSAVG", "set numberSamples to " + numberSamplesUsedInAvg);
         }
         broadcast("GPS Averaging complete");
         cancelAvgNotify(notifyMgr);
@@ -354,7 +330,7 @@ public class GpsAvgService extends IntentService {
     *
     */
     public void cancelAvgNotify(NotificationManager notifyMgr) {
-        GPLog.addLogEntry("GPSAVG", "cancel notification called");
+        //GPLog.addLogEntry("GPSAVG", "cancel notification called");
     notifyMgr.cancel(6789);
 
     }

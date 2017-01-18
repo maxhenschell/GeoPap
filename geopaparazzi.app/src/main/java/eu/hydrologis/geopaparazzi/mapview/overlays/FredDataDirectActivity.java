@@ -69,8 +69,8 @@ public class FredDataDirectActivity extends Activity {
     private String gpsUnit;
     private String coordSource;
     private String recordID;
-    private double[] gpsLocation;
-    private BroadcastReceiver gpsBroadcastReceiver;
+    //private double[] gpsLocation;
+    //private BroadcastReceiver gpsBroadcastReceiver;
 
     private List<String> secondIDs; // second level information -- e.g. obspoint
     private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
@@ -119,7 +119,6 @@ public class FredDataDirectActivity extends Activity {
 //            GPLog.addLogEntry("fred", "prefs child table: " + childTable); //$NON-NLS-1$
 //            GPLog.addLogEntry("fred", "prefs child ID: " + childID); //$NON-NLS-1$
 //        }
-
 
         // Get intent, action
         Intent intent = getIntent();
@@ -255,8 +254,8 @@ public class FredDataDirectActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if (gpsBroadcastReceiver != null)
-            GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
+        //if (gpsBroadcastReceiver != null)
+          //  GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
 
         //maintain this boolean
         MapviewActivity.created = true;

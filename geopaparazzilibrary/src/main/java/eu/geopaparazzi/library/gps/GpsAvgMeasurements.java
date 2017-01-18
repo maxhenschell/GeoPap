@@ -13,7 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   Modified and added to Geopaparazzi by Tim Howard, 2015
  */
 package eu.geopaparazzi.library.gps;
 
@@ -28,6 +27,7 @@ import java.util.List;
  * of the measured values and record times of measurement.
  * 
  * @author Libor Tvrdik (libor.tvrdik@gmail.com), Destil
+ * Modified and added to Geopaparazzi by Tim Howard, 2015, 2017
  */
 public class GpsAvgMeasurements {
 
