@@ -31,11 +31,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.widget.Spinner;
 import android.widget.Toast;
-import android.widget.ToggleButton;
-
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequence;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,14 +43,10 @@ import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
-import eu.geopaparazzi.library.util.Utilities;
 import eu.hydrologis.geopaparazzi.GeoPapFromDroidDb;
 import eu.hydrologis.geopaparazzi.R;
 import eu.hydrologis.geopaparazzi.database.DatabaseManager;
 import eu.hydrologis.geopaparazzi.mapview.MapviewActivity;
-import eu.hydrologis.geopaparazzi.mapview.overlays.GpsData;
-import jsqlite.*;
-//import eu.geopaparazzi.library.gps.GpsManager;
 
 /**
  * Fred activity.
@@ -122,26 +114,26 @@ public class FredDataDirectActivity extends Activity {
         final String quicksetChoice = preferences.getString(PREFS_KEY_FRED_QUICK_SET, "default13"); //$NON-NLS-1$
 
         // debug some of the defaults in case of problems
-        if (GPLog.LOG_HEAVY) {
-            GPLog.addLogEntry("fred", "prefs DB val: " + externalDB); //$NON-NLS-1$
-            GPLog.addLogEntry("fred", "prefs child table: " + childTable); //$NON-NLS-1$
-            GPLog.addLogEntry("fred", "prefs child ID: " + childID); //$NON-NLS-1$
-        }
+//        if (GPLog.LOG_HEAVY) {
+//            GPLog.addLogEntry("fred", "prefs DB val: " + externalDB); //$NON-NLS-1$
+//            GPLog.addLogEntry("fred", "prefs child table: " + childTable); //$NON-NLS-1$
+//            GPLog.addLogEntry("fred", "prefs child ID: " + childID); //$NON-NLS-1$
+//        }
+
 
         // Get intent, action
         Intent intent = getIntent();
-
         String intentType = intent.getStringExtra("type");
 
         recordID = GeoPapFromDroidDb.idKey;
         coordSource = intent.getStringExtra("coordSource");
 
-        GPLog.addLogEntry("fred","extra, type = " + intentType);
-        GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
+        //GPLog.addLogEntry("fred","extra, type = " + intentType);
+        //GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
 
+        // check if the location already has coordinates in Fred
         if (intentType.equals("checkForExistingLocation")){
-            GPLog.addLogEntry("fred", "checking if location already has gps data");
-
+            //GPLog.addLogEntry("fred", "checking if location already has gps data");
             boolean hasLocData = false;
             try {
                 final SQLiteDatabase sqlDB;
@@ -155,13 +147,6 @@ public class FredDataDirectActivity extends Activity {
             }
 
             Intent resultIntent = new Intent();
-//            resultIntent.putExtra(LibraryConstants.LATITUDE, latitude);
-//            resultIntent.putExtra(LibraryConstants.LONGITUDE, longitude);
-//            resultIntent.putExtra(LibraryConstants.ELEVATION, elevation);
-//            resultIntent.putExtra("gpsAccuracy", gpsAccuracy);
-//            resultIntent.putExtra("gpsAccuracyUnits", gpsAccuracyUnits);
-//            resultIntent.putExtra("coordSource", coordSource);
-//            resultIntent.putExtra("recordID", recordID);
 
             if (hasLocData) {
                 resultIntent.putExtra("hasLocData", true);
@@ -185,7 +170,7 @@ public class FredDataDirectActivity extends Activity {
             numberPointsSampled = intent.getIntExtra("numberPointsSampled",0);
             gpsUnit = "Tablet: " + Build.MODEL;
 
-            //        if (GPLog.LOG_HEAVY){
+//        if (GPLog.LOG_HEAVY){
 //            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
 //            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
 //        }
@@ -244,32 +229,6 @@ public class FredDataDirectActivity extends Activity {
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             }
-
-//        if (IsWritten){
-//            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-//            List<ActivityManager.RunningTaskInfo> tasklist = am.getRunningTasks(10); // Number of tasks you want to get
-//            if (!tasklist.isEmpty()) {
-//                int nSize = tasklist.size();
-//                boolean appFound = false;
-//                for (int i = 0; i < nSize; i++) {
-//                    ActivityManager.RunningTaskInfo taskinfo = tasklist.get(i);
-//                    if (GPLog.LOG_HEAVY)
-//                        GPLog.addLogEntry(this, "RunningTask " + i + " is " + taskinfo.topActivity.getPackageName()); //$NON-NLS-1$
-//                    if (taskinfo.topActivity.getPackageName().equals("com.syware.droiddb")) {
-//                        appFound = true;
-//                        am.moveTaskToFront(taskinfo.id, 0);
-//                    }
-//                }
-//                if (!appFound) {
-//                    Intent intentDDB = new Intent("com.syware.droiddb"); //$NON-NLS-1$
-//                    intentDDB.addFlags(intentDDB.FLAG_ACTIVITY_NEW_TASK);
-//                    intentDDB.putExtra("parameter", externalDBname); //$NON-NLS-1$
-//                    startActivity(intentDDB);
-//                }
-//            }
-//        }
-
-
         }
     }
 
@@ -280,7 +239,7 @@ public class FredDataDirectActivity extends Activity {
     public void onPause() {
         //maintain this boolean
         MapviewActivity.created = true;
-        GPLog.addLogEntry(this, "Pausing Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
+        //GPLog.addLogEntry(this, "Pausing Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
 
         super.onPause();
     }
@@ -289,20 +248,19 @@ public class FredDataDirectActivity extends Activity {
     public void onStop() {
         //maintain this boolean
         MapviewActivity.created = true;
-        GPLog.addLogEntry(this, "Stopping Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
+        //GPLog.addLogEntry(this, "Stopping Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
 
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-
         if (gpsBroadcastReceiver != null)
             GpsServiceUtilities.unregisterFromBroadcasts(this, gpsBroadcastReceiver);
 
         //maintain this boolean
         MapviewActivity.created = true;
-        GPLog.addLogEntry(this, "Destroying Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
+        //GPLog.addLogEntry(this, "Destroying Fred ... MapsActivity.created =  " + MapviewActivity.created); //$NON-NLS-1$
 
         super.onDestroy();
     }
@@ -323,9 +281,9 @@ public class FredDataDirectActivity extends Activity {
     private static List<String> getTableIDs(SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
                                             String tsCol, String filterID, String strWhere, String quickSet) throws IOException {
 
-        GPLog.addLogEntry("in getTableIDs, tableName= " + tableName);
-        GPLog.addLogEntry("in getTableIDs, IdCol= " + IdCol);
-        GPLog.addLogEntry("in getTableIDs, NameCol= " + NameCol);
+        //GPLog.addLogEntry("in getTableIDs, tableName= " + tableName);
+        //GPLog.addLogEntry("in getTableIDs, IdCol= " + IdCol);
+        //GPLog.addLogEntry("in getTableIDs, NameCol= " + NameCol);
 
         String asColumnsToReturn[] = {NameCol, IdCol, tsCol};
         String strSortOrder = tsCol + " DESC"; //$NON-NLS-1$
@@ -343,7 +301,6 @@ public class FredDataDirectActivity extends Activity {
             String row = "";
             while (!c.isAfterLast()) {
                 String fID = c.getString(1); // to handle non-int IDs
-                // int fID = c.getInt(1);
                 String fName = c.getString(0);
                 String tStamp = c.getString(2);
                 try {
@@ -392,7 +349,7 @@ public class FredDataDirectActivity extends Activity {
         try {
             String query = "SELECT " + colLat + " FROM " + tbl + " WHERE " + colSecondID + "= '" + lvlTwoID + "'";
             Cursor cursor = sqlDB.rawQuery(query, null);
-            GPLog.addLogEntry("fred", "query: " + query);
+            //GPLog.addLogEntry("fred", "query: " + query);
             if(cursor!=null) {
                 //GPLog.addLogEntry("fred", "cursor not null");
                 //GPLog.addLogEntry("fred", "cursor count = " + cursor.getCount());
@@ -405,7 +362,7 @@ public class FredDataDirectActivity extends Activity {
                     //Double lat = cursor.getDouble(cursor.getColumnIndex(colLat));
                     //GPLog.addLogEntry("fred", "lat = " + lat);
                     if(lat > 0){
-                        GPLog.addLogEntry("fred", "coords existing for this point");
+                        //GPLog.addLogEntry("fred", "coords existing for this point");
                         cursor.close();
                         return true;
                     }
@@ -457,7 +414,6 @@ public class FredDataDirectActivity extends Activity {
 
         try {
             sqlDB.beginTransaction();
-
             StringBuilder sb = new StringBuilder();
             sb.append("UPDATE "); //$NON-NLS-1$
             sb.append(tbl);
@@ -479,7 +435,6 @@ public class FredDataDirectActivity extends Activity {
             SQLiteStatement sqlUpdate = sqlDB.compileStatement(query);
             sqlUpdate.execute();
             sqlUpdate.close();
-
             sqlDB.setTransactionSuccessful();
         } catch (Exception e) {
             GPLog.error("FredWriteQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
@@ -497,7 +452,6 @@ public class FredDataDirectActivity extends Activity {
      * @param context is the context
      * @param dbName  is the name of the database to check
      */
-
     private static boolean doesDatabaseExist(Context context, String dbName) {
         File dbFile = context.getDatabasePath(dbName);
         return dbFile.exists();
@@ -508,10 +462,8 @@ public class FredDataDirectActivity extends Activity {
      *
      * @param tableName is the name of the table
      * @param sqlDb  is the name of the database
-     * @param
      */
     public boolean doesTableExist(String tableName, SQLiteDatabase sqlDb) {
-
         Cursor cursor = sqlDb.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '" + tableName + "'", null);
         if(cursor!=null) {
             if(cursor.getCount()>0) {
