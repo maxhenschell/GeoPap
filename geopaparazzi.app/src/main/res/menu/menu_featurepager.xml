@@ -29,6 +29,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_image_browser"
+        android:icon="@drawable/ic_camera_24dp"
+        android:orderInCategory="10"
+        android:title="@string/browse_images"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_save_24dp"
         android:orderInCategory="11"

@@ -37,7 +37,7 @@ import eu.geopaparazzi.library.util.CompressionUtilities;
 import eu.geopaparazzi.library.core.ResourcesManager;
 
 /**
- * Singleton to handle cloud up- and download.
+ * Singleton to handle projects to/from cloud up- and download.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */

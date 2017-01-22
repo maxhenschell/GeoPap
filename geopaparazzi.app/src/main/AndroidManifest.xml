@@ -30,6 +30,8 @@
         android:name="android.permission.ACCESS_MOCK_LOCATION"
         tools:ignore="MockLocation" />
 
+    <uses-feature android:name="android.hardware.location.gps" />
+
     <application
         android:name=".GeopaparazziApplication"
         android:allowBackup="true"
@@ -272,9 +274,11 @@
         </activity>
 
         <activity
-            android:name="eu.geopaparazzi.library.camera.CameraActivity"
+            android:name="eu.geopaparazzi.library.camera.CameraNoteActivity"
             android:configChanges="orientation|screenSize" />
-
+        <activity
+            android:name="eu.geopaparazzi.spatialite.database.spatial.activities.camera.CameraDbActivity"
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name="eu.geopaparazzi.spatialite.database.spatial.activities.databasesview.SpatialiteDatabasesTreeListActivity"
             android:label="@string/spatialite_databases"
@@ -328,6 +332,14 @@
         <activity android:name="com.google.android.apps.markers.MarkersActivity" />
         <activity android:name="eu.geopaparazzi.library.core.activities.DirectoryBrowserActivity" />
         <activity android:name="eu.geopaparazzi.library.webproject.WebProjectsListActivity" />
+        <activity android:name="eu.geopaparazzi.library.webproject.WebDataListActivity" />
+        <activity android:name="eu.geopaparazzi.library.webproject.WebDataUploadListActivity" />
+
+        <activity android:name=".maptools.resourceviews.ResourceBrowser"
+            android:label="@string/Images"
+            android:theme="@style/GeopapTheme.NoActionBar"
+            >
+        </activity>
 
         <activity
             android:name=".GeoPapFromDroidDb"
