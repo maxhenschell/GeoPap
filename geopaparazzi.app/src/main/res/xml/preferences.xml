@@ -30,14 +30,21 @@
             android:key="PREFS_KEY_GPS_USE_NETWORK_POSITION"
             android:order="6"
             android:title="@string/gps_use_coarse" />
-    </PreferenceScreen>
+		<EditTextPreference
+			android:defaultValue="150"
+			android:inputType="number"
+			android:key="PREFS_KEY_GPSAVG_NUMBER_SAMPLES"
+			android:order="7"
+			android:title="@string/gps_avg_sample_size" />
+
+	</PreferenceScreen>
     <PreferenceScreen
-        android:order="7"
+        android:order="8"
         android:title="@string/sms_preferences"
         android:summary="@string/sms_preferences_summary">
         <CheckBoxPreference
             android:key="PREFS_KEY_SMSCATCHER"
-            android:order="8"
+            android:order="9"
             android:title="@string/sms_catcher" />
 
         <EditTextPreference

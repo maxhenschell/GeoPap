@@ -252,7 +252,6 @@ public class GpsAvgService extends IntentService {
         final String numSamples = preferences.getString(PREFS_KEY_GPSAVG_NUMBER_SAMPLES,
                 String.valueOf(GPS_AVERAGING_SAMPLE_NUMBER));
         final Integer numSamps = Integer.parseInt(numSamples);
-
         //build the notification intents
         Intent cancelIntent = new Intent();
         cancelIntent.setAction(STOP_AVERAGING_NOW);

@@ -295,6 +295,7 @@
     <string name="fred_quick_sets_summary">Change all preferences at once here with quick-sets.</string>
     <string name="fred_quick_sets">Quick-sets</string>
     <string name="fred_choose_settings">Choose a group of predefined settings</string>
+    <string name="gps_avg_sample_size">GPS Averaging; number of samples.</string>
     <!-- Fred default values: change these to change defaults-->    
     <string name="fred_defval_external_db_path">/FRED/FRED.db</string>
     <string name="fred_defval_external_db_name">FRED</string>
