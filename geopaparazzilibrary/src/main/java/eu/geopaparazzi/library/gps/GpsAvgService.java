@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
@@ -38,6 +39,8 @@ import android.app.PendingIntent;
 
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
+import eu.geopaparazzi.library.gps.GpsService;
+import eu.geopaparazzi.library.gps.GpsLocation;
 
 /**
  * An intent service to handle and return gps averaging data
@@ -241,6 +244,8 @@ public class GpsAvgService extends IntentService {
      */
     public void startAveraging() {
         isAveraging = true;
+        boolean hasSignal = true;
+        int signalLostSeconds = 0;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -264,8 +269,25 @@ public class GpsAvgService extends IntentService {
         for (int i = 0; i < numSamps; i++) {
             //GPLog.addLogEntry("GPSAVG", "In avg loop, i=" + i);
             Location location = locationManager.getLastKnownLocation("gps");
+            //TODO: check properly if gps signal is lost!!
+            // method is probably to use same method as GpsInfoDialogFragment and set up a reciever and use all data from geopap's service for all of this
             if (location != null) {
+                hasSignal = true;
+                signalLostSeconds = 0;
                 gpsavgmeasurements.add(location);
+                notifyAboutAveraging(pendingIntent, notifyMgr, hasSignal, i, numSamps, signalLostSeconds);
+                numberSamplesUsedInAvg++;
+
+            } else {
+                //if signal is lost, wait.
+                // this actually happens when gps is turned off, but may not (does not?) happen when signal is lost but gps remains on
+                //todo need a way to really check if signal is lost
+                GPLog.addLogEntry("GPSAVG", "gps signal lost i= " + i);
+                hasSignal = false;
+                i--;
+                signalLostSeconds++;
+                notifyAboutAveraging(pendingIntent, notifyMgr, hasSignal, i, numSamps, signalLostSeconds);
+                if(signalLostSeconds > 20){break;}
             }
 
             try {
@@ -273,9 +295,9 @@ public class GpsAvgService extends IntentService {
             } catch (InterruptedException e) {
                 break;
             }
-            notifyAboutAveraging(pendingIntent, notifyMgr, i, numSamps);
+
             if(stopAveragingRequest){
-                numberSamplesUsedInAvg = i + 1;
+                numberSamplesUsedInAvg++;
                 //GPLog.addLogEntry("GPSAVG", "stop avg req in avg loop. samps is " + i);
                 break;
             }
@@ -295,11 +317,12 @@ public class GpsAvgService extends IntentService {
      *
      * @param pendingIntent the pending intent for the notification
      * @param notifyMgr the notification manager retrieved from the system
+     * @param haveSignal whether or not the unit currently has GPS signal
      * @param sampsAcquired the current number of gps samples sent to gpsavgmeasurements for averaging
      * @param sampsTargeted the total number of gps samples requested for averaging
-     *
+     * @param noSignalDuration the total time without GPS signal, seconds
      */
-    public void notifyAboutAveraging(PendingIntent pendingIntent, NotificationManager notifyMgr, Integer sampsAcquired, Integer sampsTargeted) {
+    public void notifyAboutAveraging(PendingIntent pendingIntent, NotificationManager notifyMgr, Boolean haveSignal, Integer sampsAcquired, Integer sampsTargeted, Integer noSignalDuration) {
 
         if (nBuilder == null) {
             String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ".";
@@ -312,9 +335,16 @@ public class GpsAvgService extends IntentService {
                             .setProgress(sampsTargeted,sampsAcquired,false);
 
         } else {
-            String msg = String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + " points sampled. Press to stop NOW.";
-            nBuilder.setContentText(msg)
-                    .setProgress(sampsTargeted,sampsAcquired,false);
+            if (haveSignal){
+                String msg = String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + " points sampled. Press to stop NOW.";
+                nBuilder.setContentText(msg)
+                        .setProgress(sampsTargeted,sampsAcquired,false);
+            } else {
+                String msg = String.valueOf(sampsAcquired) + " points sampled. GPS signal lost for " + noSignalDuration + ", waiting. Press to stop NOW.";
+                nBuilder.setContentText(msg)
+                        .setProgress(sampsTargeted,sampsAcquired,false);
+
+            }
         }
 
         // Issue notification
