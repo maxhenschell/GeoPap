@@ -1005,14 +1005,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     GPLog.addLogEntry("fred","no gps");
                     return true;
                 }
-//                GPDialogs.toast(this, "GPS averaging not implemented yet. Try something else.", Toast.LENGTH_LONG);
-
-                //TODO: strategy: quick check for existing coords, then ask to continue
-                // if OK, then commence averaging.
 
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
                 mapFredDDIntentChk.putExtra("coordSource", "gpsAvg");
-//                mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
