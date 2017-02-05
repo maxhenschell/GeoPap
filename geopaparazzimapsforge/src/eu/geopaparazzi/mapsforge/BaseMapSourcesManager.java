@@ -149,7 +149,7 @@ public enum BaseMapSourcesManager {
                 mBaseMaps = getBaseMapsFromPreferences();
 
                 if (mBaseMaps.size() == 0) {
-                    addBaseMapFromFile(mMapnikFile);
+                    addBaseMapsFromFile(mMapnikFile);
                 }
                 mReReadBasemaps = false;
             }
@@ -205,18 +205,19 @@ public enum BaseMapSourcesManager {
         editor.apply();
     }
 
-    public boolean addBaseMapFromFile(File file) {
-        boolean foundBaseMap = false;
-        try {
-            if (mBaseMaps == null) mBaseMaps = new ArrayList<>();
+    public List<BaseMap> addBaseMapsFromFile(File file) {
+        List<BaseMap> foundBaseMaps = new ArrayList<>();
+        if (!file.getName().startsWith("_")) {
+            try {
+                if (mBaseMaps == null) mBaseMaps = new ArrayList<>();
 
-            List<AbstractSpatialTable> collectedTables = collectTablesFromFile(file);
-            if (collectedTables.size() > 0) foundBaseMap = true;
-            saveToBaseMap(collectedTables);
-        } catch (java.lang.Exception e) {
-            GPLog.error(this, null, e);
+                List<AbstractSpatialTable> collectedTables = collectTablesFromFile(file);
+                saveToBaseMap(collectedTables, foundBaseMaps);
+            } catch (java.lang.Exception e) {
+                GPLog.error(this, null, e);
+            }
         }
-        return foundBaseMap;
+        return foundBaseMaps;
     }
 
     public void removeBaseMap(BaseMap baseMap) throws JSONException {
@@ -227,55 +228,59 @@ public enum BaseMapSourcesManager {
 
     @NonNull
     private List<AbstractSpatialTable> collectTablesFromFile(File file) throws IOException, Exception {
+//        GPLog.addLogEntry(this, "Processing file: " + file);
         List<AbstractSpatialTable> collectedTables = new ArrayList<>();
             /*
              * add MAPURL TABLES
              */
-        CustomTileDatabaseHandler customTileDatabaseHandler = CustomTileDatabaseHandler.getHandlerForFile(file);
-        if (customTileDatabaseHandler != null) {
-            try {
-                List<CustomTileTable> tables = customTileDatabaseHandler.getTables(false);
-                for (AbstractSpatialTable table : tables) {
-                    collectedTables.add(table);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            customTileDatabaseHandler.close();
-        } else {
-            /*
-             * add MAP TABLES
-             */
-            MapDatabaseHandler mapDatabaseHandler = MapDatabaseHandler.getHandlerForFile(file);
-            if (mapDatabaseHandler != null) {
+        try {
+            CustomTileDatabaseHandler customTileDatabaseHandler = CustomTileDatabaseHandler.getHandlerForFile(file);
+            if (customTileDatabaseHandler != null) {
                 try {
-                    List<MapTable> tables = mapDatabaseHandler.getTables(false);
+                    List<CustomTileTable> tables = customTileDatabaseHandler.getTables(false);
                     for (AbstractSpatialTable table : tables) {
                         collectedTables.add(table);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                mapDatabaseHandler.close();
+                customTileDatabaseHandler.close();
             } else {
-                        /*
-                         * add MBTILES, GEOPACKAGE, RASTERLITE TABLES
-                         */
-                AbstractSpatialDatabaseHandler sdbHandler = getRasterHandlerForFile(file);
-                if (sdbHandler != null) {
+                /*
+                 * add MAP TABLES
+                 */
+                MapDatabaseHandler mapDatabaseHandler = MapDatabaseHandler.getHandlerForFile(file);
+                if (mapDatabaseHandler != null) {
                     try {
-                        List<SpatialRasterTable> tables = sdbHandler.getSpatialRasterTables(false);
+                        List<MapTable> tables = mapDatabaseHandler.getTables(false);
                         for (AbstractSpatialTable table : tables) {
                             collectedTables.add(table);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    sdbHandler.close();
+                    mapDatabaseHandler.close();
+                } else {
+                    /*
+                     * add MBTILES, GEOPACKAGE, RASTERLITE TABLES
+                     */
+                    AbstractSpatialDatabaseHandler sdbHandler = getRasterHandlerForFile(file);
+                    if (sdbHandler != null) {
+                        try {
+                            List<SpatialRasterTable> tables = sdbHandler.getSpatialRasterTables(false);
+                            for (AbstractSpatialTable table : tables) {
+                                collectedTables.add(table);
+                            }
+                        } finally {
+                            sdbHandler.close();
+                        }
+                    }
+
                 }
 
             }
-
+        } catch (Exception e) {
+            GPLog.error(this, "error reading file: " + file, e);
         }
 
         return collectedTables;
@@ -311,11 +316,14 @@ public enum BaseMapSourcesManager {
         return null;
     }
 
-    private void saveToBaseMap(List<AbstractSpatialTable> tablesList) throws JSONException {
+    private void saveToBaseMap(List<AbstractSpatialTable> tablesList, List<BaseMap> foundBaseMaps) throws JSONException {
         for (AbstractSpatialTable table : tablesList) {
             BaseMap newBaseMap = table2BaseMap(table);
+            if (mBaseMaps.contains(newBaseMap))
+                continue;
             mBaseMaps.add(newBaseMap);
             mBaseMaps2TablesMap.put(newBaseMap, table);
+            foundBaseMaps.add(newBaseMap);
         }
         saveBaseMapsToPreferences(mBaseMaps);
     }
@@ -347,11 +355,18 @@ public enum BaseMapSourcesManager {
                     GPLog.error(this, null, e);
                 }
             }
-            BaseMap baseMap = mBaseMaps2TablesMap.keySet().iterator().next();
             try {
+                BaseMap baseMap;
+                if (mBaseMaps2TablesMap.size() > 0) {
+                    baseMap = mBaseMaps2TablesMap.keySet().iterator().next();
+                } else {
+                    List<BaseMap> baseMaps = addBaseMapsFromFile(mMapnikFile);
+                    baseMap = baseMaps.get(0);
+                }
+
                 setSelectedBaseMap(baseMap);
             } catch (Exception e) {
-                e.printStackTrace();
+                GPLog.error(this, "Error on setting selected basemap", e);
             }
         }
         return selectedBaseMapTable;
@@ -364,11 +379,26 @@ public enum BaseMapSourcesManager {
      * @throws jsqlite.Exception
      */
     public void setSelectedBaseMap(BaseMap baseMap) throws Exception {
-        selectedTileSourceType = baseMap.mapType;
-        selectedTableDatabasePath = baseMap.databasePath;
-        selectedTableTitle = baseMap.title;
-
-        selectedBaseMapTable = mBaseMaps2TablesMap.get(baseMap);
+        try {
+            selectedTileSourceType = baseMap.mapType;
+            selectedTableDatabasePath = baseMap.databasePath;
+            selectedTableTitle = baseMap.title;
+            selectedBaseMapTable = mBaseMaps2TablesMap.get(baseMap);
+        } catch (java.lang.Exception e) {
+            GPLog.error(this, null, e);
+            // fallback on mapnik
+            List<BaseMap> addedBaseMaps = addBaseMapsFromFile(mMapnikFile);
+            if (addedBaseMaps.size() > 0) {
+                BaseMap setBaseMap = addedBaseMaps.get(0);
+                selectedTileSourceType = setBaseMap.mapType;
+                selectedTableDatabasePath = setBaseMap.databasePath;
+                selectedTableTitle = setBaseMap.title;
+                selectedBaseMapTable = mBaseMaps2TablesMap.get(setBaseMap);
+            } else {
+                // give up
+                return;
+            }
+        }
 
         setTileSource(selectedTileSourceType, selectedTableDatabasePath, selectedTableTitle);
     }

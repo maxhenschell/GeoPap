@@ -65,6 +65,7 @@ import eu.geopaparazzi.library.forms.FormInfoHolder;
 import eu.geopaparazzi.library.forms.FormUtilities;
 import eu.geopaparazzi.library.images.ImageUtilities;
 import eu.geopaparazzi.library.share.ShareUtilities;
+import eu.geopaparazzi.library.util.AppsUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.PositionUtilities;
@@ -77,7 +78,6 @@ import eu.hydrologis.geopaparazzi.database.DaoNotes;
 import eu.hydrologis.geopaparazzi.database.objects.ItemComparators;
 import eu.hydrologis.geopaparazzi.database.objects.Note;
 import eu.hydrologis.geopaparazzi.mapview.MapviewActivity;
-import eu.hydrologis.geopaparazzi.ui.utils.ImageIntents;
 
 /**
  * Notes listing activity.
@@ -109,6 +109,7 @@ public class NotesListActivity extends AppCompatActivity {
     private Comparator<ANote>[] comparators;
     private int currentComparatorIndex = 0;
     private SharedPreferences mPreferences;
+    private StringAsyncTask deletionTask;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -171,8 +172,9 @@ public class NotesListActivity extends AppCompatActivity {
     }
 
     protected void onDestroy() {
-        super.onDestroy();
+        if (deletionTask != null) deletionTask.dispose();
         filterText.removeTextChangedListener(filterTextWatcher);
+        super.onDestroy();
     }
 
     @Override
@@ -498,7 +500,7 @@ public class NotesListActivity extends AppCompatActivity {
             try {
                 Image image = (Image) currentNote;
                 byte[] imageData = new DaoImages().getImageData(image.getId());
-                ImageIntents.showImage(imageData, image.getName(), this);
+                AppsUtilities.showImage(imageData, image.getName(), this);
             } catch (Exception e) {
                 GPLog.error(this, null, e);
             }
@@ -552,7 +554,7 @@ public class NotesListActivity extends AppCompatActivity {
                                     }
                                 }
 
-                                StringAsyncTask deletionTask = new StringAsyncTask(NotesListActivity.this) {
+                                deletionTask = new StringAsyncTask(NotesListActivity.this) {
                                     protected String doBackgroundWork() {
                                         try {
                                             int index = 0;
@@ -590,6 +592,7 @@ public class NotesListActivity extends AppCompatActivity {
                 }, null
         );
     }
+
 
     private TextWatcher filterTextWatcher = new TextWatcher() {
 

@@ -78,6 +78,7 @@ public class ExportActivity extends AppCompatActivity implements
     // List of URIs to provide to Android Beam
     private Uri[] mFileUris = new Uri[1];
     private PendingIntent pendingIntent;
+    private StringAsyncTask exportImagesTask;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -134,8 +135,13 @@ public class ExportActivity extends AppCompatActivity implements
                     return;
                 }
 
-                StageExportDialogFragment stageExportDialogFragment = StageExportDialogFragment.newInstance(serverUrl, user, pwd);
-                stageExportDialogFragment.show(getSupportFragmentManager(), "stage export");
+                GPDialogs.yesNoMessageDialog(context, getString(R.string.upload_to_cloud_prompt), new Runnable() {
+                    @Override
+                    public void run() {
+                        StageExportDialogFragment stageExportDialogFragment = StageExportDialogFragment.newInstance(serverUrl, user, pwd);
+                        stageExportDialogFragment.show(getSupportFragmentManager(), "cloud export");
+                    }
+                }, null);
             }
         });
 
@@ -285,7 +291,7 @@ public class ExportActivity extends AppCompatActivity implements
 
 
             final DaoImages imageHelper = new DaoImages();
-            StringAsyncTask task = new StringAsyncTask(this) {
+            exportImagesTask = new StringAsyncTask(this) {
                 protected String doBackgroundWork() {
                     try {
                         for (int i = 0; i < imagesList.size(); i++) {
@@ -318,14 +324,20 @@ public class ExportActivity extends AppCompatActivity implements
                     }
                 }
             };
-            task.setProgressDialog(getString(R.string.export_uc), getString(R.string.export_img_processing), false, imagesList.size());
-            task.execute();
+            exportImagesTask.setProgressDialog(getString(R.string.export_uc), getString(R.string.export_img_processing), false, imagesList.size());
+            exportImagesTask.execute();
 
 
         } catch (Exception e) {
             GPLog.error(this, null, e);
             GPDialogs.errorDialog(this, e, null);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (exportImagesTask != null) exportImagesTask.dispose();
+        super.onDestroy();
     }
 
     @Override

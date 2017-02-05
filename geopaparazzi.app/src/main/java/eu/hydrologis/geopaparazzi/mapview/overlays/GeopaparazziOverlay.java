@@ -67,9 +67,11 @@ import eu.geopaparazzi.library.gps.GpsLoggingStatus;
 import eu.geopaparazzi.library.gps.GpsService;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
 import eu.geopaparazzi.library.images.ImageUtilities;
+import eu.geopaparazzi.library.util.AppsUtilities;
 import eu.geopaparazzi.library.util.Compat;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
+import eu.geopaparazzi.library.util.Utilities;
 import eu.geopaparazzi.spatialite.database.spatial.SpatialiteSourcesManager;
 import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.SpatialiteDatabaseHandler;
 import eu.geopaparazzi.spatialite.database.spatial.core.enums.GeometryType;
@@ -178,7 +180,7 @@ public abstract class GeopaparazziOverlay extends Overlay {
         defaultWayPaintOutline.setStyle(Paint.Style.STROKE);
         defaultWayPaintOutline.setColor(Color.BLACK);
 
-        gpsMarker = Compat.getDrawable(context, R.drawable.current_position);
+        gpsMarker = Compat.getDrawable(context, R.drawable.ic_my_location_black_24dp);
         gpsFill = new Paint(Paint.ANTI_ALIAS_FLAG);
         gpsFill.setStyle(Paint.Style.FILL);
         gpsFill.setColor(Color.BLUE);
@@ -1113,21 +1115,14 @@ public abstract class GeopaparazziOverlay extends Overlay {
     private void openImage(Context context, String title, String snippet) {
 
         try {
-            File tempDir = ResourcesManager.getInstance(context).getTempDir();
             // get image from db
             long imageID = Long.parseLong(snippet);
-
             int length = title.length();
             String ext = title.substring(length - 4, length);
+            String tempImageName = ImageUtilities.getTempImageName(ext);
             byte[] imageData = new DaoImages().getImageData(imageID);
 
-
-            final File newTempFile = new File(tempDir, ImageUtilities.getTempImageName(ext));
-            ImageUtilities.writeImageDataToFile(imageData, newTempFile.getAbsolutePath());
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(newTempFile), "image/*"); //$NON-NLS-1$
-            context.startActivity(intent);
+            AppsUtilities.showImage(imageData, tempImageName, context );
         } catch (java.lang.Exception e) {
             GPLog.error(this, null, e);
         }

@@ -412,8 +412,12 @@ public class ImportActivity extends AppCompatActivity implements IActivityStarte
                         } else {
                             bboxStr = "YYY,XXX,YYY,XXX";
                         }
+                        String srsLabel = "SRS";
+                        if (wmsversion.equals("1.3.0")){
+                            srsLabel = "CRS";
+                        }
                         sb.append("url=" + baseurl.trim() + "?REQUEST=GetMap&SERVICE=WMS&VERSION=" + wmsversion //
-                                + "&LAYERS=" + layerName + "&STYLES=&FORMAT=image/png&BGCOLOR=0xFFFFFF&TRANSPARENT=TRUE&SRS=" //
+                                + "&LAYERS=" + layerName + "&STYLES=&FORMAT=image/png&BGCOLOR=0xFFFFFF&TRANSPARENT=TRUE&"+srsLabel+"=" //
                                 + srs + "&BBOX=" + bboxStr + "&WIDTH=256&HEIGHT=256\n");
                         sb.append("minzoom=1\n");
                         sb.append("maxzoom=22\n");
@@ -455,7 +459,7 @@ public class ImportActivity extends AppCompatActivity implements IActivityStarte
                 String mapurlText = sb.toString();
                 FileUtilities.writefile(mapurlText, newMapurl);
 
-                BaseMapSourcesManager.INSTANCE.addBaseMapFromFile(newMapurl);
+                BaseMapSourcesManager.INSTANCE.addBaseMapsFromFile(newMapurl);
                 Button wmsImportButton = (Button) findViewById(R.id.wmsImportButton);
                 GPDialogs.quickInfo(wmsImportButton, getString(R.string.wms_mapurl_added) + newMapurl.getName());
             } catch (Exception e) {

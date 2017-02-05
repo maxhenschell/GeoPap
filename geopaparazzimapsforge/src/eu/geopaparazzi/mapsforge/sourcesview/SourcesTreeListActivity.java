@@ -45,12 +45,12 @@ import android.widget.RelativeLayout;
 
 import org.json.JSONException;
 
-import eu.geopaparazzi.library.core.ResourcesManager;
 import eu.geopaparazzi.library.core.maps.BaseMap;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.profiles.ProfilesHandler;
 import eu.geopaparazzi.library.style.ColorUtilities;
 import eu.geopaparazzi.library.util.AppsUtilities;
+import eu.geopaparazzi.library.util.FileUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.IActivityStarter;
 import eu.geopaparazzi.library.util.LibraryConstants;
@@ -67,6 +67,7 @@ import eu.geopaparazzi.library.util.types.ESpatialDataSources;
  */
 public class SourcesTreeListActivity extends AppCompatActivity implements IActivityStarter {
     public static final int PICKFILE_REQUEST_CODE = 666;
+    public static final int PICKFOLDER_REQUEST_CODE = 667;
 
     public static final String SHOW_MAPS = "showMaps";
     public static final String SHOW_MAPURLS = "showMapurls";
@@ -80,6 +81,8 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
     private boolean[] mCheckedValues;
     private List<String> mTypeNames;
     private final LinkedHashMap<String, List<BaseMap>> newMap = new LinkedHashMap<>();
+    private StringAsyncTask loadTask;
+    private StringAsyncTask addNewSourcesTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,13 +133,7 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
             addSourceButton.hide();
         }
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        StringAsyncTask task = new StringAsyncTask(this) {
+        loadTask = new StringAsyncTask(this) {
             List<BaseMap> baseMaps;
 
             protected String doBackgroundWork() {
@@ -153,14 +150,29 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
                 }
             }
         };
-        task.setProgressDialog("", getString(R.string.loading_sources), false, null);
-        task.execute();
+        loadTask.setProgressDialog("", getString(R.string.loading_sources), false, null);
+        loadTask.execute();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (loadTask != null) loadTask.dispose();
+        if (addNewSourcesTask != null) addNewSourcesTask.dispose();
+        super.onDestroy();
     }
 
     @Override
     protected void onStop() {
-        super.onStop();
         mFilterText.removeTextChangedListener(filterTextWatcher);
+        super.onStop();
     }
 
     public void add(View view) {
@@ -168,6 +180,16 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
             String title = getString(R.string.select_basemap_source);
             String[] supportedExtensions = ESpatialDataSources.getSupportedTileSourcesExtensions();
             AppsUtilities.pickFile(this, PICKFILE_REQUEST_CODE, title, supportedExtensions, null);
+        } catch (Exception e) {
+            GPLog.error(this, null, e);
+            GPDialogs.errorDialog(this, e, null);
+        }
+    }
+
+    public void addFolder(View view) {
+        try {
+            String title = getString(R.string.select_basemap_source_folder);
+            AppsUtilities.pickFolder(this, PICKFOLDER_REQUEST_CODE, title, null);
         } catch (Exception e) {
             GPLog.error(this, null, e);
             GPDialogs.errorDialog(this, e, null);
@@ -182,17 +204,18 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
                 if (resultCode == Activity.RESULT_OK) {
                     try {
                         String filePath = data.getStringExtra(LibraryConstants.PREFS_KEY_PATH);
-                        File  file = new File(filePath);
+                        File file = new File(filePath);
                         if (file.exists()) {
                             Utilities.setLastFilePath(this, filePath);
                             final File finalFile = file;
-                            StringAsyncTask task = new StringAsyncTask(this) {
+                            // add basemap to list and in mPreferences
+                            addNewSourcesTask = new StringAsyncTask(this) {
                                 public List<BaseMap> baseMaps;
 
                                 protected String doBackgroundWork() {
                                     try {
                                         // add basemap to list and in mPreferences
-                                        if (BaseMapSourcesManager.INSTANCE.addBaseMapFromFile(finalFile)) {
+                                        if (BaseMapSourcesManager.INSTANCE.addBaseMapsFromFile(finalFile).size() != 0) {
                                             baseMaps = BaseMapSourcesManager.INSTANCE.getBaseMaps();
                                         } else {
                                             return getString(R.string.selected_file_no_basemap) + finalFile;
@@ -217,8 +240,71 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
                                     }
                                 }
                             };
-                            task.setProgressDialog("", getString(R.string.adding_new_source), false, null);
-                            task.execute();
+                            addNewSourcesTask.setProgressDialog("", getString(R.string.adding_new_source), false, null);
+                            addNewSourcesTask.execute();
+                        }
+                    } catch (Exception e) {
+                        GPDialogs.errorDialog(this, e, null);
+                    }
+                }
+                break;
+            }
+            case (PICKFOLDER_REQUEST_CODE): {
+                if (resultCode == Activity.RESULT_OK) {
+                    try {
+                        String folderPath = data.getStringExtra(LibraryConstants.PREFS_KEY_PATH);
+                        final File folder = new File(folderPath);
+                        if (folder.exists()) {
+                            Utilities.setLastFilePath(this, folderPath);
+                            final List<File> foundFiles = new ArrayList<>();
+                            // get all supported files
+                            String[] supportedExtensions = ESpatialDataSources.getSupportedTileSourcesExtensions();
+                            FileUtilities.searchDirectoryRecursive(folder, supportedExtensions, foundFiles);
+                            // add basemap to list and in mPreferences
+                            addNewSourcesTask = new StringAsyncTask(this) {
+                                public List<BaseMap> baseMaps = new ArrayList<>();
+
+                                protected String doBackgroundWork() {
+                                    try {
+
+                                        for (int i = 0; i < foundFiles.size(); i++) {
+                                            File file = foundFiles.get(i);
+                                            try {
+                                                // add basemap to list and in mPreferences
+                                                BaseMapSourcesManager.INSTANCE.addBaseMapsFromFile(file);
+                                            } catch (Exception e) {
+                                                // ignore
+                                            } finally {
+                                                onProgressUpdate(i + 1);
+                                            }
+                                        }
+
+                                        baseMaps = BaseMapSourcesManager.INSTANCE.getBaseMaps();
+                                        if (baseMaps.size() == 0) {
+                                            return getString(R.string.selected_file_no_basemap) + folder;
+                                        }
+                                    } catch (Exception e) {
+                                        GPLog.error(this, "Problem getting sources.", e);
+                                        return "ERROR: " + e.getLocalizedMessage();
+                                    }
+                                    return "";
+                                }
+
+                                protected void doUiPostWork(String response) {
+                                    dispose();
+                                    if (response.length() > 0) {
+                                        GPDialogs.warningDialog(SourcesTreeListActivity.this, response, null);
+                                    } else {
+                                        try {
+                                            refreshData(baseMaps);
+                                        } catch (Exception e) {
+                                            GPLog.error(this, null, e);
+                                        }
+                                    }
+                                }
+                            };
+                            addNewSourcesTask.setProgressDialog("", getString(R.string.adding_new_source), false, foundFiles.size());
+                            addNewSourcesTask.execute();
                         }
                     } catch (Exception e) {
                         GPDialogs.errorDialog(this, e, null);
