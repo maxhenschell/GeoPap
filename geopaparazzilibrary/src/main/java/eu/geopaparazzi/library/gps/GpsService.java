@@ -30,6 +30,7 @@ import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.OnNmeaMessageListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -207,6 +208,21 @@ public class GpsService extends Service implements LocationListener, Listener {
             }
             locationManager.addGpsStatusListener(this);
             isProviderEnabled = isGpsOn();
+
+
+            //for API23 and below
+            // logs with heavy logging!  yay!
+            locationManager.addNmeaListener(new GpsStatus.NmeaListener() {
+                public void onNmeaReceived(long timestamp, String nmea) {
+                    log("NMEA " + nmea+"\n");
+                }});
+
+            //for API24 and above
+            // from http://stackoverflow.com/questions/40446956/unbelievably-inaccurate-gps-points-what-is-the-reason
+//            locationManager.addNmeaListener(new OnNmeaMessageListener() {
+//                public void onNmeaMessage(String nmea, long timestamp) {
+//                    log("NMEA " + nmea+"\n");
+//                }});
 
             log("onStartCommand: LocationManager created + GpsService started");
         }
