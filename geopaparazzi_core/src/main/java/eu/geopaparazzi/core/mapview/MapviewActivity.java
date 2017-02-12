@@ -116,6 +116,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import eu.geopaparazzi.core.database.DaoFredPts;
+import eu.geopaparazzi.core.mapview.overlays.FredDataActivity;
+import eu.geopaparazzi.core.mapview.overlays.FredDataDirectActivity;
 import eu.geopaparazzi.library.core.ResourcesManager;
 import eu.geopaparazzi.library.core.activities.GeocodeActivity;
 import eu.geopaparazzi.library.core.dialogs.InsertCoordinatesDialogFragment;

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package eu.hydrologis.geopaparazzi.database;
+package eu.geopaparazzi.core.database;
 
 import java.io.IOException;
 import java.io.File;
@@ -37,7 +37,7 @@ import android.widget.Toast;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.Utilities;
-import eu.hydrologis.geopaparazzi.database.objects.NoteOverlayItem;
+import eu.geopaparazzi.core.database.objects.NoteOverlayItem;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)

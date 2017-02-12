@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package eu.hydrologis.geopaparazzi.mapview.overlays;
+package eu.geopaparazzi.core.mapview.overlays;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,9 +56,9 @@ import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.PositionUtilities;
 import eu.geopaparazzi.library.util.Utilities;
-import eu.hydrologis.geopaparazzi.R;
-import eu.hydrologis.geopaparazzi.database.DatabaseManager;
-import eu.hydrologis.geopaparazzi.mapview.MapviewActivity;
+import eu.geopaparazzi.core.R;
+import eu.geopaparazzi.core.database.DatabaseManager;
+import eu.geopaparazzi.core.mapview.MapviewActivity;
 //import eu.geopaparazzi.library.gps.GpsManager;
 
 /**
