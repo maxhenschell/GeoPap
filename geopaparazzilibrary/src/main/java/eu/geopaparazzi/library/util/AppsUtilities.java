@@ -18,18 +18,14 @@
 
 package eu.geopaparazzi.library.util;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -115,6 +111,27 @@ public class AppsUtilities {
     }
 
     /**
+     * Start a file picking activity.
+     *
+     * @param activityStarter
+     * @param requestCode
+     * @param title
+     * @param filterExtensions
+     * @param startPath
+     * @throws Exception
+     */
+    public static void pickFile(IActivitySupporter activityStarter, int requestCode, String title, String[] filterExtensions, String startPath) throws Exception {
+        if (startPath == null) {
+            startPath = Utilities.getLastFilePath(activityStarter.getContext());
+        }
+
+        Intent browseIntent = new Intent(activityStarter.getContext(), DirectoryBrowserActivity.class);
+        browseIntent.putExtra(DirectoryBrowserActivity.EXTENSIONS, filterExtensions);
+        browseIntent.putExtra(DirectoryBrowserActivity.STARTFOLDERPATH, startPath);
+        activityStarter.startActivityForResult(browseIntent, requestCode);
+    }
+
+    /**
      * Start activity to pick a file.
      * <p>
      * <p>
@@ -132,7 +149,7 @@ public class AppsUtilities {
      * @param mimeType        the mimetype.
      * @param uri             the uri of the start folder.
      */
-    public static void pickFileByExternalBrowser(IActivityStarter activityStarter, int requestCode, String title, String mimeType, Uri uri) {
+    public static void pickFileByExternalBrowser(IActivitySupporter activityStarter, int requestCode, String title, String mimeType, Uri uri) {
         // first try with amaze
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setPackage(AppsUtilities.AMAZE_PACKAGE);
@@ -164,40 +181,20 @@ public class AppsUtilities {
         }
     }
 
-    /**
-     * Start a file picking activity.
-     *
-     * @param activityStarter
-     * @param requestCode
-     * @param title
-     * @param filterExtensions
-     * @param startPath
-     * @throws Exception
-     */
-    public static void pickFile(IActivityStarter activityStarter, int requestCode, String title, String[] filterExtensions, String startPath) throws Exception {
+    public static void pickFolder(IActivitySupporter activityStarter, int requestCode, String title, String startPath, String[] visibleExtensions) throws Exception {
         if (startPath == null) {
             startPath = Utilities.getLastFilePath(activityStarter.getContext());
         }
 
         Intent browseIntent = new Intent(activityStarter.getContext(), DirectoryBrowserActivity.class);
-        browseIntent.putExtra(DirectoryBrowserActivity.EXTENSIONS, filterExtensions);
-        browseIntent.putExtra(DirectoryBrowserActivity.STARTFOLDERPATH, startPath);
-        activityStarter.startActivityForResult(browseIntent, requestCode);
-    }
-
-    public static void pickFolder(IActivityStarter activityStarter, int requestCode, String title, String startPath) throws Exception {
-        if (startPath == null) {
-            startPath = Utilities.getLastFilePath(activityStarter.getContext());
-        }
-
-        Intent browseIntent = new Intent(activityStarter.getContext(), DirectoryBrowserActivity.class);
-        browseIntent.putExtra(DirectoryBrowserActivity.EXTENSIONS, new String[]{DirectoryBrowserActivity.FOLDER});
+        browseIntent.putExtra(DirectoryBrowserActivity.DOFOLDER, true);
+        browseIntent.putExtra(DirectoryBrowserActivity.EXTENSIONS, visibleExtensions);
         browseIntent.putExtra(DirectoryBrowserActivity.STARTFOLDERPATH, startPath);
         activityStarter.startActivityForResult(browseIntent, requestCode);
     }
 
 
-    public static void checkAmazeExplorer(final IActivityStarter activityStarter) {
+    public static void checkAmazeExplorer(final IActivitySupporter activityStarter) {
         Context context = activityStarter.getContext();
         boolean hasPackage = hasPackage(context, AMAZE_PACKAGE);
 

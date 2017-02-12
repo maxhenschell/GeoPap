@@ -52,7 +52,7 @@ import eu.geopaparazzi.library.style.ColorUtilities;
 import eu.geopaparazzi.library.util.AppsUtilities;
 import eu.geopaparazzi.library.util.FileUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
-import eu.geopaparazzi.library.util.IActivityStarter;
+import eu.geopaparazzi.library.util.IActivitySupporter;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.StringAsyncTask;
 import eu.geopaparazzi.library.util.Utilities;
@@ -65,7 +65,7 @@ import eu.geopaparazzi.library.util.types.ESpatialDataSources;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class SourcesTreeListActivity extends AppCompatActivity implements IActivityStarter {
+public class SourcesTreeListActivity extends AppCompatActivity implements IActivitySupporter {
     public static final int PICKFILE_REQUEST_CODE = 666;
     public static final int PICKFOLDER_REQUEST_CODE = 667;
 
@@ -189,7 +189,8 @@ public class SourcesTreeListActivity extends AppCompatActivity implements IActiv
     public void addFolder(View view) {
         try {
             String title = getString(R.string.select_basemap_source_folder);
-            AppsUtilities.pickFolder(this, PICKFOLDER_REQUEST_CODE, title, null);
+            String[] supportedExtensions = ESpatialDataSources.getSupportedTileSourcesExtensions();
+            AppsUtilities.pickFolder(this, PICKFOLDER_REQUEST_CODE, title, null, supportedExtensions);
         } catch (Exception e) {
             GPLog.error(this, null, e);
             GPDialogs.errorDialog(this, e, null);

@@ -9,12 +9,14 @@ buildscript {
 apply plugin: 'com.android.library'
 dependencies {
     compile project(':geopaparazzilibrary')
+    compile 'com.android.support:appcompat-v7:25.1.1'
+    compile 'com.android.support:design:25.1.1'
 }
 android {
 //    compileSdkVersion project.ext.myCompileSdkVersion
 //    buildToolsVersion project.ext.myBuildToolsVersion
     compileSdkVersion 25
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '24.0.3'
     sourceSets {
         main {
             manifest {
