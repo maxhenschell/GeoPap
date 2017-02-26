@@ -68,6 +68,7 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.net.Uri;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -269,7 +270,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         setContentView(R.layout.activity_mapview);
 
         created = true;
-        if (GPLog.LOG_HEAVY){
+        if (GPLog.LOG_HEAVY) {
             GPLog.addLogEntry(this, "MapsActivity.created =  " + created); //$NON-NLS-1$
         }
 
@@ -278,8 +279,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         String uid = intent.getStringExtra("uid");
         GPLog.addLogEntry(this, "Maps onCreate intent uid extra is " + uid); //$NON-NLS-1$
 
-        mapsSupportBroadcastReceiver = new BroadcastReceiver(){
-            public void onReceive( Context context, Intent intent ) {
+        mapsSupportBroadcastReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
                 if (intent.hasExtra(MapsSupportService.REREAD_MAP_REQUEST)) {
                     boolean rereadMap = intent.getBooleanExtra(MapsSupportService.REREAD_MAP_REQUEST, false);
                     if (rereadMap) {
@@ -301,8 +302,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         registerReceiver(mapsSupportBroadcastReceiver, new IntentFilter(
                 MapsSupportService.MAPSSUPPORT_SERVICE_BROADCAST_NOTIFICATION));
 
-        gpsServiceBroadcastReceiver = new BroadcastReceiver(){
-            public void onReceive( Context context, Intent intent ) {
+        gpsServiceBroadcastReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
                 onGpsServiceUpdate(intent);
             }
         };
@@ -405,7 +406,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         * tool buttons
         */
 
-        if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null ) {
+        if (GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
             GPLog.addLogEntry("fred", "inside mapsactivity button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
             addfreddataButton.setEnabled(true);
@@ -431,12 +432,17 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             });
         }
 
-        ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
-        gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
-              public void onClick(View v) {
-                  returnToDroidDB();
-              }
-          });
+        // only add the goback button for pre-Nougat versions
+        GPLog.addLogEntry("fred SDK_INT: ", Integer.toString(android.os.Build.VERSION.SDK_INT));
+        GPLog.addLogEntry("fred BUILD: ", Integer.toString(Build.VERSION_CODES.N));
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
+            gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    returnToDroidDB();
+                }
+            });
+        }
 
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         addnotebytagButton.setOnClickListener(this);
@@ -1710,18 +1716,25 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
     private void setLeftButtoonsEnablement( boolean enable ) {
         ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+        ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
         ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         if (enable) {
             addfreddataButton.setVisibility(View.VISIBLE);
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                gobacktofredButton.setVisibility(View.GONE);
+            } else {
+                gobacktofredButton.setVisibility(View.VISIBLE);
+            }
             addnotebytagButton.setVisibility(View.VISIBLE);
             addBookmarkButton.setVisibility(View.VISIBLE);
             toggleLoginfoButton.setVisibility(View.VISIBLE);
             toggleMeasuremodeButton.setVisibility(View.VISIBLE);
         } else {
             addfreddataButton.setVisibility(View.GONE);
+            gobacktofredButton.setVisibility(View.GONE);
             addnotebytagButton.setVisibility(View.GONE);
             addBookmarkButton.setVisibility(View.GONE);
             toggleLoginfoButton.setVisibility(View.GONE);
@@ -1731,6 +1744,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
     private void setAllButtoonsEnablement( boolean enable ) {
         ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+        ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
         ImageButton addnotebytagButton = (ImageButton) findViewById(R.id.addnotebytagbutton);
         ImageButton addBookmarkButton = (ImageButton) findViewById(R.id.addbookmarkbutton);
         ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
@@ -1755,6 +1769,12 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         zoomLevelTextview.setVisibility(visibility);
         zoomOutButton.setVisibility(visibility);
         toggleEditingButton.setVisibility(visibility);
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            gobacktofredButton.setVisibility(View.GONE);
+        } else {
+            gobacktofredButton.setVisibility(visibility);
+        }
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
