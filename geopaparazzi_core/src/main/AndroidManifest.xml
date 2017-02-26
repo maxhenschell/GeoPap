@@ -370,6 +370,7 @@
             android:exported="true" />
 
         <service android:name="eu.geopaparazzi.library.gps.GpsService" />
+        <service android:name="eu.geopaparazzi.library.gps.GpsAvgService" />
         <service android:name="eu.geopaparazzi.core.mapview.MapsSupportService" />
     </application>
 
