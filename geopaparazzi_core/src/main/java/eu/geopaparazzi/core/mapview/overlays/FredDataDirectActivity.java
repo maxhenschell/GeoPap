@@ -410,39 +410,51 @@ public class FredDataDirectActivity extends Activity {
                                         double ddLat, double ddLon, double elev, double gpsAcc, String gpsAccUnits, String coordSo,
                                         String gpsUnit, int numPtsSampled,
                                         SQLiteDatabase sqlDB) throws IOException {
-
         try {
-            sqlDB.beginTransaction();
-            StringBuilder sb = new StringBuilder();
-            sb.append("UPDATE "); //$NON-NLS-1$
-            sb.append(tbl);
-            sb.append(" SET "); //$NON-NLS-1$
-            sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colElev).append("=").append(elev).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colAcc).append("=").append(gpsAcc).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colAccUnits).append("= '").append(gpsAccUnits).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colCoordSo).append("= '").append(coordSo).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colGpsUnit).append("= '").append(gpsUnit).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
-            sb.append(colAvgCount).append("= '").append(numPtsSampled).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
-
-            sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-
-            String query = sb.toString();
-            if (GPLog.LOG_HEAVY)
-                GPLog.addLogEntry("FredWriteQuery", query); //$NON-NLS-1$
-            SQLiteStatement sqlUpdate = sqlDB.compileStatement(query);
-            sqlUpdate.execute();
-            sqlUpdate.close();
-            sqlDB.setTransactionSuccessful();
+           sqlDB.beginTransaction();
+           StringBuilder sb = new StringBuilder();
+           // if map center, don't pass elevation or accuracy stats
+           // TODO: calculate accuracy for map center based on zoom level?
+            GPLog.addLogEntry("coordSo is", coordSo);
+            if(coordSo.equals("mapCenter")) {
+                sb.append("UPDATE "); //$NON-NLS-1$
+                sb.append(tbl);
+                sb.append(" SET "); //$NON-NLS-1$
+                sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colCoordSo).append("= '").append(coordSo).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colGpsUnit).append("= '").append(gpsUnit).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colAvgCount).append("= '").append(numPtsSampled).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+            } else {
+                sb.append("UPDATE "); //$NON-NLS-1$
+                sb.append(tbl);
+                sb.append(" SET "); //$NON-NLS-1$
+                sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colElev).append("=").append(elev).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colAcc).append("=").append(gpsAcc).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colAccUnits).append("= '").append(gpsAccUnits).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colCoordSo).append("= '").append(coordSo).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colGpsUnit).append("= '").append(gpsUnit).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colAvgCount).append("= '").append(numPtsSampled).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+           String query = sb.toString();
+           if (GPLog.LOG_HEAVY)
+               GPLog.addLogEntry("FredWriteQuery", query); //$NON-NLS-1$
+           SQLiteStatement sqlUpdate = sqlDB.compileStatement(query);
+           sqlUpdate.execute();
+           sqlUpdate.close();
+           sqlDB.setTransactionSuccessful();
         } catch (Exception e) {
-            GPLog.error("FredWriteQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
-            throw new IOException(e.getLocalizedMessage());
+           GPLog.error("FredWriteQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
+           throw new IOException(e.getLocalizedMessage());
         } finally {
-            sqlDB.endTransaction();
-            sqlDB.close();
+           sqlDB.endTransaction();
+           sqlDB.close();
         }
-        return true;
+    return true;
     }
 
     /**

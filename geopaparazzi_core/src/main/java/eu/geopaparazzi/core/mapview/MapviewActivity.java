@@ -1825,7 +1825,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         Intent mapGpsPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
         mapGpsPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
         mapGpsPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-        mapGpsPt.putExtra(LibraryConstants.ELEVATION, 0.0);
+        mapGpsPt.putExtra(LibraryConstants.ELEVATION, lastGpsPosition[2]);
         double posAc = lastGpsPositionAccuracy;
         mapGpsPt.putExtra("gpsAccuracy", posAc);
         mapGpsPt.putExtra("gpsAccuracyUnits", "m");
@@ -1844,9 +1844,12 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         Intent mapMapPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
         mapMapPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
         mapMapPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-        mapMapPt.putExtra(LibraryConstants.ELEVATION, -1.0);
-        mapMapPt.putExtra("gpsAccuracy", -1.0);
-        mapMapPt.putExtra("gpsAccuracyUnits","unk");
+        Double elev = null;
+        mapMapPt.putExtra(LibraryConstants.ELEVATION, elev);
+        Double posAc = null;
+        mapMapPt.putExtra("gpsAccuracy", posAc);
+        String accunits = null;
+        mapMapPt.putExtra("gpsAccuracyUnits",accunits);
         mapMapPt.putExtra("coordSource", "mapCenter");
         mapMapPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
         mapMapPt.putExtra("type", "writeLocation");
