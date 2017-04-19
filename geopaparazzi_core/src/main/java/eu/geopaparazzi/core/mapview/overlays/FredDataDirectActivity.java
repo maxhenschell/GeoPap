@@ -411,10 +411,12 @@ public class FredDataDirectActivity extends Activity {
                                         String gpsUnit, int numPtsSampled,
                                         SQLiteDatabase sqlDB) throws IOException {
         try {
-           sqlDB.beginTransaction();
-           StringBuilder sb = new StringBuilder();
-           // if map center, don't pass elevation or accuracy stats
-           // TODO: calculate accuracy for map center based on zoom level?
+            sqlDB.beginTransaction();
+            StringBuilder sb = new StringBuilder();
+            // if map center, don't pass elevation or accuracy stats
+            // TODO: calculate accuracy for map center based on zoom level?
+            // now that DB settings in fred have been corrected, I should be able to pass
+            // these as nulls (the fields skipped) and avoid this if statement.
             GPLog.addLogEntry("coordSo is", coordSo);
             if(coordSo.equals("mapCenter")) {
                 sb.append("UPDATE "); //$NON-NLS-1$
