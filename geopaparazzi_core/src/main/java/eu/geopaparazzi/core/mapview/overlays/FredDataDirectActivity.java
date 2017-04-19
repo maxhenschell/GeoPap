@@ -423,8 +423,7 @@ public class FredDataDirectActivity extends Activity {
                 sb.append(colLat).append("=").append(ddLat).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
                 sb.append(colLon).append("=").append(ddLon).append(", "); //$NON-NLS-1$ //$NON-NLS-2$
                 sb.append(colCoordSo).append("= '").append(coordSo).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
-                sb.append(colGpsUnit).append("= '").append(gpsUnit).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
-                sb.append(colAvgCount).append("= '").append(numPtsSampled).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
+                sb.append(colGpsUnit).append("= '").append(gpsUnit).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
                 sb.append("WHERE ").append(colSecondID).append("= '").append(lvlTwoID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
             } else {
                 sb.append("UPDATE "); //$NON-NLS-1$
