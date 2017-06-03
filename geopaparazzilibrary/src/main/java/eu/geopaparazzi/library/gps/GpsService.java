@@ -631,7 +631,8 @@ public class GpsService extends Service implements LocationListener, Listener {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            return;
+            //return;
+            throw new SecurityException();
         }
         mStatus = locationManager.getGpsStatus(mStatus);
 

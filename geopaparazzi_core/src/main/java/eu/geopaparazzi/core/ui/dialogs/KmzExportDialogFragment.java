@@ -154,6 +154,7 @@ public class KmzExportDialogFragment extends DialogFragment {
                         Long id = lineEntry.getKey();
                         Line line = lineEntry.getValue();
                         LogMapItem mapItem = mapitemsMap.get(id);
+                        if (mapItem == null) continue;
                         float width = mapItem.getWidth();
                         String color = mapItem.getColor();
                         line.setStyle(width, color);
@@ -221,19 +222,16 @@ public class KmzExportDialogFragment extends DialogFragment {
                 if (response.equals(NODATA)) {
                     String msg = context.getString(R.string.no_data_found_in_project_to_export);
                     alertDialog.setMessage(msg);
-                    positiveButton.setEnabled(true);
                 } else if (response.equals(INTERRUPTED)) {
                     alertDialog.setMessage(context.getString(R.string.interrupted_by_user));
-                    positiveButton.setEnabled(true);
                 } else if (response.length() > 0) {
                     String msg = context.getString(R.string.datasaved) + " " + response;
                     alertDialog.setMessage(msg);
-                    positiveButton.setEnabled(true);
                 } else {
                     String msg = context.getString(R.string.data_nonsaved);
                     alertDialog.setMessage(msg);
-                    positiveButton.setEnabled(true);
                 }
+                if(positiveButton!=null)positiveButton.setEnabled(true);
 
             }
         }.execute((String) null);
