@@ -104,7 +104,6 @@ public class FredQuickSets extends DialogPreference {
 
         ArrayList<String> quicksetChoicesList = new ArrayList<String>();
 
-        quicksetChoicesList.add("iMapField"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Ecology"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Bot_Zool"); //$NON-NLS-1$
 
@@ -198,29 +197,10 @@ public class FredQuickSets extends DialogPreference {
         String colGpsAvgCount = context.getString(R.string.fred_defval_column_gps_avg_count);
         String colPdop = context.getString(R.string.fred_defval_column_Pdop);
         String colNote = context.getString(R.string.fred_defval_column_note);
-        String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
-        String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
+        String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
+        String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
 
-        if (quicksetChoice.equals("iMapField")) { //$NON-NLS-1$
-            externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_path);
-            externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_external_db_name);
-            haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_two_levels));
-            parentTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_table);
-            parentID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_ID);
-            parentDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_descriptor);
-            parentTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_first_level_timestamp);
-            childTable = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_table);
-            childID = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_ID);
-            colLat = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lat);
-            colLon = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_Lon);
-            colAcc = "dblGpsAcc"; //placeholder; not in iMapField, need to get from Brent
-            colAccUnits = "strGpsAccUnits"; //placeholder; not in iMapField, need to get from Brent
-            colCoordSo = "strPositionMethod";  //placeholder; not in iMapField, need to get from Brent
-            colElev = "dblElev"; //placeholder; not in iMapField, need to get from Brent
-            colNote = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_column_note);
-            childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_descriptor);
-            childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_iMap_second_level_timestamp);
-        } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
+        if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));
