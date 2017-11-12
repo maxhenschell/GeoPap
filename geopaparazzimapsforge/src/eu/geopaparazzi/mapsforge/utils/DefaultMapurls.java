@@ -24,6 +24,7 @@ import java.io.OutputStream;
 
 import android.content.Context;
 import eu.geopaparazzi.library.util.FileUtilities;
+import eu.geopaparazzi.mapsforge.R;
 
 /**
  * The default mapurls available
@@ -35,6 +36,9 @@ public class DefaultMapurls {
      * The extension for mapurl files.
      */
     public static final String MAPURL_EXTENSION = ".mapurl"; //$NON-NLS-1$
+
+    //also sqlite
+    public static final String SQLITE_EXTENSION = ".sqlite"; //$NON-NLS-1$
 
     /**
      * The different available mapurls.
@@ -49,7 +53,7 @@ public class DefaultMapurls {
 
         private int resourceId;
 
-        Mapurls( int resourceId ) {
+        Mapurls(int resourceId) {
             this.resourceId = resourceId;
         }
 
@@ -61,16 +65,34 @@ public class DefaultMapurls {
         }
     }
 
+    public enum Sqlitefiles {
+        /** */
+        towncountyquad(R.raw.TownCountyQuad);
+
+        private int resourceId;
+
+        Sqlitefiles(int resourceId) {
+            this.resourceId = resourceId;
+        }
+
+        /**
+         * @return the resource id to retrieve the raw file.
+         */
+        public int getResourceId() {
+            return resourceId;
+        }
+        }
+
     /**
      * Checks if a source definition file exists. If not it is created.
-     * 
+     *
      * @param context the context to use.
      * @param mapsDir the maps folder file.
-     * @param type the mapurl type.
+     * @param type    the mapurl type.
      * @return the checked file.
      * @throws Exception if something goes wrong.
      */
-    public static File checkSourceExistence( Context context, File mapsDir, Mapurls type ) throws Exception {
+    public static File checkSourceExistence(Context context, File mapsDir, Mapurls type) throws Exception {
         File mapurlFile = new File(mapsDir, type.toString() + MAPURL_EXTENSION);
         if (!mapurlFile.exists()) {
             InputStream inputStream = context.getResources().openRawResource(type.getResourceId());
@@ -82,17 +104,26 @@ public class DefaultMapurls {
 
     /**
      * Checks if the default mapurl source definition files exist. If not they are created.
-     * 
+     *
      * @param context the context to use.
-     * @param folder the folder into which to write the mapurls.
+     * @param folder  the folder into which to write the mapurls.
      * @throws Exception if something goes wrong.
      */
-    public static void checkAllSourcesExistence( Context context, File folder ) throws Exception {
-        for( Mapurls mapurl : Mapurls.values() ) {
+    public static void checkAllSourcesExistence(Context context, File folder) throws Exception {
+        for (Mapurls mapurl : Mapurls.values()) {
             File mapurlFile = new File(folder, mapurl.toString() + MAPURL_EXTENSION);
             if (!mapurlFile.exists()) {
                 InputStream inputStream = context.getResources().openRawResource(mapurl.getResourceId());
                 OutputStream outputStream = new FileOutputStream(mapurlFile);
+                FileUtilities.copyFile(inputStream, outputStream);
+            }
+        }
+        // also check for sqlite file
+        for (Sqlitefiles sqlitefile : Sqlitefiles.values()) {
+            File sqliteFile = new File(folder, sqlitefile.toString() + SQLITE_EXTENSION);
+            if (!sqliteFile.exists()) {
+                InputStream inputStream = context.getResources().openRawResource(sqlitefile.getResourceId());
+                OutputStream outputStream = new FileOutputStream(sqliteFile);
                 FileUtilities.copyFile(inputStream, outputStream);
             }
         }
