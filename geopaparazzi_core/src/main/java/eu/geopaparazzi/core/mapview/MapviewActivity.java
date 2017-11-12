@@ -213,6 +213,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     private final int MENU_PLACE_PT_GPS = 21;
     private final int MENU_PLACE_PT_MAP_CENTER = 22;
     private final int MENU_PLACE_PT_AVG = 23;
+    private final int MENU_COUNTYTOWNQUAD_GPS = 24;
+    private final int MENU_COUNTYTOWNQUAD_MAP_CENTER = 25;
 
     private static final String ARE_BUTTONSVISIBLE_OPEN = "ARE_BUTTONSVISIBLE_OPEN"; //$NON-NLS-1$
 
@@ -864,9 +866,14 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare);//.setIcon(R.drawable.icon_datasource);
             menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, getString(R.string.menu_extract_mapsforge_data));//"Import mapsforge data");//.setIcon(R.drawable.icon_datasource);
         } else if (v.getId() == R.id.addfreddata){
-            menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 1, "Place point at GPS");//.setIcon(android.R.drawable.ic_menu_compass);;
-            menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 2, "Place point at map center");//.setIcon(android.R.drawable.ic_menu_compass);;
-            menu.add(Menu.NONE, MENU_PLACE_PT_AVG, 3, "Place point using GPS averaging");
+            if (GeoPapFromDroidDb.whichFredForm == "SurveySite") {
+                menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 1, "Get County, Town, Quad at GPS pt");
+                menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 2, "Get County, Town, Quad at map center");
+            } else {
+                menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 1, "Place point at GPS");//.setIcon(android.R.drawable.ic_menu_compass);;
+                menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 2, "Place point at map center");//.setIcon(android.R.drawable.ic_menu_compass);;
+                menu.add(Menu.NONE, MENU_PLACE_PT_AVG, 3, "Place point using GPS averaging");
+            }
         }
     }
     public boolean onContextItemSelected(MenuItem item) {
