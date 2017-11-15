@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import eu.geopaparazzi.core.preferences.FredPreferences;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.core.mapview.MapviewActivity;
 
@@ -140,7 +141,9 @@ public class GeoPapFromDroidDb extends Activity{
 
         //GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
 
-        changeSettings(ddbName, this);
+        //changeSettings(ddbName, this);
+        FredPreferences fredP = new FredPreferences();
+        fredP.changeSettings(ddbName, this);
 
     }
 
