@@ -17,36 +17,30 @@
  */
 package eu.geopaparazzi.core.preferences;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
-
-import java.util.ArrayList;
+import android.preference.PreferenceManager;
 
 import eu.geopaparazzi.core.R;
+import eu.geopaparazzi.library.database.GPLog;
 
 /**
- * A spinner within preferences, modified from
- * Andrea Antonello's custom sdcard path chooser.
- * 
+ * A class to set prefs programmatically
  * 
  * @author Tim Howard
  *
  */
-public class FredPreferences extends PreferenceActivity {
+public class FredPreferences extends Activity {
     private Context context;
     private String quicksetChoice = ""; //$NON-NLS-1$
+
+    public static final String PREFS_NAME = "preferences";
+
 
     private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
     private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
@@ -169,6 +163,8 @@ public class FredPreferences extends PreferenceActivity {
 
     public void changeSettings(String quicksetChoice, Context context){
 
+        GPLog.addLogEntry(this, "GPFDDB quicksetchoice is " + quicksetChoice);
+
         // get the base path
         String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         // set defaults to something real
@@ -196,7 +192,25 @@ public class FredPreferences extends PreferenceActivity {
         String childDescriptorField = context.getString(R.string.fred_defval_second_level_descriptor);
         String childTimeStamp = context.getString(R.string.fred_defval_second_level_timestamp);
 
-        if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
+
+
+        if (quicksetChoice.equals("Fred-Surveysite")) { //$NON-NLS-1$
+            externalDB = baseDir + context.getString(R.string.fred_SS_external_db_path);
+            externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_SS_external_db_name);
+            haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_SS_two_levels));
+            parentTable = context.getString(R.string.fred_SS_first_level_table);
+            parentID = context.getString(R.string.fred_SS_first_level_ID);
+            parentDescriptorField = context.getString(R.string.fred_SS_first_level_descriptor);
+            parentTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_first_level_timestamp);
+            childTable = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_table);
+            childID = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_ID);
+            colLat = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_Lat);
+            colLon = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_Lon);
+            colNote = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_note);
+            childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_descriptor);
+            childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_timestamp);
+        } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
+            GPLog.addLogEntry(this, "GPFDDB inside Fred-Ecology");
             externalDB = baseDir + context.getString(R.string.fred_defval_external_db_path);
             externalDBname = context.getString(R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(R.string.fred_defval_two_levels));
@@ -248,7 +262,11 @@ public class FredPreferences extends PreferenceActivity {
             // don't change anything
         }
 
-        SharedPreferences prefs = this.getSharedPreferences("fredPrefs",0);
+        GPLog.addLogEntry(this, "external DB is  " + externalDB);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //SharedPreferences prefs = this.getSharedPreferences(PREFS_NAME,MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(EXTERNAL_DB, externalDB);
         editor.putString(EXTERNAL_DB_NAME, externalDBname);

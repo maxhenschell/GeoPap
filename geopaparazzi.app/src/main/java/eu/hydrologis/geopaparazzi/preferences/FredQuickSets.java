@@ -104,6 +104,7 @@ public class FredQuickSets extends DialogPreference {
 
         ArrayList<String> quicksetChoicesList = new ArrayList<String>();
 
+        quicksetChoicesList.add("Fred-Surveysite"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Ecology"); //$NON-NLS-1$
         quicksetChoicesList.add("Fred-Bot_Zool"); //$NON-NLS-1$
 
@@ -200,7 +201,22 @@ public class FredQuickSets extends DialogPreference {
         String childDescriptorField = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_descriptor);
         String childTimeStamp = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_second_level_timestamp);
 
-        if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
+        if (quicksetChoice.equals("Fred-Surveysite")) { //$NON-NLS-1$
+            externalDB = baseDir + context.getString(eu.geopaparazzi.core.R.string.fred_SS_external_db_path);
+            externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_SS_external_db_name);
+            haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_SS_two_levels));
+            parentTable = context.getString(eu.geopaparazzi.core.R.string.fred_SS_first_level_table);
+            parentID = context.getString(eu.geopaparazzi.core.R.string.fred_SS_first_level_ID);
+            parentDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_SS_first_level_descriptor);
+            parentTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_first_level_timestamp);
+            childTable = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_table);
+            childID = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_ID);
+            colLat = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_Lat);
+            colLon = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_Lon);
+            colNote = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_note);
+            childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_descriptor);
+            childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_timestamp);
+        } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_path);
             externalDBname = context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.hydrologis.geopaparazzi.R.string.fred_defval_two_levels));

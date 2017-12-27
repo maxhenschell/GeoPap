@@ -76,9 +76,6 @@ public class GeoPapFromDroidDb extends Activity{
 
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
-                if(whichFredDb.equals("iMapInvasivesField")){
-                    whichFredDb = "iMapField";
-                }
                 setFredPrefs(whichFredDb);
             }
 
@@ -139,11 +136,15 @@ public class GeoPapFromDroidDb extends Activity{
      *    ddbName is name of droid db database. Options: iMapField, fredEcol, fredBotZool, Fred-Surveysite
      */
 
-        //GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
+        GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
 
         //changeSettings(ddbName, this);
         FredPreferences fredP = new FredPreferences();
         fredP.changeSettings(ddbName, this);
+
+        Intent intent = new Intent(this,FredPreferences.class);
+        intent.addFlags(intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+
 
     }
 
@@ -169,7 +170,7 @@ public class GeoPapFromDroidDb extends Activity{
         if (quicksetChoice.equals("Fred-Surveysite")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(R.string.fred_SS_external_db_path);
             externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_SS_external_db_name);
-            //\haveParentTable = Boolean.valueOf(context.getString(R.string.fred_SS_two_levels));
+            haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_SS_two_levels));
             parentTable = context.getString(R.string.fred_SS_first_level_table);
             parentID = context.getString(R.string.fred_SS_first_level_ID);
             parentDescriptorField = context.getString(R.string.fred_SS_first_level_descriptor);
