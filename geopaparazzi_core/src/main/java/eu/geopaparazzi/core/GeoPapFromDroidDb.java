@@ -3,10 +3,7 @@ package eu.geopaparazzi.core;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -133,7 +130,7 @@ public class GeoPapFromDroidDb extends Activity{
     /*
      *    if info was shipped with the intent, set the prefs accordingly
      *
-     *    ddbName is name of droid db database. Options: iMapField, fredEcol, fredBotZool, Fred-Surveysite
+     *    ddbName is name of droid db database. Options: fredEcol, fredBotZool, Fred-Surveysite
      */
 
         GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
@@ -145,98 +142,8 @@ public class GeoPapFromDroidDb extends Activity{
         Intent intent = new Intent(context,FredPreferences.class);
         intent.addFlags(intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
 
-
     }
 
-    private void changeSettings(String quicksetChoice, Context context){
-        // could not call FredQuickSets.java directly so repeating here, yuk.
-
-        String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String externalDB = baseDir + context.getString(eu.geopaparazzi.core.R.string.fred_defval_external_db_path);
-        String externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_defval_external_db_name);
-        Boolean haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_defval_two_levels));
-        String parentTable = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_table);
-        String parentID = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_ID);
-        String parentDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_descriptor);
-        String parentTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_timestamp);
-        String childTable = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_table);
-        String childID = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_ID);
-        String colLat = context.getString(eu.geopaparazzi.core.R.string.fred_defval_column_Lat);
-        String colLon = context.getString(eu.geopaparazzi.core.R.string.fred_defval_column_Lon);
-        String colNote = context.getString(eu.geopaparazzi.core.R.string.fred_defval_column_note);
-        String childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_descriptor);
-        String childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_timestamp);
-
-        if (quicksetChoice.equals("Fred-Surveysite")) { //$NON-NLS-1$
-            externalDB = baseDir + context.getString(R.string.fred_SS_external_db_path);
-            externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_SS_external_db_name);
-            haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_SS_two_levels));
-            parentTable = context.getString(R.string.fred_SS_first_level_table);
-            parentID = context.getString(R.string.fred_SS_first_level_ID);
-            parentDescriptorField = context.getString(R.string.fred_SS_first_level_descriptor);
-            parentTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_first_level_timestamp);
-            childTable = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_table);
-            childID = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_ID);
-            colLat = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_Lat);
-            colLon = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_Lon);
-            colNote = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_note);
-            childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_descriptor);
-            childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_timestamp);
-        } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$ //should be "Fred-Ecology"
-            externalDB = baseDir + context.getString(eu.geopaparazzi.core.R.string.fred_defval_external_db_path);
-            externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_defval_external_db_name);
-            haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_defval_two_levels));
-            parentTable = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_table);
-            parentID = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_ID);
-            parentDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_descriptor);
-            parentTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_defval_first_level_timestamp);
-            childTable = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_table);
-            childID = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_ID);
-            colLat = context.getString(eu.geopaparazzi.core.R.string.fred_defval_column_Lat);
-            colLon = context.getString(eu.geopaparazzi.core.R.string.fred_defval_column_Lon);
-            colNote = context.getString(eu.geopaparazzi.core.R.string.fred_defval_column_note);
-            childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_descriptor);
-            childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_defval_second_level_timestamp);
-        } else if (quicksetChoice.equals("Fred-Bot_Zool")) { //$NON-NLS-1$
-            externalDB = baseDir + context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_external_db_path);
-            externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_external_db_name);
-            haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_two_levels));
-            parentTable = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_first_level_table);
-            parentID = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_first_level_ID);
-            parentDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_first_level_descriptor);
-            parentTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_first_level_timestamp);
-            childTable = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_second_level_table);
-            childID = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_second_level_ID);
-            colLat = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_column_Lat);
-            colLon = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_column_Lon);
-            colNote = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_column_note);
-            childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_second_level_descriptor);
-            childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_BotZoo_second_level_timestamp);
-        } else {
-            // don't change anything
-        }
-
-        GPLog.addLogEntry(this, "GPFDDB external db is " + externalDB);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(EXTERNAL_DB, externalDB);
-        editor.putString(EXTERNAL_DB_NAME, externalDBname);
-        editor.putBoolean(TABLES_TWO_LEVELS, haveParentTable);
-        editor.putString(FIRST_LEVEL_TABLE, parentTable);
-        editor.putString(COLUMN_FIRST_LEVEL_ID, parentID);
-        editor.putString(SECOND_LEVEL_TABLE, childTable);
-        editor.putString(COLUMN_SECOND_LEVEL_ID, childID);
-        editor.putString(COLUMN_LAT, colLat);
-        editor.putString(COLUMN_LON, colLon);
-        editor.putString(COLUMN_NOTE, colNote);
-        editor.putString(COLUMN_FIRST_LEVEL_DESCRIPTOR, parentDescriptorField);
-        editor.putString(COLUMN_FIRST_LEVEL_TIMESTAMP, parentTimeStamp);
-        editor.putString(COLUMN_SECOND_LEVEL_DESCRIPTOR, childDescriptorField);
-        editor.putString(COLUMN_SECOND_LEVEL_TIMESTAMP, childTimeStamp);
-        editor.commit();
-
-    }
 
     @Override
     protected void onPause() {
