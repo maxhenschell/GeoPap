@@ -76,7 +76,7 @@ public class GeoPapFromDroidDb extends Activity{
 
             if (extraParsMap.containsKey("DDB")) {
                 whichFredDb = extraParsMap.get("DDB");
-                setFredPrefs(whichFredDb);
+                setFredPrefs(whichFredDb, this);
             }
 
             GPLog.addLogEntry(this, "GPFDDB db is " + whichFredDb);
@@ -129,7 +129,7 @@ public class GeoPapFromDroidDb extends Activity{
 
     }
 
-    private void setFredPrefs(String ddbName){
+    private void setFredPrefs(String ddbName, Context context){
     /*
      *    if info was shipped with the intent, set the prefs accordingly
      *
@@ -140,9 +140,9 @@ public class GeoPapFromDroidDb extends Activity{
 
         //changeSettings(ddbName, this);
         FredPreferences fredP = new FredPreferences();
-        fredP.changeSettings(ddbName, this);
+        fredP.changeSettings(ddbName, context);
 
-        Intent intent = new Intent(this,FredPreferences.class);
+        Intent intent = new Intent(context,FredPreferences.class);
         intent.addFlags(intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
 
 
@@ -287,7 +287,7 @@ public class GeoPapFromDroidDb extends Activity{
                 if(whichFredDb.equals("iMapInvasivesField")){
                     whichFredDb = "iMapField";
                 }
-                setFredPrefs(whichFredDb);
+                setFredPrefs(whichFredDb, this);
             }
             GPLog.addLogEntry(this, "GPFDDB onResume ddb is " + whichFredDb);
 

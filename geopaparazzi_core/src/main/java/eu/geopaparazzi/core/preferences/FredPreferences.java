@@ -264,7 +264,7 @@ public class FredPreferences extends Activity {
 
         GPLog.addLogEntry(this, "external DB is  " + externalDB);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         //SharedPreferences prefs = this.getSharedPreferences(PREFS_NAME,MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
