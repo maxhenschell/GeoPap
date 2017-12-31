@@ -109,7 +109,8 @@ public class FredDataActivity extends Activity {
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
-        setContentView(R.layout.fred_writecoords);
+        //this is the old form. Removed but keeping in code for now
+        //setContentView(R.layout.fred_writecoords);
 
         // get preferences
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);

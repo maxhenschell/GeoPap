@@ -417,21 +417,23 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
 
         } else {
-            // old style fred data collection here
-            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
-            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
-                public void onClick(View v) {
-                    MapViewPosition mapPosition = mMapView.getMapPosition();
-                    GeoPoint mapCenter = mapPosition.getMapCenter();
-                    Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
-                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
-                    startActivity(mapFredIntent);
-                }
-            });
+            // don't add any Fred button
+
+//            // old style fred data collection here
+//            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+//            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
+//            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
+//                public void onClick(View v) {
+//                    MapViewPosition mapPosition = mMapView.getMapPosition();
+//                    GeoPoint mapCenter = mapPosition.getMapCenter();
+//                    Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
+//                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+//                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+//                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+//                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
+//                    startActivity(mapFredIntent);
+//                }
+//            });
         }
 
         // only add the goback button for pre-Nougat versions
@@ -585,21 +587,24 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             registerForContextMenu(addfreddataButton);
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
         } else {
+            // don't add any button
+
+
             // old style fred data collection here
-            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
-            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
-                public void onClick(View v) {
-                    MapViewPosition mapPosition = mMapView.getMapPosition();
-                    GeoPoint mapCenter = mapPosition.getMapCenter();
-                    Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
-                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
-                    startActivity(mapFredIntent);
-                }
-            });
+//            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
+//            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
+//            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
+//                public void onClick(View v) {
+//                    MapViewPosition mapPosition = mMapView.getMapPosition();
+//                    GeoPoint mapCenter = mapPosition.getMapCenter();
+//                    Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
+//                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
+//                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
+//                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
+//                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
+//                    startActivity(mapFredIntent);
+//                }
+//            });
         }
 
 
@@ -866,7 +871,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare);//.setIcon(R.drawable.icon_datasource);
             menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, getString(R.string.menu_extract_mapsforge_data));//"Import mapsforge data");//.setIcon(R.drawable.icon_datasource);
         } else if (v.getId() == R.id.addfreddata){
-            if (GeoPapFromDroidDb.whichFredForm == "SurveySite") {
+            if (GeoPapFromDroidDb.whichFredForm == "Fred-Surveysite") {
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 1, "Get County, Town, Quad at GPS pt");
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 2, "Get County, Town, Quad at map center");
             } else {
@@ -1729,7 +1734,12 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         ImageButton toggleLoginfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
         ImageButton toggleMeasuremodeButton = (ImageButton) findViewById(R.id.togglemeasuremodebutton);
         if (enable) {
-            addfreddataButton.setVisibility(View.VISIBLE);
+            if (GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
+                addfreddataButton.setVisibility(View.VISIBLE);
+            } else {
+                addfreddataButton.setVisibility(View.GONE);
+            }
+
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 gobacktofredButton.setVisibility(View.GONE);
             } else {
@@ -1765,7 +1775,14 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         if (!enable) {
             visibility = View.GONE;
         }
-        addfreddataButton.setVisibility(visibility);
+
+        if (GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
+            addfreddataButton.setVisibility(visibility);
+        } else {
+            addfreddataButton.setVisibility(View.GONE);
+        }
+
+        //addfreddataButton.setVisibility(visibility);
         addnotebytagButton.setVisibility(visibility);
         addBookmarkButton.setVisibility(visibility);
         toggleLoginfoButton.setVisibility(visibility);
