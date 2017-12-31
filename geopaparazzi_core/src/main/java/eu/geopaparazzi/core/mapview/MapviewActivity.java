@@ -871,7 +871,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             menu.add(Menu.NONE, MENU_MIXARE_ID, 9, R.string.view_in_mixare);//.setIcon(R.drawable.icon_datasource);
             menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, getString(R.string.menu_extract_mapsforge_data));//"Import mapsforge data");//.setIcon(R.drawable.icon_datasource);
         } else if (v.getId() == R.id.addfreddata){
-            if (GeoPapFromDroidDb.whichFredForm == "Fred-Surveysite") {
+            GPLog.addLogEntry(this, "Fred form is: " + GeoPapFromDroidDb.whichFredForm); //$NON-NLS-1$
+            //TODO: ;can't remember string comparison. need to tweak here.
+            if (GeoPapFromDroidDb.whichFredForm == "SS") {
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 1, "Get County, Town, Quad at GPS pt");
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 2, "Get County, Town, Quad at map center");
             } else {

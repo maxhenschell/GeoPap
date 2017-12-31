@@ -96,7 +96,7 @@ public class GeoPapFromDroidDb extends Activity{
     /*
      *    if info was shipped with the intent, set the prefs accordingly
      *
-     *    ddbName is name of droid db database. Options: fredEcol, fredBotZool, Fred-Surveysite
+     *    ddbName is name of droid db database. Options: fredEcol, fredBotZool, fredSurveysite
      */
 
         GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
@@ -114,7 +114,7 @@ public class GeoPapFromDroidDb extends Activity{
      *    extract the extra parameters and assign them to constants.
      *    set preference
      *
-     *    ddbName is name of droid db database. Options: fredEcol, fredBotZool, Fred-Surveysite
+     *    ddbName is name of droid db database. Options: fredEcol, fredBotZool, fredSurveysite
      */
         String[] extraParams = param.split(";");
 
