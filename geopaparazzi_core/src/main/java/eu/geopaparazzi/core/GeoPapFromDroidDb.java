@@ -57,39 +57,7 @@ public class GeoPapFromDroidDb extends Activity{
         GPLog.addLogEntry(this, "GPFDDB onCreate extra string " + extraParam);
 
         if (extraParam != null) {
-            String[] extraParams = extraParam.split(";");
-
-            for (int i = 0; i < extraParams.length; i++)
-                extraParams[i] = extraParams[i].trim();
-
-            Map<String, String> extraParsMap = new LinkedHashMap<String, String>();
-            for (String keyValue : extraParams) {
-                String[] pairs = keyValue.split(" *: *", 2);
-                extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
-            }
-            // currently mapped items are DDB, Form, ID
-            GPLog.addLogEntry(this, "GPFDDB extraParsMap " + extraParsMap);
-
-
-            if (extraParsMap.containsKey("DDB")) {
-                whichFredDb = extraParsMap.get("DDB");
-                setFredPrefs(whichFredDb, this);
-            }
-
-            GPLog.addLogEntry(this, "GPFDDB db is " + whichFredDb);
-
-
-            if (extraParsMap.containsKey("ID")){
-                idKey = extraParsMap.get("ID");
-            }
-
-            GPLog.addLogEntry(this, "GPFDDB idkey is " + idKey);
-
-            if (extraParsMap.containsKey("Form")){
-                whichFredForm = extraParsMap.get("Form");
-            }
-
-            GPLog.addLogEntry(this, "GPFDDB Form is " + whichFredForm);
+            setFredMappings(extraParam, this);
         }
 
         // finally see what's open and send user to the correct spot
@@ -111,9 +79,7 @@ public class GeoPapFromDroidDb extends Activity{
             }
             intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
             this.startActivity(intent);
-
         } else {
-            //Intent intent = new Intent(this, GeopaparazziActivity.class);
             Intent intent = new Intent(this, GeopaparazziCoreActivity.class);
             if (GPLog.LOG_HEAVY){
                 GPLog.addLogEntry(this, "GPFDDB maps boolean " + MapviewActivity.created); //$NON-NLS-1$
@@ -135,14 +101,56 @@ public class GeoPapFromDroidDb extends Activity{
 
         GPLog.addLogEntry(this, "GPFDDB ddb is " + ddbName);
 
-        //changeSettings(ddbName, this);
         FredPreferences fredP = new FredPreferences();
         fredP.changeSettings(ddbName, context);
 
         Intent intent = new Intent(context,FredPreferences.class);
         intent.addFlags(intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
-
     }
+
+
+    private void setFredMappings(String param, Context context){
+    /*
+     *    extract the extra parameters and assign them to constants.
+     *    set preference
+     *
+     *    ddbName is name of droid db database. Options: fredEcol, fredBotZool, Fred-Surveysite
+     */
+        String[] extraParams = param.split(";");
+
+        for (int i = 0; i < extraParams.length; i++)
+            extraParams[i] = extraParams[i].trim();
+
+        Map<String, String> extraParsMap = new LinkedHashMap<String, String>();
+        for (String keyValue : extraParams) {
+            String[] pairs = keyValue.split(" *: *", 2);
+            extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
+        }
+        // currently mapped items are DDB, Form, ID
+        GPLog.addLogEntry(context, "GPFDDB extraParsMap " + extraParsMap);
+
+
+        if (extraParsMap.containsKey("DDB")) {
+            whichFredDb = extraParsMap.get("DDB");
+            setFredPrefs(whichFredDb, context);
+        }
+
+        GPLog.addLogEntry(context, "GPFDDB db is " + whichFredDb);
+
+
+        if (extraParsMap.containsKey("ID")){
+            idKey = extraParsMap.get("ID");
+        }
+
+        GPLog.addLogEntry(context, "GPFDDB idkey is " + idKey);
+
+        if (extraParsMap.containsKey("Form")){
+            whichFredForm = extraParsMap.get("Form");
+        }
+
+        GPLog.addLogEntry(context, "GPFDDB Form is " + whichFredForm);
+    }
+
 
 
     @Override
@@ -163,11 +171,16 @@ public class GeoPapFromDroidDb extends Activity{
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        //Intent intent = getIntent();
         String extraParam = intent.getStringExtra("parameter");
         // parameter should map as "key: value; key: value; key: value" with or without spaces
-
         GPLog.addLogEntry(this, "GPFDDB onNewIntent extra string " + extraParam);
+
+        if (extraParam != null) {
+            setFredMappings(extraParam, this);
+        }
+
+        // finally see what's open and send user to the correct spot
+        checkMapsActivity();
     }
 
     @Override
@@ -178,30 +191,7 @@ public class GeoPapFromDroidDb extends Activity{
         String extraParam = intent.getStringExtra("parameter");
 
         if (extraParam != null) {
-            String[] extraParams = extraParam.split(";");
-
-            for (int i = 0; i < extraParams.length; i++)
-                extraParams[i] = extraParams[i].trim();
-
-            Map<String, String> extraParsMap = new LinkedHashMap<String, String>();
-            for (String keyValue : extraParams) {
-                String[] pairs = keyValue.split(" *: *", 2);
-                extraParsMap.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
-            }
-
-            if (extraParsMap.containsKey("DDB")) {
-                whichFredDb = extraParsMap.get("DDB");
-                if(whichFredDb.equals("iMapInvasivesField")){
-                    whichFredDb = "iMapField";
-                }
-                setFredPrefs(whichFredDb, this);
-            }
-            GPLog.addLogEntry(this, "GPFDDB onResume ddb is " + whichFredDb);
-
-            if (extraParsMap.containsKey("ID")) {
-                idKey = extraParsMap.get("ID");
-            }
-            // GPLog.addLogEntry(this, "GPFDDB onResume idkey is " + idKey);
+            setFredMappings(extraParam, this);
         }
     }
 
