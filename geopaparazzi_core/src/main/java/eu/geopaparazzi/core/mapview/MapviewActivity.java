@@ -196,6 +196,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     public static final int FORMUPDATE_RETURN_CODE = 669;
     public static final int FRED_POINT_DATA_WRITTEN_RETURN_CODE = 251;
     public static final int FRED_POINT_EXISTING_LOCATION_RETURN_CODE = 252;
+    public static final int FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE = 253;
+    public static final int FRED_TCQUAD_DATA_WRITTEN_RETURN_CODE = 254;
     private final int CONTACT_RETURN_CODE = 670;
     public static final int SELECTED_FEATURES_UPDATED_RETURN_CODE = 672;
     // private static final int MAPSDIR_FILETREE = 777;
@@ -872,7 +874,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             menu.add(Menu.NONE, MENU_LOADMAPSFORGE_VECTORS_ID, 9, getString(R.string.menu_extract_mapsforge_data));//"Import mapsforge data");//.setIcon(R.drawable.icon_datasource);
         } else if (v.getId() == R.id.addfreddata){
             GPLog.addLogEntry(this, "Fred form is: " + GeoPapFromDroidDb.whichFredForm); //$NON-NLS-1$
-            //TODO: ;can't remember string comparison. need to tweak here.
             if (GeoPapFromDroidDb.whichFredForm.equals("SS")) {
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 1, "Get County, Town, Quad at GPS pt");
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 2, "Get County, Town, Quad at map center");
@@ -990,14 +991,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 }
                 //check if point has existing coordinates
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-                //mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
-                //mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
-                //mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, 0.0);
-                //double posAc = lastGpsPositionAccuracy;
-                //mapFredDDIntentChk.putExtra("gpsAccuracy", posAc);
-                //mapFredDDIntentChk.putExtra("gpsAccuracyUnits", "m");
                 mapFredDDIntentChk.putExtra("coordSource","GPS");
-                //mapFredDDIntentChk.putExtra("recordID", GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
@@ -1006,17 +1000,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             }
             case MENU_PLACE_PT_MAP_CENTER: {
                 GPLog.addLogEntry("fred","in Case map center");
-                //check if point has existing coordinates
-                //MapViewPosition mapPosition = mMapView.getMapPosition();
-                //GeoPoint mapCenter = mapPosition.getMapCenter();
                 Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
-                //mapFredDDIntentChk.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-                //mapFredDDIntentChk.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-                //mapFredDDIntentChk.putExtra(LibraryConstants.ELEVATION, -1.0);
-                //mapFredDDIntentChk.putExtra("gpsAccuracy", -1.0);
-                //mapFredDDIntentChk.putExtra("gpsAccuracyUnits","unk");
                 mapFredDDIntentChk.putExtra("coordSource", "mapCenter");
-                //mapFredDDIntentChk.putExtra("recordID",GeoPapFromDroidDb.idKey);
                 mapFredDDIntentChk.putExtra("type", "checkForExistingLocation");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_POINT_EXISTING_LOCATION_RETURN_CODE);
@@ -1045,6 +1030,33 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
                 return true;
             }
+            case MENU_COUNTYTOWNQUAD_GPS: {
+                GPLog.addLogEntry("fred","in Case county town quad gps");
+
+                GeoPoint geoPoint;
+                if (lastGpsPosition != null && lastGpsServiceStatus == GpsServiceStatus.GPS_FIX) {
+                    setNewCenter(lastGpsPosition[0], lastGpsPosition[1]);
+                    geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+                            (int) (lastGpsPosition[0] * LibraryConstants.E6));
+                } else {
+                    GPDialogs.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
+                    GPLog.addLogEntry("fred","no gps");
+                    return true;
+                }
+                //for countyTownQuad
+                Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra("coordSource","GPS");
+                mapFredDDIntentChk.putExtra("type", "checkForExistingCTQuad");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE);
+
+                return true;
+            }
+            case MENU_COUNTYTOWNQUAD_MAP_CENTER: {
+                GPLog.addLogEntry("fred","in Case county town quad map center");
+
+            }
+
             default:
         }
         return super.onContextItemSelected(item);
@@ -1290,6 +1302,47 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
+            }
+
+            case (FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE): {
+                GPLog.addLogEntry("fred","in tcquad existing location return code");
+                if (resultCode == Activity.RESULT_OK) {
+                    boolean hasCTQ = data.getBooleanExtra("hasCTQuadData", false);
+                    final String coordSource = data.getStringExtra("coordSource");
+                    if (hasCTQ){
+                        GPLog.addLogEntry("fred","in maps activity, pt has CTQ");
+                        GPLog.addLogEntry("fred","coordSource = " + coordSource);
+                        GPDialogs.yesNoMessageDialog(MapviewActivity.this, "At least one of County, Town, or Quad are already filled in, overwrite?", new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if (coordSource.equals("GPS")) {
+                                        //TODO this is where I am!!
+                                        //writeGpsDataToFred();
+                                    } else if (coordSource.equals("mapCenter")){
+                                        //writeMapCenterToFred();
+                                    }
+                                } catch (Exception e) {
+                                    GPLog.error(this, null, e);
+                                }
+                            }
+                        }, new Runnable() {
+                            @Override
+                            public void run() {
+                                //leave gracefully
+                                GPDialogs.toast(MapviewActivity.this,"County, Town, Quad data not updated", Toast.LENGTH_SHORT);
+                            }
+                        });
+
+                    } else {
+                        if (coordSource.equals("GPS")) {
+                            //writeGpsDataToFred();
+                        } else if (coordSource.equals("mapCenter")){
+                            //writeMapCenterToFred();
+                        }
+                    }
+                }
+
             }
         break;
         }

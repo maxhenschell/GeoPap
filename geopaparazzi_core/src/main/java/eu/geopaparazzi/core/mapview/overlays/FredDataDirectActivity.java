@@ -89,6 +89,9 @@ public class FredDataDirectActivity extends Activity {
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String PREFS_KEY_FRED_QUICK_SET = "PREFS_KEY_FRED_QUICK_SET";//$NON-NLS-1$
 
+    private static String COLUMN_COUNTY = "COLUMN_COUNTY";
+    private static String COLUMN_TOWN = "COLUMN_TOWN";
+    private static String COLUMN_QUAD = "COLUMN_QUAD";
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -96,9 +99,7 @@ public class FredDataDirectActivity extends Activity {
         // get preferences
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         final String externalDB = preferences.getString(EXTERNAL_DB, "default"); //$NON-NLS-1$
-        final String externalDBname = preferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
         final String childTable = preferences.getString(SECOND_LEVEL_TABLE, "default3"); //$NON-NLS-1$
         final String childID = preferences.getString(COLUMN_SECOND_LEVEL_ID, "default4"); //$NON-NLS-1$
         final String colLat = preferences.getString(COLUMN_LAT, "default5"); //$NON-NLS-1$  
@@ -112,13 +113,16 @@ public class FredDataDirectActivity extends Activity {
         final String childDescriptorField = preferences.getString(COLUMN_SECOND_LEVEL_DESCRIPTOR, "default11"); //$NON-NLS-1$
         final String childTimeStamp = preferences.getString(COLUMN_SECOND_LEVEL_TIMESTAMP, "default12"); //$NON-NLS-1$
         final String quicksetChoice = preferences.getString(PREFS_KEY_FRED_QUICK_SET, "default13"); //$NON-NLS-1$
+        final String colCounty = preferences.getString(COLUMN_COUNTY, "default16");
+        final String colTown = preferences.getString(COLUMN_TOWN, "default17");
+        final String colQuad = preferences.getString(COLUMN_QUAD, "default18");
 
         // debug some of the defaults in case of problems
-//        if (GPLog.LOG_HEAVY) {
-//            GPLog.addLogEntry("fred", "prefs DB val: " + externalDB); //$NON-NLS-1$
-//            GPLog.addLogEntry("fred", "prefs child table: " + childTable); //$NON-NLS-1$
-//            GPLog.addLogEntry("fred", "prefs child ID: " + childID); //$NON-NLS-1$
-//        }
+        if (GPLog.LOG_HEAVY) {
+            GPLog.addLogEntry("fred", "prefs DB val: " + externalDB); //$NON-NLS-1$
+            GPLog.addLogEntry("fred", "prefs child table: " + childTable); //$NON-NLS-1$
+            GPLog.addLogEntry("fred", "prefs child ID: " + childID); //$NON-NLS-1$
+        }
 
         // Get intent, action
         Intent intent = getIntent();
@@ -131,7 +135,7 @@ public class FredDataDirectActivity extends Activity {
         //GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
 
         // check if the location already has coordinates in Fred
-        if (intentType.equals("checkForExistingLocation")){
+        if (intentType.equals("checkForExistingLocation")) {
             //GPLog.addLogEntry("fred", "checking if location already has gps data");
             boolean hasLocData = false;
             try {
@@ -154,6 +158,32 @@ public class FredDataDirectActivity extends Activity {
                 finish();
             } else {
                 resultIntent.putExtra("hasLocData", false);
+                resultIntent.putExtra("coordSource", coordSource);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            }
+        } else if (intentType.equals("checkForExistingCTQuad")){
+            boolean hasCTQuadData = false;
+            try {
+                final SQLiteDatabase sqlDB;
+                sqlDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
+                        .openDatabase(externalDB, null, 2);
+                hasCTQuadData = checkExistingCTQuad(childTable, childID, recordID,
+                        colCounty, colTown, colQuad, sqlDB);
+                sqlDB.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Intent resultIntent = new Intent();
+
+            if (hasCTQuadData) {
+                resultIntent.putExtra("hasCTQuadData", true);
+                resultIntent.putExtra("coordSource", coordSource);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            } else {
+                resultIntent.putExtra("hasCTQuadData", false);
                 resultIntent.putExtra("coordSource", coordSource);
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
@@ -377,6 +407,63 @@ public class FredDataDirectActivity extends Activity {
         }
     return false;
     }
+
+
+    /**
+     * Checks County, Town, Quad data at the external database to see if the current record already has these populated
+     *
+     * @param tbl           is the name of the table to query
+     * @param colID         is the column name for the recID
+     * @param recID         is the ID value for the record to query (located in colID)
+     * @param colCounty     is the column for County
+     * @param colTown       the column for Town
+     * @param colQuad       the column for quad
+     * @param sqlDB         the DB name
+     * @throws IOException if a problem
+     */
+
+    private static boolean checkExistingCTQuad(String tbl, String colID, String recID, String colCounty,
+            String colTown, String colQuad, SQLiteDatabase sqlDB) throws IOException {
+
+        GPLog.addLogEntry("fred", "checking for existing CTQuad data at point");
+        try {
+            String query = "SELECT " + colCounty + "," + colTown  + "," + colQuad + " FROM " + tbl + " WHERE " + colID+ "= '" + recID + "'";
+            Cursor cursor = sqlDB.rawQuery(query, null);
+            GPLog.addLogEntry("fred", "query: " + query);
+            if(cursor!=null) {
+                GPLog.addLogEntry("fred", "cursor not null");
+                GPLog.addLogEntry("fred", "cursor count = " + cursor.getCount());
+                GPLog.addLogEntry("fred", "cursor cols = " + cursor.getColumnCount());
+                GPLog.addLogEntry("fred", "cursor cols = " + cursor.getColumnName(0));
+                if(cursor.getCount()>0) {
+                    cursor.moveToFirst();
+                    cursor.moveToLast();
+                    String cty = cursor.getString(0);
+                    String twn = cursor.getString(1);
+                    String qd = cursor.getString(2);
+                    //GPLog.addLogEntry("fred", "county = " + cty);
+                    //GPLog.addLogEntry("fred", "town = " + twn);
+                    //GPLog.addLogEntry("fred", "quad = " + qd);
+                    // looks like droidDB is storing a single space in empty cells as default.
+                    // so check for length instead of null or isempty
+                    if(cty.length() > 2 || twn.length() > 2 || qd.length() > 2){
+                        GPLog.addLogEntry("fred", "at least one of county, town, quad not null");
+                        cursor.close();
+                        return true;
+                    }
+                }
+                cursor.close();
+            }
+
+        } catch (Exception e) {
+            GPLog.error("FredSelectQuery", e.getLocalizedMessage(),e);
+            throw new IOException(e.getLocalizedMessage());
+        } finally {
+            sqlDB.close();
+        }
+        return false;
+    }
+
 
     /**
      * Writes GPS data to an external database

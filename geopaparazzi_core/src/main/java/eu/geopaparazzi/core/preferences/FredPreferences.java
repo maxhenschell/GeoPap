@@ -65,6 +65,9 @@ public class FredPreferences extends Activity {
     private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
     private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
+    private static String COLUMN_COUNTY = "COLUMN_COUNTY";
+    private static String COLUMN_TOWN = "COLUMN_TOWN";
+    private static String COLUMN_QUAD = "COLUMN_QUAD";
 
 
     public void onCreate( Bundle icicle ) {
@@ -191,10 +194,13 @@ public class FredPreferences extends Activity {
         String colNote = context.getString(R.string.fred_defval_column_note);
         String childDescriptorField = context.getString(R.string.fred_defval_second_level_descriptor);
         String childTimeStamp = context.getString(R.string.fred_defval_second_level_timestamp);
+        String colCounty = context.getString(R.string.fred_defval_column_county);
+        String colTown = context.getString(R.string.fred_defval_column_town);
+        String colQuad = context.getString(R.string.fred_defval_column_quad);
 
 
 
-        if (quicksetChoice.equals("Fred-Surveysite")) { //$NON-NLS-1$
+        if (quicksetChoice.equals("fredSurveysite")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(R.string.fred_SS_external_db_path);
             externalDBname = context.getString(eu.geopaparazzi.core.R.string.fred_SS_external_db_name);
             haveParentTable = Boolean.valueOf(context.getString(eu.geopaparazzi.core.R.string.fred_SS_two_levels));
@@ -209,6 +215,9 @@ public class FredPreferences extends Activity {
             colNote = context.getString(eu.geopaparazzi.core.R.string.fred_SS_column_note);
             childDescriptorField = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_descriptor);
             childTimeStamp = context.getString(eu.geopaparazzi.core.R.string.fred_SS_second_level_timestamp);
+            colCounty = context.getString(R.string.fred_SS_column_county);
+            colTown = context.getString(R.string.fred_SS_column_town);
+            colQuad = context.getString(R.string.fred_SS_column_quad);
         } else if (quicksetChoice.equals("Fred-Ecology")) { //$NON-NLS-1$
             GPLog.addLogEntry(this, "GPFDDB inside Fred-Ecology");
             externalDB = baseDir + context.getString(R.string.fred_defval_external_db_path);
@@ -291,6 +300,9 @@ public class FredPreferences extends Activity {
         editor.putString(COLUMN_FIRST_LEVEL_TIMESTAMP, parentTimeStamp);
         editor.putString(COLUMN_SECOND_LEVEL_DESCRIPTOR, childDescriptorField);
         editor.putString(COLUMN_SECOND_LEVEL_TIMESTAMP, childTimeStamp);
+        editor.putString(COLUMN_COUNTY, colCounty);
+        editor.putString(COLUMN_TOWN, colTown);
+        editor.putString(COLUMN_QUAD, colQuad);
         editor.commit();
 
     }

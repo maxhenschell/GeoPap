@@ -455,6 +455,9 @@
     <string name="fred_defval_column_coord_source">strPositionMethod</string>
     <string name="fred_defval_column_elev">dblElev</string>
     <string name="fred_defval_column_note">Comments</string>
+    <string name="fred_defval_column_county">strCounty</string>
+    <string name="fred_defval_column_town">strTown</string>
+    <string name="fred_defval_column_quad">strQuadName</string>
     <string name="fred_defval_two_levels">true</string>
     <string name="fred_defval_second_level_descriptor">Obspt</string>
     <string name="fred_defval_second_level_timestamp">dtmRecCreate</string>
@@ -498,6 +501,9 @@
     <string name="fred_SS_column_acc_units">NA</string>
     <string name="fred_SS_column_coord_source">NA</string>
     <string name="fred_SS_column_elev">NA</string>
+    <string name="fred_SS_column_county">strCounty</string>
+    <string name="fred_SS_column_town">strTown</string>
+    <string name="fred_SS_column_quad">strQuadName</string>
     <string name="fred_SS_column_note">strComment</string>
     <string name="fred_SS_second_level_descriptor">Surveysite</string>
     <string name="fred_SS_second_level_timestamp">dtmRecCreate</string>
