@@ -873,7 +873,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         } else if (v.getId() == R.id.addfreddata){
             GPLog.addLogEntry(this, "Fred form is: " + GeoPapFromDroidDb.whichFredForm); //$NON-NLS-1$
             //TODO: ;can't remember string comparison. need to tweak here.
-            if (GeoPapFromDroidDb.whichFredForm == "SS") {
+            if (GeoPapFromDroidDb.whichFredForm.equals("SS")) {
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 1, "Get County, Town, Quad at GPS pt");
                 menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 2, "Get County, Town, Quad at map center");
             } else {
