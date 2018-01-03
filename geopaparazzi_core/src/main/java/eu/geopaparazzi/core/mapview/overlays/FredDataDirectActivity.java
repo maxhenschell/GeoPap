@@ -47,6 +47,13 @@ import eu.geopaparazzi.core.GeoPapFromDroidDb;
 import eu.geopaparazzi.core.R;
 import eu.geopaparazzi.core.database.DatabaseManager;
 import eu.geopaparazzi.core.mapview.MapviewActivity;
+import eu.geopaparazzi.spatialite.database.spatial.SpatialiteSourcesManager;
+import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.SpatialiteDatabaseHandler;
+import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
+import eu.geopaparazzi.spatialite.database.spatial.util.SpatialiteUtilities;
+import jsqlite.Constants;
+import jsqlite.Database;
+import jsqlite.Stmt;
 
 /**
  * Fred activity.
@@ -162,7 +169,7 @@ public class FredDataDirectActivity extends Activity {
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             }
-        } else if (intentType.equals("checkForExistingCTQuad")){
+        } else if (intentType.equals("checkForExistingCTQuad")) {
             boolean hasCTQuadData = false;
             try {
                 final SQLiteDatabase sqlDB;
@@ -189,7 +196,49 @@ public class FredDataDirectActivity extends Activity {
                 finish();
             }
 
-        } else {
+        } else if (intentType.equals("getCTQuad")){
+            GPLog.addLogEntry("fred", "getting CTQuad data");
+            latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
+            longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
+
+            String CTQuadDB = "/storage/emulated/0/geopaparazzi/towncountyquad.sqlite";
+            boolean isWritten = false;
+
+            try {
+
+                String dbDir = "/storage/emulated/0/geopaparazzi";
+                File spatialDbFile = new File(dbDir, "towncountyquad.sqlite");
+
+                final Database ctqDB;
+                ctqDB = new jsqlite.Database();
+
+                ctqDB.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE);
+
+                //final SQLiteDatabase ctqDB;
+                //ctqDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
+                //        .openDatabase(CTQuadDB, null, 2);
+
+                final SQLiteDatabase fredDB;
+                fredDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
+                        .openDatabase(externalDB, null, 2);
+
+                isWritten = getWriteCTQuadData(fredDB, childTable, childID, recordID,
+                        colCounty, colTown, colQuad, latitude, longitude);
+                ctqDB.close();
+                fredDB.close();
+
+            } catch (Exception e) {
+            e.printStackTrace();
+            }
+
+            if (isWritten) {
+                Intent resultIntent = new Intent();
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            }
+
+
+            } else {
             GPLog.addLogEntry("fred", "writing location data");
             latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
             longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
@@ -441,12 +490,15 @@ public class FredDataDirectActivity extends Activity {
                     String cty = cursor.getString(0);
                     String twn = cursor.getString(1);
                     String qd = cursor.getString(2);
-                    //GPLog.addLogEntry("fred", "county = " + cty);
-                    //GPLog.addLogEntry("fred", "town = " + twn);
-                    //GPLog.addLogEntry("fred", "quad = " + qd);
+                    GPLog.addLogEntry("fred", "county = " + cty);
+                    GPLog.addLogEntry("fred", "town = " + twn);
+                    GPLog.addLogEntry("fred", "quad = " + qd);
                     // looks like droidDB is storing a single space in empty cells as default.
-                    // so check for length instead of null or isempty
-                    if(cty.length() > 2 || twn.length() > 2 || qd.length() > 2){
+                    // so check for length instead of null or isempty. Brand new records have null so
+                    // need to check for null too
+                    if((cty != null && cty.length() > 2)
+                            || (twn != null && twn.length() > 2)
+                            || (qd != null && qd.length() > 2)) {
                         GPLog.addLogEntry("fred", "at least one of county, town, quad not null");
                         cursor.close();
                         return true;
@@ -456,7 +508,7 @@ public class FredDataDirectActivity extends Activity {
             }
 
         } catch (Exception e) {
-            GPLog.error("FredSelectQuery", e.getLocalizedMessage(),e);
+            GPLog.error("FredCTQuadSelectQuery", e.getLocalizedMessage(),e);
             throw new IOException(e.getLocalizedMessage());
         } finally {
             sqlDB.close();
@@ -544,6 +596,64 @@ public class FredDataDirectActivity extends Activity {
         }
     return true;
     }
+
+    /**
+     *
+     * @param fredDB    the fred DB
+     * @param tbl   the table with county town quad columns in Fred DB
+     * @param colID the column in tbl holding the record ID
+     * @param recID the record ID value
+     * @param colCounty The county column name
+     * @param colTown   the town column name
+     * @param colQuad   the quad column name
+     * @param ddLat     the location (latitude) to do the intersect
+     * @param ddLon     the location (longitude) to do the intersect
+     * @return
+     * @throws IOException
+     */
+    private static boolean getWriteCTQuadData(SQLiteDatabase fredDB,
+                                              String tbl, String colID, String recID, String colCounty,
+                                              String colTown, String colQuad, double ddLat, double ddLon) throws Exception {
+
+        String dbDir = "/storage/emulated/0/geopaparazzi";
+        File spatialDbFile = new File(dbDir, "towncountyquad.sqlite");
+
+        SpatialiteDatabaseHandler dbHandler = SpatialiteSourcesManager.INSTANCE.getDatabaseHandlerForFile(spatialDbFile);
+        Database ctqDB = dbHandler.getDatabase();
+        GPLog.addLogEntry("Fred cty DB is: ", ctqDB.getFilename());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT COUNTYNAME from County where within(GeomFromText('POINT( ");
+        sb.append(ddLon);
+        sb.append(" ");
+        sb.append(ddLat);
+        sb.append(" )'), County.Geometry)");
+
+        String selectQuery = sb.toString();
+        GPLog.addLogEntry("Fred cty query is: ", selectQuery);
+            Stmt statement = null;
+            try {
+                statement = ctqDB.prepare(selectQuery);
+                if (statement.step()) {
+                    String cty = "none";
+                    if (statement.column_string(0) != null) {
+                        cty = statement.column_string(0);
+                    }
+                GPLog.addLogEntry("Fred county query result: ", cty);
+                    //Yay! this is where to continue. cty *IS* returned correctly!
+            }
+            } catch (jsqlite.Exception e_stmt) {
+                GPLog.error("fred","fred spatailite error", e_stmt);
+            } finally {
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+
+        return true;
+
+    }
+
 
     /**
      * Check to see if DB exists

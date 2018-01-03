@@ -1308,6 +1308,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 GPLog.addLogEntry("fred","in tcquad existing location return code");
                 if (resultCode == Activity.RESULT_OK) {
                     boolean hasCTQ = data.getBooleanExtra("hasCTQuadData", false);
+                    GPLog.addLogEntry("fred","hasCTQuadData = " + hasCTQ );
                     final String coordSource = data.getStringExtra("coordSource");
                     if (hasCTQ){
                         GPLog.addLogEntry("fred","in maps activity, pt has CTQ");
@@ -1317,8 +1318,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             public void run() {
                                 try {
                                     if (coordSource.equals("GPS")) {
-                                        //TODO this is where I am!!
-                                        //writeGpsDataToFred();
+                                        writeCTQuadToFredGPS();
+
                                     } else if (coordSource.equals("mapCenter")){
                                         //writeMapCenterToFred();
                                     }
@@ -1336,7 +1337,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
                     } else {
                         if (coordSource.equals("GPS")) {
-                            //writeGpsDataToFred();
+                            writeCTQuadToFredGPS();
                         } else if (coordSource.equals("mapCenter")){
                             //writeMapCenterToFred();
                         }
@@ -1972,6 +1973,24 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         IntentFilter gpsAvgIntentFilter = new IntentFilter("eu.geopaparazzi.library.gps.GpsAvgService.BROADCAST");
         //IntentFilter gpsAvgIntentFilter = new IntentFilter("GPS_AVERAGING");
         this.registerReceiver(gpsAvgReceiver,gpsAvgIntentFilter);
+    }
 
+    private void writeCTQuadToFredGPS(){
+        GPLog.addLogEntry("fred", "inside writeCTQuadToFred");
+        GeoPoint geoPoint;
+        geoPoint = new GeoPoint((int) (lastGpsPosition[1] * LibraryConstants.E6),
+                (int) (lastGpsPosition[0] * LibraryConstants.E6));
+        Intent mapGpsPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+        mapGpsPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+        mapGpsPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+        mapGpsPt.putExtra(LibraryConstants.ELEVATION, lastGpsPosition[2]);
+        double posAc = lastGpsPositionAccuracy;
+        mapGpsPt.putExtra("gpsAccuracy", posAc);
+        mapGpsPt.putExtra("gpsAccuracyUnits", "m");
+        mapGpsPt.putExtra("coordSource", "GPS");
+        mapGpsPt.putExtra("recordID", GeoPapFromDroidDb.idKey);
+        mapGpsPt.putExtra("type", "getCTQuad");
+        mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
+        startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
     }
 }
