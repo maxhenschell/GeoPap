@@ -420,22 +420,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
         } else {
             // don't add any Fred button
-
-//            // old style fred data collection here
-//            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-//            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
-//            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
-//                public void onClick(View v) {
-//                    MapViewPosition mapPosition = mMapView.getMapPosition();
-//                    GeoPoint mapCenter = mapPosition.getMapCenter();
-//                    Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
-//                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-//                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-//                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-//                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
-//                    startActivity(mapFredIntent);
-//                }
-//            });
         }
 
         // only add the goback button for pre-Nougat versions
@@ -464,9 +448,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
         final ImageButton toggleLogInfoButton = (ImageButton) findViewById(R.id.toggleloginfobutton);
         toggleLogInfoButton.setOnClickListener(this);
-
-//        final ImageButton toggleviewingconeButton = (ImageButton) findViewById(R.id.toggleviewingconebutton);
-//        toggleviewingconeButton.setOnClickListener(this);
 
         final ImageButton toggleEditingButton = (ImageButton) findViewById(R.id.toggleEditingButton);
         toggleEditingButton.setOnClickListener(this);
@@ -590,23 +571,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             addfreddataButton.setBackgroundResource(R.drawable.fred_add_point);
         } else {
             // don't add any button
-
-
-            // old style fred data collection here
-//            ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
-//            addfreddataButton.setBackgroundResource(R.drawable.fredpoint);
-//            addfreddataButton.setOnClickListener(new Button.OnClickListener() {
-//                public void onClick(View v) {
-//                    MapViewPosition mapPosition = mMapView.getMapPosition();
-//                    GeoPoint mapCenter = mapPosition.getMapCenter();
-//                    Intent mapFredIntent = new Intent(MapviewActivity.this, FredDataActivity.class);
-//                    mapFredIntent.putExtra(LibraryConstants.LATITUDE, (double) (mapCenter.latitudeE6 / LibraryConstants.E6));
-//                    mapFredIntent.putExtra(LibraryConstants.LONGITUDE, (double) (mapCenter.longitudeE6 / LibraryConstants.E6));
-//                    mapFredIntent.putExtra(LibraryConstants.ELEVATION, 0.0);
-//                    mapFredIntent.addFlags(mapFredIntent.FLAG_ACTIVITY_NO_HISTORY);
-//                    startActivity(mapFredIntent);
-//                }
-//            });
         }
 
 

@@ -200,33 +200,15 @@ public class FredDataDirectActivity extends Activity {
             GPLog.addLogEntry("fred", "getting CTQuad data");
             latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
             longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
-
-            String CTQuadDB = "/storage/emulated/0/geopaparazzi/towncountyquad.sqlite";
             boolean isWritten = false;
 
             try {
-
-                String dbDir = "/storage/emulated/0/geopaparazzi";
-                File spatialDbFile = new File(dbDir, "towncountyquad.sqlite");
-
-                final Database ctqDB;
-                ctqDB = new jsqlite.Database();
-
-                ctqDB.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE);
-
-                //final SQLiteDatabase ctqDB;
-                //ctqDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
-                //        .openDatabase(CTQuadDB, null, 2);
-
                 final SQLiteDatabase fredDB;
                 fredDB = DatabaseManager.getInstance().getDatabase(FredDataDirectActivity.this)
                         .openDatabase(externalDB, null, 2);
-
                 isWritten = getWriteCTQuadData(fredDB, childTable, childID, recordID,
                         colCounty, colTown, colQuad, latitude, longitude);
-                ctqDB.close();
                 fredDB.close();
-
             } catch (Exception e) {
             e.printStackTrace();
             }
@@ -237,8 +219,7 @@ public class FredDataDirectActivity extends Activity {
                 finish();
             }
 
-
-            } else {
+        } else {
             GPLog.addLogEntry("fred", "writing location data");
             latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
             longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
@@ -247,11 +228,6 @@ public class FredDataDirectActivity extends Activity {
             gpsAccuracyUnits = intent.getStringExtra("gpsAccuracyUnits");
             numberPointsSampled = intent.getIntExtra("numberPointsSampled",0);
             gpsUnit = "Tablet: " + Build.MODEL;
-
-//        if (GPLog.LOG_HEAVY){
-//            GPLog.addLogEntry(this, "Received intent action " + action); //$NON-NLS-1$
-//            GPLog.addLogEntry(this, "Received intent type " + type); //$NON-NLS-1$
-//        }
 
             // first off, check to see if dB exists
             final boolean dbExists = doesDatabaseExist(this, externalDB);
