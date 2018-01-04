@@ -1054,7 +1054,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             }
             case MENU_COUNTYTOWNQUAD_MAP_CENTER: {
                 GPLog.addLogEntry("fred","in Case county town quad map center");
-
+                Intent mapFredDDIntentChk = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+                mapFredDDIntentChk.putExtra("coordSource", "mapCenter");
+                mapFredDDIntentChk.putExtra("type", "checkForExistingCTQuad");
+                mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
+                startActivityForResult(mapFredDDIntentChk, FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE);
             }
 
             default:
@@ -1321,7 +1325,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                                         writeCTQuadToFredGPS();
 
                                     } else if (coordSource.equals("mapCenter")){
-                                        //writeMapCenterToFred();
+                                        writeCTQuadToFredMapCenter();
                                     }
                                 } catch (Exception e) {
                                     GPLog.error(this, null, e);
@@ -1339,7 +1343,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         if (coordSource.equals("GPS")) {
                             writeCTQuadToFredGPS();
                         } else if (coordSource.equals("mapCenter")){
-                            //writeMapCenterToFred();
+                            writeCTQuadToFredMapCenter();
                         }
                     }
                 }
@@ -1992,5 +1996,26 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         mapGpsPt.putExtra("type", "getCTQuad");
         mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
         startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+    }
+
+    private void writeCTQuadToFredMapCenter() {
+        GPLog.addLogEntry("fred", "inside writeCTQuadToFredMapCenter");
+        GeoPoint geoPoint;
+        MapViewPosition mapPosition = mMapView.getMapPosition();
+        geoPoint = mapPosition.getMapCenter();
+        Intent mapMapPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
+        mapMapPt.putExtra(LibraryConstants.LATITUDE, (double) (geoPoint.latitudeE6 / LibraryConstants.E6));
+        mapMapPt.putExtra(LibraryConstants.LONGITUDE, (double) (geoPoint.longitudeE6 / LibraryConstants.E6));
+        Double elev = null;
+        mapMapPt.putExtra(LibraryConstants.ELEVATION, elev);
+        Double posAc = null;
+        mapMapPt.putExtra("gpsAccuracy", posAc);
+        String accunits = null;
+        mapMapPt.putExtra("gpsAccuracyUnits",accunits);
+        mapMapPt.putExtra("coordSource", "mapCenter");
+        mapMapPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
+        mapMapPt.putExtra("type", "getCTQuad");
+        mapMapPt.addFlags(mapMapPt.FLAG_ACTIVITY_NO_HISTORY);
+        startActivityForResult(mapMapPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
     }
 }

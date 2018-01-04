@@ -618,10 +618,15 @@ public class FredDataDirectActivity extends Activity {
         String dbDir = "/storage/emulated/0/geopaparazzi";
         File spatialDbFile = new File(dbDir, "towncountyquad.sqlite");
 
+        String cty = "none";
+        String twn = "none";
+        String qd = "none";
+
         SpatialiteDatabaseHandler dbHandler = SpatialiteSourcesManager.INSTANCE.getDatabaseHandlerForFile(spatialDbFile);
         Database ctqDB = dbHandler.getDatabase();
         GPLog.addLogEntry("Fred cty DB is: ", ctqDB.getFilename());
 
+        // get county
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT COUNTYNAME from County where within(GeomFromText('POINT( ");
         sb.append(ddLon);
@@ -635,7 +640,6 @@ public class FredDataDirectActivity extends Activity {
             try {
                 statement = ctqDB.prepare(selectQuery);
                 if (statement.step()) {
-                    String cty = "none";
                     if (statement.column_string(0) != null) {
                         cty = statement.column_string(0);
                     }
@@ -649,9 +653,88 @@ public class FredDataDirectActivity extends Activity {
                     statement.close();
                 }
             }
+        //get town
+        sb.setLength(0);
+        sb.append("SELECT TOWNNAME from Town where within(GeomFromText('POINT( ");
+        sb.append(ddLon);
+        sb.append(" ");
+        sb.append(ddLat);
+        sb.append(" )'), Town.Geometry)");
 
+        selectQuery = sb.toString();
+        GPLog.addLogEntry("Fred cty query is: ", selectQuery);
+        statement = null;
+        try {
+            statement = ctqDB.prepare(selectQuery);
+            if (statement.step()) {
+                if (statement.column_string(0) != null) {
+                    twn = statement.column_string(0);
+                }
+                GPLog.addLogEntry("Fred town query result: ", twn);
+            }
+        } catch (jsqlite.Exception e_stmt) {
+            GPLog.error("fred","fred spatailite error", e_stmt);
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        //get quad
+        sb.setLength(0);
+        sb.append("SELECT USGSNAME from QuadNHP where within(GeomFromText('POINT( ");
+        sb.append(ddLon);
+        sb.append(" ");
+        sb.append(ddLat);
+        sb.append(" )'), QuadNHP.Geometry)");
+
+        selectQuery = sb.toString();
+        GPLog.addLogEntry("Fred quad query is: ", selectQuery);
+        statement = null;
+        try {
+            statement = ctqDB.prepare(selectQuery);
+            if (statement.step()) {
+                if (statement.column_string(0) != null) {
+                    qd = statement.column_string(0);
+                }
+                GPLog.addLogEntry("Fred quad query result: ", qd);
+            }
+        } catch (jsqlite.Exception e_stmt) {
+            GPLog.error("fred","fred spatailite error", e_stmt);
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+            ctqDB.close();
+        }
+        // now send data to FRED
+        try {
+            fredDB.beginTransaction();
+            //StringBuilder sb = new StringBuilder();
+            sb.setLength(0);
+
+            sb.append("UPDATE "); //$NON-NLS-1$
+            sb.append(tbl);
+            sb.append(" SET "); //$NON-NLS-1$
+            sb.append(colCounty).append("= '").append(cty).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colTown).append("= '").append(twn).append("', "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(colQuad).append("= '").append(qd).append("' "); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append("WHERE ").append(colID).append("= '").append(recID).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+
+            String query = sb.toString();
+            if (GPLog.LOG_HEAVY)
+                GPLog.addLogEntry("FredCTQWriteQuery", query); //$NON-NLS-1$
+            SQLiteStatement sqlUpdate = fredDB.compileStatement(query);
+            sqlUpdate.execute();
+            sqlUpdate.close();
+            fredDB.setTransactionSuccessful();
+        } catch (Exception e) {
+            GPLog.error("FredCTQWriteQuery", e.getLocalizedMessage(), e); //$NON-NLS-1$
+            throw new IOException(e.getLocalizedMessage());
+        } finally {
+            fredDB.endTransaction();
+            fredDB.close();
+        }
         return true;
-
     }
 
 
