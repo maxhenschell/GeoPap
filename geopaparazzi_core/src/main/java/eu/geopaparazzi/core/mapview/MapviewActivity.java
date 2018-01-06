@@ -118,7 +118,7 @@ import java.util.Date;
 import java.util.List;
 
 import eu.geopaparazzi.core.database.DaoFredPts;
-import eu.geopaparazzi.core.mapview.overlays.FredDataActivity;
+//import eu.geopaparazzi.core.mapview.overlays.FredDataActivity;
 import eu.geopaparazzi.core.mapview.overlays.FredDataDirectActivity;
 import eu.geopaparazzi.library.core.ResourcesManager;
 import eu.geopaparazzi.library.core.activities.GeocodeActivity;
@@ -196,8 +196,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
     public static final int FORMUPDATE_RETURN_CODE = 669;
     public static final int FRED_POINT_DATA_WRITTEN_RETURN_CODE = 251;
     public static final int FRED_POINT_EXISTING_LOCATION_RETURN_CODE = 252;
-    public static final int FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE = 253;
-    public static final int FRED_TCQUAD_DATA_WRITTEN_RETURN_CODE = 254;
+    public static final int FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE = 853;
+    public static final int FRED_TCQUAD_DATA_WRITTEN_RETURN_CODE = 854;
     private final int CONTACT_RETURN_CODE = 670;
     public static final int SELECTED_FEATURES_UPDATED_RETURN_CODE = 672;
     // private static final int MAPSDIR_FILETREE = 777;
@@ -423,8 +423,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
 
         // only add the goback button for pre-Nougat versions
-        GPLog.addLogEntry("fred SDK_INT: ", Integer.toString(android.os.Build.VERSION.SDK_INT));
-        GPLog.addLogEntry("fred BUILD: ", Integer.toString(Build.VERSION_CODES.N));
+//        GPLog.addLogEntry("fred SDK_INT: ", Integer.toString(android.os.Build.VERSION.SDK_INT));
+//        GPLog.addLogEntry("fred BUILD: ", Integer.toString(Build.VERSION_CODES.N));
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             ImageButton gobacktofredButton = (ImageButton) findViewById(R.id.gobacktofred);
             gobacktofredButton.setOnClickListener(new Button.OnClickListener() {
@@ -470,11 +470,11 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
 
         //tgh debugging
-        if (toggleEditingButton != null) {
-            GPLog.addLogEntry("fred","MapsActivity toggle Button NOT Null");
-        } else {
-            GPLog.addLogEntry("fred","MapsActivity toggle Button Is Null");
-        }
+//        if (toggleEditingButton != null) {
+//            GPLog.addLogEntry("fred","MapsActivity toggle Button NOT Null");
+//        } else {
+//            GPLog.addLogEntry("fred","MapsActivity toggle Button Is Null");
+//        }
 
         GpsServiceUtilities.registerForBroadcasts(this, gpsServiceBroadcastReceiver);
         GpsServiceUtilities.triggerBroadcast(this);
@@ -563,7 +563,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
         //reset this button as settings could have changed on resume (re-entry)
         if(GeoPapFromDroidDb.whichFredDb != null && GeoPapFromDroidDb.whichFredForm != null) {
-            GPLog.addLogEntry("fred", "inside mapsactivity button");
+//            GPLog.addLogEntry("fred", "inside mapsactivity button");
             ImageButton addfreddataButton = (ImageButton) findViewById(R.id.addfreddata);
             addfreddataButton.setEnabled(true);
             addfreddataButton.setOnClickListener(this);
@@ -839,12 +839,12 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         } else if (v.getId() == R.id.addfreddata){
             GPLog.addLogEntry(this, "Fred form is: " + GeoPapFromDroidDb.whichFredForm); //$NON-NLS-1$
             if (GeoPapFromDroidDb.whichFredForm.equals("SS")) {
-                menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 1, "Get County, Town, Quad at GPS pt");
-                menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 2, "Get County, Town, Quad at map center");
+                menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_GPS, 24, "Get County, Town, Quad at GPS pt");
+                menu.add(Menu.NONE, MENU_COUNTYTOWNQUAD_MAP_CENTER, 25, "Get County, Town, Quad at map center");
             } else {
-                menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 1, "Place point at GPS");//.setIcon(android.R.drawable.ic_menu_compass);;
-                menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 2, "Place point at map center");//.setIcon(android.R.drawable.ic_menu_compass);;
-                menu.add(Menu.NONE, MENU_PLACE_PT_AVG, 3, "Place point using GPS averaging");
+                menu.add(Menu.NONE, MENU_PLACE_PT_GPS, 21, "Place point at GPS");
+                menu.add(Menu.NONE, MENU_PLACE_PT_MAP_CENTER, 22, "Place point at map center");
+                menu.add(Menu.NONE, MENU_PLACE_PT_AVG, 23, "Place point using GPS averaging");
             }
         }
     }
@@ -950,7 +950,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             (int) (lastGpsPosition[0] * LibraryConstants.E6));
                 } else {
                     GPDialogs.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
-                    GPLog.addLogEntry("fred","no gps");
+//                    GPLog.addLogEntry("fred","no gps");
                     return true;
                 }
                 //check if point has existing coordinates
@@ -982,7 +982,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             (int) (lastGpsPosition[0] * LibraryConstants.E6));
                 } else {
                     GPDialogs.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
-                    GPLog.addLogEntry("fred","no gps");
+//                    GPLog.addLogEntry("fred","no gps");
                     return true;
                 }
 
@@ -1004,7 +1004,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             (int) (lastGpsPosition[0] * LibraryConstants.E6));
                 } else {
                     GPDialogs.toast(this, "no GPS position! Use map center instead", Toast.LENGTH_LONG);
-                    GPLog.addLogEntry("fred","no gps");
+//                    GPLog.addLogEntry("fred","no gps");
                     return true;
                 }
                 //for countyTownQuad
@@ -1023,6 +1023,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 mapFredDDIntentChk.putExtra("type", "checkForExistingCTQuad");
                 mapFredDDIntentChk.addFlags(mapFredDDIntentChk.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(mapFredDDIntentChk, FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE);
+                return true;
             }
 
             default:
@@ -1195,6 +1196,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
+                break;
             }
             case (FORMUPDATE_RETURN_CODE): {
                 if (resultCode == Activity.RESULT_OK) {
@@ -1212,6 +1214,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
+                break;
             }
 
             case (SELECTED_FEATURES_UPDATED_RETURN_CODE): {
@@ -1226,6 +1229,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
+                break;
             }
 
             case (FRED_POINT_EXISTING_LOCATION_RETURN_CODE): {
@@ -1234,8 +1238,8 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     boolean hasLoc = data.getBooleanExtra("hasLocData", false);
                     final String coordSource = data.getStringExtra("coordSource");
                     if (hasLoc){
-                        GPLog.addLogEntry("fred","in maps activity, pt has loc");
-                        GPLog.addLogEntry("fred","coordSource = " + coordSource);
+//                        GPLog.addLogEntry("fred","in maps activity, pt has loc");
+//                        GPLog.addLogEntry("fred","coordSource = " + coordSource);
                         GPDialogs.yesNoMessageDialog(MapviewActivity.this, "This point has coordinates, overwrite?", new Runnable() {
                             @Override
                             public void run() {
@@ -1245,7 +1249,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                                     } else if (coordSource.equals("mapCenter")){
                                         writeMapCenterToFred();
                                     } else if (coordSource.equals("gpsAvg")){
-                                        GPLog.addLogEntry("fred","inside YES answer to has coords, coordsource = gpsAvg");
+//                                        GPLog.addLogEntry("fred","inside YES answer to has coords, coordsource = gpsAvg");
                                         writeGpsAvgToFred();
                                     }
                                 } catch (Exception e) {
@@ -1270,17 +1274,18 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
+                break;
             }
 
             case (FRED_TCQUAD_EXISTING_LOCATION_RETURN_CODE): {
                 GPLog.addLogEntry("fred","in tcquad existing location return code");
                 if (resultCode == Activity.RESULT_OK) {
                     boolean hasCTQ = data.getBooleanExtra("hasCTQuadData", false);
-                    GPLog.addLogEntry("fred","hasCTQuadData = " + hasCTQ );
+//                    GPLog.addLogEntry("fred","hasCTQuadData = " + hasCTQ );
                     final String coordSource = data.getStringExtra("coordSource");
                     if (hasCTQ){
-                        GPLog.addLogEntry("fred","in maps activity, pt has CTQ");
-                        GPLog.addLogEntry("fred","coordSource = " + coordSource);
+//                        GPLog.addLogEntry("fred","in maps activity, pt has CTQ");
+//                        GPLog.addLogEntry("fred","coordSource = " + coordSource);
                         GPDialogs.yesNoMessageDialog(MapviewActivity.this, "At least one of County, Town, or Quad are already filled in, overwrite?", new Runnable() {
                             @Override
                             public void run() {
@@ -1311,9 +1316,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                         }
                     }
                 }
-
+            break;
             }
-        break;
+        //break;
         }
         }
 
@@ -1881,6 +1886,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         mapGpsPt.putExtra("recordID", GeoPapFromDroidDb.idKey);
         mapGpsPt.putExtra("type", "writeLocation");
         mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
+//        GPLog.addLogEntry("fred", "leaving writeGPSDataToFred");
         startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
     }
 
@@ -1914,9 +1920,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
         gpsAvgReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
-                GPLog.addLogEntry("GPSAVG", "inside gpsAvBR receiver");
+//                GPLog.addLogEntry("GPSAVG", "inside gpsAvBR receiver");
                 if (intent.getIntExtra("GPS_AVG_COMPLETE", 0) == 1) {
-                    GPLog.addLogEntry("GPSAVG", "inside gpsAvBR intent getIntExtraGPLog");
+//                    GPLog.addLogEntry("GPSAVG", "inside gpsAvBR intent getIntExtraGPLog");
                     gpsAvgLocation = intent.getDoubleArrayExtra("GPS_SERVICE_AVERAGED_POSITION");
 
                     Intent mapAvgPt = new Intent(MapviewActivity.this, FredDataDirectActivity.class);
@@ -1959,7 +1965,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         mapGpsPt.putExtra("recordID", GeoPapFromDroidDb.idKey);
         mapGpsPt.putExtra("type", "getCTQuad");
         mapGpsPt.addFlags(mapGpsPt.FLAG_ACTIVITY_NO_HISTORY);
-        startActivityForResult(mapGpsPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+        startActivityForResult(mapGpsPt, FRED_TCQUAD_DATA_WRITTEN_RETURN_CODE);
     }
 
     private void writeCTQuadToFredMapCenter() {
@@ -1980,6 +1986,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         mapMapPt.putExtra("recordID",GeoPapFromDroidDb.idKey);
         mapMapPt.putExtra("type", "getCTQuad");
         mapMapPt.addFlags(mapMapPt.FLAG_ACTIVITY_NO_HISTORY);
-        startActivityForResult(mapMapPt, FRED_POINT_DATA_WRITTEN_RETURN_CODE);
+        startActivityForResult(mapMapPt, FRED_TCQUAD_DATA_WRITTEN_RETURN_CODE);
     }
 }

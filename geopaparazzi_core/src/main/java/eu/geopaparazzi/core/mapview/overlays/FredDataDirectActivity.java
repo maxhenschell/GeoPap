@@ -21,7 +21,6 @@ package eu.geopaparazzi.core.mapview.overlays;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -40,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.geopaparazzi.library.database.GPLog;
-import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.core.GeoPapFromDroidDb;
@@ -49,9 +47,6 @@ import eu.geopaparazzi.core.database.DatabaseManager;
 import eu.geopaparazzi.core.mapview.MapviewActivity;
 import eu.geopaparazzi.spatialite.database.spatial.SpatialiteSourcesManager;
 import eu.geopaparazzi.spatialite.database.spatial.core.databasehandlers.SpatialiteDatabaseHandler;
-import eu.geopaparazzi.spatialite.database.spatial.core.tables.SpatialVectorTable;
-import eu.geopaparazzi.spatialite.database.spatial.util.SpatialiteUtilities;
-import jsqlite.Constants;
 import jsqlite.Database;
 import jsqlite.Stmt;
 
@@ -76,12 +71,9 @@ public class FredDataDirectActivity extends Activity {
     private String gpsUnit;
     private String coordSource;
     private String recordID;
-    //private double[] gpsLocation;
-    //private BroadcastReceiver gpsBroadcastReceiver;
 
     private List<String> secondIDs; // second level information -- e.g. obspoint
     private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
-    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
     private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";//$NON-NLS-1$
     private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";//$NON-NLS-1$
     private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
@@ -99,6 +91,8 @@ public class FredDataDirectActivity extends Activity {
     private static String COLUMN_COUNTY = "COLUMN_COUNTY";
     private static String COLUMN_TOWN = "COLUMN_TOWN";
     private static String COLUMN_QUAD = "COLUMN_QUAD";
+
+    //private final int INSERTCOORD_RETURN_CODE = 666;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -138,12 +132,12 @@ public class FredDataDirectActivity extends Activity {
         recordID = GeoPapFromDroidDb.idKey;
         coordSource = intent.getStringExtra("coordSource");
 
-        //GPLog.addLogEntry("fred","extra, type = " + intentType);
-        //GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
+        GPLog.addLogEntry("fred","extra, type = " + intentType);
+        GPLog.addLogEntry("fred", "recordID is " + recordID); //$NON-NLS-1$
 
         // check if the location already has coordinates in Fred
         if (intentType.equals("checkForExistingLocation")) {
-            //GPLog.addLogEntry("fred", "checking if location already has gps data");
+            GPLog.addLogEntry("fred", "checking if location already has gps data");
             boolean hasLocData = false;
             try {
                 final SQLiteDatabase sqlDB;
@@ -169,7 +163,9 @@ public class FredDataDirectActivity extends Activity {
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
             }
+
         } else if (intentType.equals("checkForExistingCTQuad")) {
+            GPLog.addLogEntry("fred", "checking if SS already has CTQuad data");
             boolean hasCTQuadData = false;
             try {
                 final SQLiteDatabase sqlDB;
@@ -219,8 +215,8 @@ public class FredDataDirectActivity extends Activity {
                 finish();
             }
 
-        } else {
-            GPLog.addLogEntry("fred", "writing location data");
+        } else if (intentType.equals("writeLocation")){
+            //GPLog.addLogEntry("fred", "writing location data");
             latitude = intent.getDoubleExtra(LibraryConstants.LATITUDE, 0.0);
             longitude = intent.getDoubleExtra(LibraryConstants.LONGITUDE, 0.0);
             elevation = intent.getDoubleExtra(LibraryConstants.ELEVATION, 0.0);
@@ -335,9 +331,9 @@ public class FredDataDirectActivity extends Activity {
     private static List<String> getTableIDs(SQLiteDatabase sqliteDatabase, String tableName, String IdCol, String NameCol,
                                             String tsCol, String filterID, String strWhere, String quickSet) throws IOException {
 
-        //GPLog.addLogEntry("in getTableIDs, tableName= " + tableName);
-        //GPLog.addLogEntry("in getTableIDs, IdCol= " + IdCol);
-        //GPLog.addLogEntry("in getTableIDs, NameCol= " + NameCol);
+        GPLog.addLogEntry("in getTableIDs, tableName= " + tableName);
+        GPLog.addLogEntry("in getTableIDs, IdCol= " + IdCol);
+        GPLog.addLogEntry("in getTableIDs, NameCol= " + NameCol);
 
         String asColumnsToReturn[] = {NameCol, IdCol, tsCol};
         String strSortOrder = tsCol + " DESC"; //$NON-NLS-1$
@@ -359,7 +355,7 @@ public class FredDataDirectActivity extends Activity {
                 String tStamp = c.getString(2);
                 try {
                     //todo: customize for each type - does not work yet
-                    if(quickSet == "Fred-Bot,Zool" && tableName == "IPAQ_SppSurvUtmList") {
+                    if(quickSet.equals("Fred-Bot,Zool") && tableName.equals("IPAQ_SppSurvUtmList")) {
                         row = "GPS ID = " + fName + " (created on " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     } else {
                         //String row = fName + " (" + String.valueOf(fID) + ", " + tStamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
