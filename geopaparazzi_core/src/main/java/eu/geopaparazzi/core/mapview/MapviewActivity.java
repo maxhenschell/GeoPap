@@ -339,9 +339,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
         }
         boolean areButtonsVisible = mPeferences.getBoolean(ARE_BUTTONSVISIBLE_OPEN, true);
 
-        //for fred
-        final String externalDBname = mPeferences.getString(EXTERNAL_DB_NAME, "default12"); //$NON-NLS-1$
-
         /*
          * create main mapview
         */
@@ -642,17 +639,13 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             boolean fredPtsVisible = mPeferences.getBoolean(Constants.PREFS_KEY_FRED_POINTS_VISIBLE,true);
 
             if(fredPtsVisible) {
-
                 String[] prefGroups = new String[]{"Fred-Ecology", "Fred-Bot_Zool"};
                 FredPreferences fredP = new FredPreferences();
                 for (String prefGroup : prefGroups) {
-
                     fredP.changeSettings(prefGroup, this);
-                    GPLog.addLogEntry("prefGroup is " + prefGroup);
-
-
+                    //GPLog.addLogEntry("prefGroup is " + prefGroup);
                     String pointString = mPeferences.getString(Constants.MAP_ICON, "trianglept_a");
-                    GPLog.addLogEntry("fred point string:" + pointString);
+                    //GPLog.addLogEntry("fred point string:" + pointString);
 
                     Drawable fredPt = Compat.getDrawable(this, getResources().getIdentifier(pointString,"drawable",getPackageName()));
 
