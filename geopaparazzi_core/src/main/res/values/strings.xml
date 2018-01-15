@@ -461,6 +461,7 @@
     <string name="fred_defval_two_levels">true</string>
     <string name="fred_defval_second_level_descriptor">Obspt</string>
     <string name="fred_defval_second_level_timestamp">dtmRecCreate</string>
+    <string name="fred_defval_map_icon">trianglept_c</string>
     <!-- Two other quick-sets: Botany/zoology and Surveysite level (for county,town,quad queries) -->
     <string name="fred_BotZoo_external_db_path">/FRED/FRED.db</string>
     <string name="fred_BotZoo_external_db_name">FRED</string>
@@ -485,6 +486,7 @@
     <string name="fred_BotZoo_column_note">StrComment</string>
     <string name="fred_BotZoo_second_level_descriptor">strPointName</string>
     <string name="fred_BotZoo_second_level_timestamp">dtmRecCreate</string>
+    <string name="fred_BotZoo_map_icon">trianglept_p</string>
 
     <string name="fred_SS_external_db_path">/FRED/FRED.db</string>
     <string name="fred_SS_external_db_name">FRED</string>

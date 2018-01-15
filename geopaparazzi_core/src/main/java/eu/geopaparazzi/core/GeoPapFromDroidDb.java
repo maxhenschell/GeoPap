@@ -25,22 +25,7 @@ public class GeoPapFromDroidDb extends Activity{
 
     private static boolean mapsActivityRunning = false;
 
-    private static String EXTERNAL_DB = "EXTERNAL_DB";//$NON-NLS-1$
-    private static String EXTERNAL_DB_NAME = "EXTERNAL_DB_NAME";//$NON-NLS-1$
-    private static String FIRST_LEVEL_TABLE = "FIRST_LEVEL_TABLE";//$NON-NLS-1$
-    private static String COLUMN_FIRST_LEVEL_ID = "COLUMN_FIRST_LEVEL_ID";//$NON-NLS-1$
-    private static String SECOND_LEVEL_TABLE = "SECOND_LEVEL_TABLE";//$NON-NLS-1$
-    private static String COLUMN_SECOND_LEVEL_ID = "COLUMN_SECOND_LEVEL_ID";//$NON-NLS-1$
-    private static String TABLES_TWO_LEVELS = "TABLES_TWO_LEVELS";//$NON-NLS-1$
-    private static String COLUMN_LAT = "COLUMN_LAT";//$NON-NLS-1$
-    private static String COLUMN_LON = "COLUMN_LON";//$NON-NLS-1$
-    private static String COLUMN_NOTE = "COLUMN_NOTE";//$NON-NLS-1$
-    private static String COLUMN_FIRST_LEVEL_DESCRIPTOR = "COLUMN_FIRST_LEVEL_DESCRIPTOR";//$NON-NLS-1$
-    private static String COLUMN_SECOND_LEVEL_DESCRIPTOR = "COLUMN_SECOND_LEVEL_DESCRIPTOR";//$NON-NLS-1$
-    private static String COLUMN_FIRST_LEVEL_TIMESTAMP = "COLUMN_FIRST_LEVEL_TIMESTAMP";//$NON-NLS-1$
-    private static String COLUMN_SECOND_LEVEL_TIMESTAMP = "COLUMN_SECOND_LEVEL_TIMESTAMP";//$NON-NLS-1$
-
-    public static String whichFredDb = null;
+    public static String whichFredDb = "Fred-Ecology"; //set a default
     public static String idKey = null;
     public static String whichFredForm = null;
     public static String whichFredCallingActivity = null;

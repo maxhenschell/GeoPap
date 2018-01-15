@@ -68,6 +68,7 @@ public class FredPreferences extends Activity {
     private static String COLUMN_COUNTY = "COLUMN_COUNTY";
     private static String COLUMN_TOWN = "COLUMN_TOWN";
     private static String COLUMN_QUAD = "COLUMN_QUAD";
+    private static String MAP_ICON = "MAP_ICON";
 
 
     public void onCreate( Bundle icicle ) {
@@ -197,6 +198,7 @@ public class FredPreferences extends Activity {
         String colCounty = context.getString(R.string.fred_defval_column_county);
         String colTown = context.getString(R.string.fred_defval_column_town);
         String colQuad = context.getString(R.string.fred_defval_column_quad);
+        String mapIcon = context.getString(R.string.fred_defval_map_icon);
 
 
 
@@ -243,6 +245,7 @@ public class FredPreferences extends Activity {
             colNote = context.getString(R.string.fred_defval_column_note);
             childDescriptorField = context.getString(R.string.fred_defval_second_level_descriptor);
             childTimeStamp = context.getString(R.string.fred_defval_second_level_timestamp);
+            mapIcon = context.getString(R.string.fred_defval_map_icon);
         } else if (quicksetChoice.equals("Fred-Bot_Zool")) { //$NON-NLS-1$
             externalDB = baseDir + context.getString(R.string.fred_BotZoo_external_db_path);
             externalDBname = context.getString(R.string.fred_BotZoo_external_db_name);
@@ -267,6 +270,7 @@ public class FredPreferences extends Activity {
             colNote = context.getString(R.string.fred_BotZoo_column_note);
             childDescriptorField = context.getString(R.string.fred_BotZoo_second_level_descriptor);
             childTimeStamp = context.getString(R.string.fred_BotZoo_second_level_timestamp);
+            mapIcon = context.getString(R.string.fred_BotZoo_map_icon);
         } else {
             // don't change anything
         }
@@ -303,6 +307,7 @@ public class FredPreferences extends Activity {
         editor.putString(COLUMN_COUNTY, colCounty);
         editor.putString(COLUMN_TOWN, colTown);
         editor.putString(COLUMN_QUAD, colQuad);
+        editor.putString(MAP_ICON, mapIcon);
         editor.commit();
 
     }

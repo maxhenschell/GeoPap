@@ -120,6 +120,7 @@ import java.util.List;
 import eu.geopaparazzi.core.database.DaoFredPts;
 //import eu.geopaparazzi.core.mapview.overlays.FredDataActivity;
 import eu.geopaparazzi.core.mapview.overlays.FredDataDirectActivity;
+import eu.geopaparazzi.core.preferences.FredPreferences;
 import eu.geopaparazzi.library.core.ResourcesManager;
 import eu.geopaparazzi.library.core.activities.GeocodeActivity;
 import eu.geopaparazzi.library.core.dialogs.InsertCoordinatesDialogFragment;
@@ -643,12 +644,25 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
             /* fred points (obs points, plots, zool or bot points,imap observations) */
             // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
+
+
+
             if(fredPtsVisible) {
-                    //Drawable fredPtp = Compat.getDrawable(this, R.drawable.ic_bookmarks_48dp_fred);
-                    Drawable fredPtp = Compat.getDrawable(this, R.drawable.trianglept_p);
-                    Drawable fredPta = Compat.getDrawable(this, R.drawable.trianglept_a);
-                    Drawable fredPtc = Compat.getDrawable(this, R.drawable.trianglept_c);
-                    Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPtp);
+
+                String[] prefGroups = new String[]{"Fred-Ecology", "Fred-Bot_Zool"};
+                FredPreferences fredP = new FredPreferences();
+                for (String prefGroup : prefGroups) {
+
+                    fredP.changeSettings(prefGroup, this);
+                    GPLog.addLogEntry("prefGroup is " + prefGroup);
+
+
+                    String pointString = mPeferences.getString(Constants.MAP_ICON, "trianglept_a");
+                    GPLog.addLogEntry("fred point string:" + pointString);
+
+                    Drawable fredPt = Compat.getDrawable(this, getResources().getIdentifier(pointString,"drawable",getPackageName()));
+
+                    Drawable newFredPt = ArrayGeopaparazziOverlay.boundCenter(fredPt);
                     Context fredContext = getApplicationContext();
                     List<OverlayItem> fredPtOverlaysList = DaoFredPts.getFredPtsOverlays(fredContext, newFredPt);
                     if (fredPtOverlaysList != null) {
@@ -659,6 +673,10 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                             mDataOverlay.addItems(fredPtOverlaysList);
                         }
                     }
+                }
+                //change prefs back
+                fredP.changeSettings(GeoPapFromDroidDb.whichFredDb, this);
+
             }
 
             /* images */
