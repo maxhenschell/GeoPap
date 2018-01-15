@@ -118,7 +118,6 @@ import java.util.Date;
 import java.util.List;
 
 import eu.geopaparazzi.core.database.DaoFredPts;
-//import eu.geopaparazzi.core.mapview.overlays.FredDataActivity;
 import eu.geopaparazzi.core.mapview.overlays.FredDataDirectActivity;
 import eu.geopaparazzi.core.preferences.FredPreferences;
 import eu.geopaparazzi.library.core.ResourcesManager;
@@ -642,11 +641,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             boolean notesVisible = mPeferences.getBoolean(Constants.PREFS_KEY_NOTES_VISIBLE, true);
             boolean fredPtsVisible = mPeferences.getBoolean(Constants.PREFS_KEY_FRED_POINTS_VISIBLE,true);
 
-            /* fred points (obs points, plots, zool or bot points,imap observations) */
-            // TODO: DaoFredPts.java would need to be rewritten in order to draw different symbols for different survey types
-
-
-
             if(fredPtsVisible) {
 
                 String[] prefGroups = new String[]{"Fred-Ecology", "Fred-Bot_Zool"};
@@ -668,7 +662,9 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                     if (fredPtOverlaysList != null) {
                         int numPts = fredPtOverlaysList.size();
                         if (numPts == 0) {
-                            GPDialogs.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
+                            //Toast activates when points present in only one of ecol or bot-zool
+                            // not necessary any more?
+                            //GPDialogs.toast(this, "no Fred points to display", Toast.LENGTH_SHORT);
                         } else {
                             mDataOverlay.addItems(fredPtOverlaysList);
                         }
@@ -676,7 +672,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 }
                 //change prefs back
                 fredP.changeSettings(GeoPapFromDroidDb.whichFredDb, this);
-
             }
 
             /* images */
