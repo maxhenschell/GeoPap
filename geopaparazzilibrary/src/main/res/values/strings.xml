@@ -107,6 +107,8 @@
     <string name="set_properties">Set properties</string>
     <string name="set_dash">Set Dash</string>
     <string name="unauthorized_api_key">Unauthorized access. Check your API-key.</string>
+    <string name="sd_card_foldername">External SD Card</string>
+    <string name="internal_card_foldername">Internal Storage</string>
 
     <string name="fill_and_stroke_color_title">Fill and Stroke color</string>
     <string name="fill_color_title">Fill color</string>
@@ -147,4 +149,9 @@
     <string name="osmbonuspack.format_minutes">%smin</string>
     <string name="osmbonuspack.format_seconds">%ssec</string>
     <string name="first_camera_open_warning">IMPORTANT README: If you experience crashes of the app while taking pictures try to lower the resolution of your camera in the settings.\n\nIt is most probably bound to high memory consumption while processing the image for insertion into the database.\n\nIn the meanwhile we are looking for a viable solution.</string>
+    <string name="gps_status_unknown">GPS status unknown</string>
+    <string name="gps_status_off">GPS switched off</string>
+    <string name="gps_status_notregistered">GPS on but not registered to updates</string>
+    <string name="gps_status_no_fix">GPS registered to updates but no fix</string>
+    <string name="gps_status_fix">GPS has fix</string>
 </resources>
