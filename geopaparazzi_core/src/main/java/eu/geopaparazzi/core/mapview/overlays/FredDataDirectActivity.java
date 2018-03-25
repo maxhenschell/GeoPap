@@ -588,7 +588,7 @@ public class FredDataDirectActivity extends Activity {
                                               String colTown, String colQuad, double ddLat, double ddLon) throws Exception {
 
         String dbDir = "/storage/emulated/0/geopaparazzi";
-        File spatialDbFile = new File(dbDir, "towncountyquad.sqlite");
+        File spatialDbFile = new File(dbDir, "towncountyquadgrid.sqlite");
 
         String cty = "none";
         String twn = "none";

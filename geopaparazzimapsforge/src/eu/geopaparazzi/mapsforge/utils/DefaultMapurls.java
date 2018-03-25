@@ -67,7 +67,7 @@ public class DefaultMapurls {
 
     public enum Sqlitefiles {
         /** */
-        towncountyquad(R.raw.towncountyquad);
+        towncountyquadgrid(R.raw.towncountyquadgrid);
 
         private int resourceId;
 
