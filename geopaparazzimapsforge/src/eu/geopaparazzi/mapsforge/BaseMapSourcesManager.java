@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.mapsforge.android.maps.MapView;
@@ -90,7 +91,7 @@ public enum BaseMapSourcesManager {
              * if they do not exist add two mapurl based mapnik and opencycle
              * tile sources as default ones. They will automatically
              * be backed into a mbtiles db.
-            */
+             */
             File applicationSupporterDir = ResourcesManager.getInstance(gpApplication).getApplicationSupporterDir();
             mMapnikFile = new File(applicationSupporterDir, DefaultMapurls.Mapurls.mapnik.toString() + DefaultMapurls.MAPURL_EXTENSION);
             DefaultMapurls.checkAllSourcesExistence(gpApplication, applicationSupporterDir);
@@ -125,6 +126,7 @@ public enum BaseMapSourcesManager {
                     }
                 }
             } else {
+
                 for (BaseMap baseMap : baseMaps) {
                     if (baseMap.databasePath.equals(selectedTableDatabasePath)) {
                         selectedBaseMapTable = mBaseMaps2TablesMap.get(baseMap);
@@ -149,10 +151,10 @@ public enum BaseMapSourcesManager {
             if (mBaseMaps == null || mReReadBasemaps) {
                 mBaseMaps = getBaseMapsFromPreferences();
 
-                if (mBaseMaps.size() == 0) {
-                    addBaseMapsFromFile(mMapnikFile);
-                }
                 mReReadBasemaps = false;
+            }
+            if (mBaseMaps.size() == 0) {
+                addBaseMapsFromFile(mMapnikFile);
             }
             return mBaseMaps;
         } catch (java.lang.Exception e) {
@@ -190,6 +192,12 @@ public enum BaseMapSourcesManager {
                 BaseMap tmpBaseMap = table2BaseMap(table);
                 if (!mBaseMaps2TablesMap.containsKey(tmpBaseMap))
                     mBaseMaps2TablesMap.put(tmpBaseMap, table);
+            }
+        }
+
+        if (ProfilesHandler.INSTANCE.getActiveProfile() == null) {
+            if ((selectedTableDatabasePath == null || selectedTableDatabasePath.length() == 0 || !new File(selectedTableDatabasePath).exists()) && baseMaps.size() > 0) {
+                setSelectedBaseMap(baseMaps.get(0));
             }
         }
         return baseMaps;
@@ -238,13 +246,23 @@ public enum BaseMapSourcesManager {
         }
     }
 
+    public void removeAllBaseMaps() throws JSONException {
+        try {
+            mBaseMaps.clear();
+            mBaseMaps2TablesMap.clear();
+            saveBaseMapsToPreferences(mBaseMaps);
+        } catch (java.lang.Exception e) {
+            GPLog.error(this, "Unable to remove all basemaps.", e);
+        }
+    }
+
     @NonNull
     private List<AbstractSpatialTable> collectTablesFromFile(File file) throws IOException, Exception {
 //        GPLog.addLogEntry(this, "Processing file: " + file);
         List<AbstractSpatialTable> collectedTables = new ArrayList<>();
-            /*
-             * add MAPURL TABLES
-             */
+        /*
+         * add MAPURL TABLES
+         */
         try {
             CustomTileDatabaseHandler customTileDatabaseHandler = CustomTileDatabaseHandler.getHandlerForFile(file);
             if (customTileDatabaseHandler != null) {
@@ -348,7 +366,11 @@ public enum BaseMapSourcesManager {
         newBaseMap.parentFolder = databaseFile.getParent();
         newBaseMap.databasePath = table.getDatabasePath();
         newBaseMap.mapType = table.getMapType();
-        newBaseMap.title = table.getTitle();
+        String title = table.getTitle();
+        if (title == null) {
+            title = table.getFileName();
+        }
+        newBaseMap.title = title;
         return newBaseMap;
     }
 
@@ -407,6 +429,10 @@ public enum BaseMapSourcesManager {
      * @throws jsqlite.Exception
      */
     public void setSelectedBaseMap(BaseMap baseMap) throws Exception {
+        if (baseMap == null) {
+            selectedBaseMapTable = null;
+            return;
+        }
         try {
             selectedTileSourceType = baseMap.mapType;
             selectedTableDatabasePath = baseMap.databasePath;

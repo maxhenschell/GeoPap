@@ -14,31 +14,43 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import eu.geopaparazzi.core.GeopaparazziApplication;
 import eu.geopaparazzi.core.R;
 import eu.geopaparazzi.core.profiles.gui.FormTagsFragment;
 import eu.geopaparazzi.core.profiles.gui.NewProfileDialogFragment;
 import eu.geopaparazzi.core.profiles.gui.ProfileSettingsActivity;
+import eu.geopaparazzi.library.GPApplication;
 import eu.geopaparazzi.library.core.ResourcesManager;
 import eu.geopaparazzi.library.core.dialogs.ColorStrokeDialogFragment;
+import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.profiles.Profile;
 import eu.geopaparazzi.library.profiles.ProfilesHandler;
+import eu.geopaparazzi.library.profiles.objects.ProfileBasemaps;
 import eu.geopaparazzi.library.style.ColorStrokeObject;
 import eu.geopaparazzi.library.style.ColorUtilities;
 import eu.geopaparazzi.library.util.FileUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.TimeUtilities;
+import eu.geopaparazzi.spatialite.database.spatial.SpatialiteSourcesManager;
+import eu.geopaparazzi.library.core.maps.BaseMap;
+import eu.geopaparazzi.mapsforge.BaseMapSourcesManager;
+import eu.geopaparazzi.library.util.PositionUtilities;
+import jsqlite.Exception;
 
 public class ProfilesActivity extends AppCompatActivity implements NewProfileDialogFragment.INewProfileCreatedListener, ColorStrokeDialogFragment.IColorStrokePropertiesChangeListener {
 
@@ -51,6 +63,7 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
     private List<Profile> profileList = new ArrayList<>();
     private CardView currentColorCardView;
     private Profile currentProfile;
+    private Profile previousActiveProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +87,7 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
             }
         });
 
+        previousActiveProfile = ProfilesHandler.INSTANCE.getActiveProfile();
     }
 
 
@@ -96,6 +110,40 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
 
         if (profileList != null) {
             saveProfiles();
+            try {
+                ProfilesHandler.INSTANCE.checkActiveProfile(getContentResolver());
+                Profile activeProfile = ProfilesHandler.INSTANCE.getActiveProfile();
+                if (activeProfile != null) {
+                    if (previousActiveProfile == null || !previousActiveProfile.name.equals(activeProfile.name)) {
+                        if (activeProfile.basemapsList.size() > 0) {
+                            try {
+                                GPApplication gpApplication = GPApplication.getInstance();
+                                ResourcesManager resourcesManager = ResourcesManager.getInstance(gpApplication);
+                                File sdcardDir = resourcesManager.getMainStorageDir();
+
+                                for (ProfileBasemaps currentBasemap : activeProfile.basemapsList) {
+                                    String filePath = currentBasemap.getRelativePath();
+                                    File basemap = new File(sdcardDir, filePath);
+                                    BaseMapSourcesManager.INSTANCE.addBaseMapsFromFile(basemap);
+                                }
+                            } catch (Exception e) {
+                                GPDialogs.warningDialog(this, "An error occurred: " + e.getLocalizedMessage(), null);
+                                Log.e("Profiles", "", e);
+                            }
+                        }
+                        String mapViewJson = activeProfile.mapView;
+                        String[] coordinates = mapViewJson.split(",");
+                        if (coordinates.length == 3) {
+                            double lat = Double.parseDouble(coordinates[0]);
+                            double lon = Double.parseDouble(coordinates[1]);
+                            float zoom = Float.parseFloat(coordinates[2]);
+                            PositionUtilities.putMapCenterInPreferences(mPeferences, lon, lat, zoom);
+                        }
+                    }
+                }
+            } catch (java.lang.Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -115,24 +163,56 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
             TextView profileDescriptionText = newProjectCardView.findViewById(R.id.profileDescriptionText);
             profileDescriptionText.setText(profile.description);
 
+            final Switch activeSwitch = newProjectCardView.findViewById(R.id.activeSwitch);
+            activeSwitch.setChecked(profile.active);
+            activeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    profile.active = isChecked;
+
+                    for (int i = 0; i < profileList.size(); i++) {
+                        Profile tmpProfile = profileList.get(i);
+                        if (profile != tmpProfile) {
+                            tmpProfile.active = false;
+                        }
+                    }
+                    if (profile.active) {
+                        activeSwitch.setText(R.string.profiles_deactivate_profile);
+                    } else {
+                        activeSwitch.setText(R.string.profiles_activate_profile);
+                    }
+                    try {
+                        BaseMapSourcesManager.INSTANCE.setSelectedBaseMap(null);
+                    } catch (Exception e) {
+                        // can be ignored
+                    }
+                    loadProfiles();
+                }
+            });
+            if (profile.active) {
+                activeSwitch.setText(R.string.profiles_deactivate_profile);
+            } else {
+                activeSwitch.setText(R.string.profiles_activate_profile);
+            }
+
             TextView profilesummaryText = newProjectCardView.findViewById(R.id.profileSummaryText);
             StringBuilder sb = new StringBuilder();
             sb.append("Basemaps: ").append(profile.basemapsList.size()).append("\n");
             sb.append("Spatialite dbs: ").append(profile.spatialiteList.size()).append("\n");
             int formsCount = 0;
-            if (profile.tagsPath != null && profile.tagsPath.length() != 0) {
-                File tagsFile = new File(profile.tagsPath);
+            if (profile.profileTags != null && profile.profileTags.getRelativePath().length() != 0) {
+                File tagsFile = profile.getFile(profile.profileTags.getRelativePath());
                 if (tagsFile.exists()) {
                     try {
                         List<String> sections = FormTagsFragment.getSectionsFromTagsFile(tagsFile);
                         formsCount = sections.size();
-                    } catch (Exception e) {
+                    } catch (java.lang.Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
             sb.append("Forms: ").append(formsCount).append("\n");
-            sb.append("Has project: ").append(profile.projectPath.length() == 0 ? "no" : "yes").append("\n");
+            sb.append("Has project: ").append(profile.profileProject == null ? "no" : "yes").append("\n");
             profilesummaryText.setText(sb.toString());
 
             ImageButton settingsButton = newProjectCardView.findViewById(R.id.settingsButton);
@@ -238,28 +318,26 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
     private void importProfiles() {
         try {
             ResourcesManager resourcesManager = ResourcesManager.getInstance(this);
-            File sdcardDir = resourcesManager.getMainStorageDir();
             File applicationSupporterDir = resourcesManager.getApplicationSupporterDir();
             File inputFile = new File(applicationSupporterDir, PROFILES_CONFIG_JSON);
             if (inputFile.exists()) {
                 String profilesJson = FileUtilities.readfile(inputFile);
-                List<Profile> importedProfiles = ProfilesHandler.INSTANCE.getProfilesFromJson(profilesJson);
+                List<Profile> importedProfiles = ProfilesHandler.INSTANCE.getProfilesFromJson(profilesJson, false);
 
-                // substitute sdcard. In case it was exported from another device
                 for (Profile profile : importedProfiles) {
-                    profile.correctPaths(sdcardDir.getAbsolutePath());
+                    if (!profileList.contains(profile)) {
+                        profileList.add(profile);
+                    }
                 }
 
-
-                profileList.addAll(importedProfiles);
                 saveProfiles();
                 loadProfiles();
 
                 GPDialogs.quickInfo(profilesContainer, "Profiles properly imported.");
             } else {
-                GPDialogs.warningDialog(this, "No profiles file exist in the path: " + inputFile.getAbsolutePath(), null);
+                GPDialogs.warningDialog(this, "No profiles file exist in the relativePath: " + inputFile.getAbsolutePath(), null);
             }
-        } catch (Exception e) {
+        } catch (java.lang.Exception e) {
             GPDialogs.warningDialog(this, "An error occurred: " + e.getLocalizedMessage(), null);
             Log.e("GEOS2GO", "", e);
         }
@@ -273,9 +351,9 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
             String jsonFromProfiles = ProfilesHandler.INSTANCE.getJsonFromProfilesList(profileList, true);
             FileUtilities.writefile(jsonFromProfiles, outFile);
             GPDialogs.quickInfo(profilesContainer, "Profiles exported to: " + outFile);
-        } catch (Exception e) {
+        } catch (java.lang.Exception e) {
             GPDialogs.warningDialog(this, "An error occurred: " + e.getLocalizedMessage(), null);
-            Log.e("GEOS2GO", "", e);
+            GPLog.error(this, null, e);
         }
     }
 
@@ -286,9 +364,9 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
         p.description = description;
         p.creationdate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date());
         try {
-            p.sdcardPath = ResourcesManager.getInstance(this).getMainStorageDir().getAbsolutePath();
-        } catch (Exception e) {
-            e.printStackTrace();
+            p.setSdcardPath(ResourcesManager.getInstance(this).getMainStorageDir().getAbsolutePath());
+        } catch (java.lang.Exception e) {
+            GPLog.error(this, null, e);
         }
         profileList.add(p);
         loadProfiles();
@@ -317,4 +395,5 @@ public class ProfilesActivity extends AppCompatActivity implements NewProfileDia
             Log.e("GEOS2GO", "Error saving profiles", e);
         }
     }
+
 }

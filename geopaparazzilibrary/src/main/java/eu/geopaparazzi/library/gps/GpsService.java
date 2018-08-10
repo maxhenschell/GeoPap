@@ -45,11 +45,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import java.util.Date;
+
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
 import eu.geopaparazzi.library.database.IGpsLogDbHelper;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.PositionUtilities;
+import eu.geopaparazzi.library.util.TimeUtilities;
 import eu.geopaparazzi.library.util.debug.TestMock;
 
 import static eu.geopaparazzi.library.util.LibraryConstants.DEFAULT_LOG_WIDTH;
@@ -189,6 +192,33 @@ public class GpsService extends Service implements LocationListener, Listener {
     public static final String CHANNEL_ID = "GeopaparazziGPSServiceChannel";
     private int notificationId = 666;
     private NotificationManager notificationManagerNative;
+    private String title;
+    private String text;
+    private String name;
+    private String description;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            title = "Geopap GPS Service";
+            text = "Geopapaparazzi is making use of the GPS.";
+            name = "Geopap Channel";
+            description = "Geopaparazzi GPS Service Channel";
+//
+//            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+//                    "GPS Information",
+//                    NotificationManager.IMPORTANCE_DEFAULT);
+//
+//            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+//            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                    .setContentTitle(title)
+//                    .setContentText(text).build();
+//
+//            startForeground(notificationId, notification);
+//        }
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -759,8 +789,7 @@ public class GpsService extends Service implements LocationListener, Listener {
             if (notificationManagerNative == null) {
                 // Create the NotificationChannel, but only on API 26+ because
                 // the NotificationChannel class is new and not in the support library
-                CharSequence name = "Geopap Channel";
-                String description = "Geopaparazzi GPS Service Channel";
+
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;
                 NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
                 channel.setDescription(description);
@@ -770,22 +799,29 @@ public class GpsService extends Service implements LocationListener, Listener {
                     notificationManagerNative.createNotificationChannel(channel);
 
                     Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                            .setContentTitle("Geopap GPS Service")
-                            .setContentText("Geopapaparazzi is making use of the GPS.")
+                            .setContentTitle(title)
+                            .setContentText(text)
                             .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
                             .setContentIntent(pendingIntent)
                             .setStyle(messagingStyle)
+                            .setOnlyAlertOnce(true)
+                            .setOngoing(true)
+                            .setWhen(System.currentTimeMillis())
                             .build();
+                    notification.flags |= Notification.FLAG_ONLY_ALERT_ONCE;
 
                     startForeground(notificationId, notification);
                 }
             } else {
                 Notification update = new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setContentTitle("Geopap GPS Service")
-                        .setContentText("Geopapaparazzi is making use of the GPS.")
+                        .setContentTitle(title)
+                        .setContentText(text)
                         .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
                         .setContentIntent(pendingIntent)
                         .setStyle(messagingStyle)
+                        .setOnlyAlertOnce(true)
+                        .setOngoing(true)
+                        .setWhen(System.currentTimeMillis())
                         .build();
                 notificationManagerNative.notify(notificationId, update);
             }
@@ -796,6 +832,7 @@ public class GpsService extends Service implements LocationListener, Listener {
     private StringBuilder getPositionInfo(String message, int status, double lon, double lat, double elev, float accuracy, float speed, float bearing, long time, int maxSatellites, int satCount, int satUsedInFixCount) {
         StringBuilder sb = new StringBuilder();
         GpsServiceStatus statusForCode = GpsServiceStatus.getStatusForCode(status);
+        boolean addInfo = false;
         String gpsStatusReadable = getString(R.string.gps_status_unknown);
         if (statusForCode == GpsServiceStatus.GPS_OFF) {
             gpsStatusReadable = getString(R.string.gps_status_off);
@@ -805,20 +842,32 @@ public class GpsService extends Service implements LocationListener, Listener {
             gpsStatusReadable = getString(R.string.gps_status_no_fix);
         } else if (statusForCode == GpsServiceStatus.GPS_FIX) {
             gpsStatusReadable = getString(R.string.gps_status_fix);
+            addInfo = true;
         }
 
         sb.append(gpsStatusReadable).append("\n");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append(" lon = ").append(lon).append("\n");
-        sb.append(" lat = ").append(lat).append("\n");
-        sb.append(" elev = ").append(elev).append("\n");
-        sb.append(" accuracy = ").append(accuracy).append("\n");
-        sb.append(" speed = ").append(speed).append("\n");
-        sb.append(" bearing = ").append(bearing).append("\n");
-        sb.append(" time = ").append(time).append("\n");
-        sb.append(" current satellites count = ").append(satCount).append("\n");
-        sb.append(" satellites used in fix = ").append(satUsedInFixCount).append("\n");
+        if (addInfo) {
+            sb.append("\n");
+            sb.append("\n");
+            String lonStr = LibraryConstants.COORDINATE_FORMATTER.format(lon);
+            String latStr = LibraryConstants.COORDINATE_FORMATTER.format(lat);
+            sb.append(" lon [deg] = ").append(lonStr).append("\n");
+            sb.append(" lat [deg] = ").append(latStr).append("\n");
+            sb.append(" elev [m] = ").append((int) elev).append("\n");
+            String roundedAccuracy;
+            if (accuracy > 1) {
+                roundedAccuracy = String.valueOf(Math.round(accuracy));
+            } else {
+                roundedAccuracy = LibraryConstants.DECIMAL_FORMATTER_1.format(accuracy);
+            }
+            String timeStr = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(time));
+            sb.append(" accuracy [m] = ").append(roundedAccuracy).append("\n");
+            sb.append(" speed [m/s] = ").append(speed).append("\n");
+            sb.append(" bearing [deg] = ").append(bearing).append("\n");
+            sb.append(" time = ").append(timeStr).append("\n");
+            sb.append(" current satellites count = ").append(satCount).append("\n");
+            sb.append(" satellites used in fix = ").append(satUsedInFixCount).append("\n");
+        }
         return sb;
     }
 

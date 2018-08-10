@@ -15,7 +15,7 @@ import eu.geopaparazzi.core.R;
 import eu.geopaparazzi.library.profiles.Profile;
 
 
-public class ProfileInfoFragment extends Fragment implements TextWatcher, CompoundButton.OnCheckedChangeListener {
+public class ProfileInfoFragment extends Fragment implements TextWatcher {
     private static final String ARG_PROFILE = "profile";
     private EditText nameEdittext;
     private EditText descriptionEdittext;
@@ -43,27 +43,17 @@ public class ProfileInfoFragment extends Fragment implements TextWatcher, Compou
 
         Profile profile = getArguments().getParcelable(ARG_PROFILE);
 
-        nameEdittext = (EditText) rootView.findViewById(R.id.profileNameEditText);
+        nameEdittext = rootView.findViewById(R.id.profileNameEditText);
         nameEdittext.setText(profile.name);
         nameEdittext.addTextChangedListener(this);
 
-        descriptionEdittext = (EditText) rootView.findViewById(R.id.profileDescriptionEditText);
+        descriptionEdittext = rootView.findViewById(R.id.profileDescriptionEditText);
         descriptionEdittext.setText(profile.description);
         descriptionEdittext.addTextChangedListener(this);
 
-        creationdateEdittext = (EditText) rootView.findViewById(R.id.profileCreationdateEditText);
+        creationdateEdittext = rootView.findViewById(R.id.profileCreationdateEditText);
         creationdateEdittext.setText(profile.creationdate);
         creationdateEdittext.addTextChangedListener(this);
-
-        final Switch activeSwitch = (Switch) rootView.findViewById(R.id.activeSwitch);
-        activeSwitch.setChecked(profile.active);
-        activeSwitch.setOnCheckedChangeListener(this);
-        if (profile.active) {
-            activeSwitch.setText(R.string.profiles_deactivate_profile);
-        } else {
-            activeSwitch.setText(R.string.profiles_activate_profile);
-        }
-
 
         return rootView;
     }
@@ -84,9 +74,4 @@ public class ProfileInfoFragment extends Fragment implements TextWatcher, Compou
         activity.onProfileInfoChanged(nameEdittext.getText().toString(), descriptionEdittext.getText().toString());
     }
 
-    @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        ProfileSettingsActivity activity = (ProfileSettingsActivity) getActivity();
-        activity.onActiveProfileChanged(isChecked);
-    }
 }

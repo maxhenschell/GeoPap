@@ -45,7 +45,7 @@
                     style="@style/GPTextViewStyle"
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="5dp"
-                    android:text="map center"
+                    android:text="@string/map_center"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <Switch
@@ -54,6 +54,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:gravity="center_horizontal"
+                    android:scaleX="1"
+                    android:scaleY="1"
                     android:text="" />
 
                 <TextView
@@ -61,7 +63,7 @@
                     style="@style/GPTextViewStyle"
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="5dp"
-                    android:text="gps position"
+                    android:text="@string/gps_position"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
             </LinearLayout>
 

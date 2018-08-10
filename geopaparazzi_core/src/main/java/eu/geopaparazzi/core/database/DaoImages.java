@@ -200,7 +200,7 @@ public class DaoImages implements IImagesDbHelper {
             int count = 0;
             for (long id : ids) {
                 if (count > 0) {
-                    imageIdsWhereStr = imageIdsWhereStr + " || ";
+                    imageIdsWhereStr = imageIdsWhereStr + " or ";
                 }
                 imageIdsWhereStr = imageIdsWhereStr + ImageTableFields.COLUMN_ID.getFieldName() + " = " + id;
                 count++;
@@ -213,7 +213,7 @@ public class DaoImages implements IImagesDbHelper {
                 long imageDataId = c.getLong(0);
                 c.moveToNext();
                 if (count > 0) {
-                    imageDataIdsWhereStr = imageDataIdsWhereStr + " || ";
+                    imageDataIdsWhereStr = imageDataIdsWhereStr + " or ";
                 }
                 imageDataIdsWhereStr = imageDataIdsWhereStr + ImageDataTableFields.COLUMN_ID.getFieldName() + " = " + imageDataId;
                 count++;
@@ -224,7 +224,7 @@ public class DaoImages implements IImagesDbHelper {
 
             // delete images
             String query = "delete from " + TABLE_IMAGES + " where " + imageIdsWhereStr;
-            SQLiteStatement deleteStmt = sqliteDatabase.compileStatement(query);
+                SQLiteStatement deleteStmt = sqliteDatabase.compileStatement(query);
             deleteStmt.execute();
 
             // delete images data
@@ -482,7 +482,8 @@ public class DaoImages implements IImagesDbHelper {
                 imageData = c.getBlob(0);
             }
         } catch (Exception ex) {
-            if (ex.getLocalizedMessage().contains("Couldn't read row")) {
+//            if (ex.getLocalizedMessage().contains("Couldn't read row")) {
+              try{
                 String sizeQuery = "SELECT " + ImageDataTableFields.COLUMN_ID.getFieldName() +//
                         ", length(" + ImageDataTableFields.COLUMN_IMAGE.getFieldName() + ") " +//
                         "FROM " + TABLE_IMAGE_DATA +//
@@ -521,8 +522,9 @@ public class DaoImages implements IImagesDbHelper {
                     imageData = bout.toByteArray();
                     bout.close();
                 }
-            } else {
-                GPLog.error(this, null, ex);
+            } catch (Exception e){
+                  Throwable throwable = e.initCause(ex);
+                  GPLog.error(this, null, throwable);
             }
 
         } finally {

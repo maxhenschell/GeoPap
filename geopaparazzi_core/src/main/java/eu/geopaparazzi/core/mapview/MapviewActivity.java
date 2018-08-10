@@ -481,6 +481,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
 
         GpsServiceUtilities.registerForBroadcasts(this, gpsServiceBroadcastReceiver);
         GpsServiceUtilities.triggerBroadcast(this);
+
     }
 
     private void setCenterCross() {
@@ -618,10 +619,6 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
                 mapGenerator.cleanup();
             }
         }
-
-        created = false;
-        GPLog.addLogEntry(this, "Destroying MapsActivity.. MapsActivity.created =  " + created); //$NON-NLS-1$
-
         super.onDestroy();
     }
 
@@ -1547,6 +1544,7 @@ public class MapviewActivity extends MapActivity implements OnTouchListener, OnC
             return true;
         } else if (i == R.id.addnotebytagbutton) {
             Intent intent = new Intent(MapviewActivity.this, NotesListActivity.class);
+            intent.putExtra(LibraryConstants.PREFS_KEY_MAP_ZOOM, true);
             startActivityForResult(intent, ZOOM_RETURN_CODE);
 
         } else if (i == R.id.addbookmarkbutton) {

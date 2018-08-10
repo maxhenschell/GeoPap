@@ -41,6 +41,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -49,6 +50,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import eu.geopaparazzi.core.R;
+import eu.geopaparazzi.core.database.DaoImages;
+import eu.geopaparazzi.core.database.DaoNotes;
+import eu.geopaparazzi.core.database.objects.Note;
 import eu.geopaparazzi.core.ui.dialogs.AddNoteLayoutDialogFragment;
 import eu.geopaparazzi.library.camera.CameraNoteActivity;
 import eu.geopaparazzi.library.core.ResourcesManager;
@@ -60,17 +65,14 @@ import eu.geopaparazzi.library.forms.TagsManager;
 import eu.geopaparazzi.library.gps.GpsServiceStatus;
 import eu.geopaparazzi.library.gps.GpsServiceUtilities;
 import eu.geopaparazzi.library.images.ImageUtilities;
-import eu.geopaparazzi.library.sketch.SketchUtilities;
 import eu.geopaparazzi.library.profiles.ProfilesHandler;
+import eu.geopaparazzi.library.sketch.SketchUtilities;
 import eu.geopaparazzi.library.style.ColorUtilities;
 import eu.geopaparazzi.library.util.Compat;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.PositionUtilities;
 import eu.geopaparazzi.library.util.TimeUtilities;
-import eu.geopaparazzi.core.R;
-import eu.geopaparazzi.core.database.DaoImages;
-import eu.geopaparazzi.core.database.DaoNotes;
 
 /**
  * Map tags adding activity.
@@ -79,7 +81,7 @@ import eu.geopaparazzi.core.database.DaoNotes;
  */
 @SuppressWarnings("nls")
 public class AddNotesActivity extends AppCompatActivity implements NoteDialogFragment.IAddNote, AddNoteLayoutDialogFragment.IAddNotesLayoutChangeListener {
-    private static final String USE_MAPCENTER_POSITION = "USE_MAPCENTER_POSITION";
+
     private static final int CAMERA_RETURN_CODE = 667;
     private static final int FORM_RETURN_CODE = 669;
     private static final int SKETCH_RETURN_CODE = 670;
@@ -129,10 +131,14 @@ public class AddNotesActivity extends AppCompatActivity implements NoteDialogFra
         togglePositionTypeButtonGps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Editor edit = preferences.edit();
-                edit.putBoolean(USE_MAPCENTER_POSITION, !isChecked);
+                edit.putBoolean(FormActivity.USE_MAPCENTER_POSITION, !isChecked);
                 edit.apply();
             }
         });
+
+        textsizeFactor = preferences.getInt(PREFS_KEY_GUITEXTSIZEFACTOR,
+                DEFAULT_GUITEXTSIZEFACTOR);
+        setToggleSize();
 
         double[] mapCenter = PositionUtilities.getMapCenterFromPreferences(preferences, true, true);
         if (mapCenter != null) {
@@ -146,7 +152,7 @@ public class AddNotesActivity extends AppCompatActivity implements NoteDialogFra
                 GpsServiceStatus gpsServiceStatus = GpsServiceUtilities.getGpsServiceStatus(intent);
                 if (gpsServiceStatus == GpsServiceStatus.GPS_FIX) {
                     gpsLocation = GpsServiceUtilities.getPosition(intent);
-                    boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
+                    boolean useMapCenterPosition = preferences.getBoolean(FormActivity.USE_MAPCENTER_POSITION, false);
                     if (useMapCenterPosition) {
                         togglePositionTypeButtonGps.setChecked(false);
                     } else {
@@ -156,7 +162,7 @@ public class AddNotesActivity extends AppCompatActivity implements NoteDialogFra
                     togglePositionTypeButtonGps.setChecked(false);
                     togglePositionTypeButtonGps.setEnabled(false);
                     Editor edit = preferences.edit();
-                    edit.putBoolean(USE_MAPCENTER_POSITION, true);
+                    edit.putBoolean(FormActivity.USE_MAPCENTER_POSITION, true);
                     edit.apply();
                 }
             }
@@ -304,7 +310,7 @@ public class AddNotesActivity extends AppCompatActivity implements NoteDialogFra
 
     private void checkPositionCoordinates() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean useMapCenterPosition = preferences.getBoolean(USE_MAPCENTER_POSITION, false);
+        boolean useMapCenterPosition = preferences.getBoolean(FormActivity.USE_MAPCENTER_POSITION, false);
         if (useMapCenterPosition || gpsLocation == null) {
             latitude = mapCenterLatitude;
             longitude = mapCenterLongitude;
@@ -324,7 +330,8 @@ public class AddNotesActivity extends AppCompatActivity implements NoteDialogFra
                 // this note needs to be removed, since is was created but then
                 // cancel was pressed
                 try {
-                    DaoNotes.deleteNote(noteId);
+                    Note note = DaoNotes.getNoteById(noteId);
+                    DaoNotes.deleteComplexNote(note);
                     return;
                 } catch (IOException e) {
                     GPLog.error(this, null, e);
@@ -411,6 +418,25 @@ public class AddNotesActivity extends AppCompatActivity implements NoteDialogFra
         buttonGridView.setNumColumns(gridColumnCount);
         textsizeFactor = preferences.getInt(PREFS_KEY_GUITEXTSIZEFACTOR,
                 DEFAULT_GUITEXTSIZEFACTOR);
+        setToggleSize();
         buttonGridView.setAdapter(arrayAdapter);
+    }
+
+    private void setToggleSize() {
+        TextView textCenterText;
+        TextView textGpsText;
+
+        int topMargin   = 50 + textsizeFactor * 20;
+        int leftMargin  = 10 + textsizeFactor * 30;
+        int rightMargin = 10 + textsizeFactor * 50;
+
+        textCenterText = findViewById(R.id.centerText);
+        textCenterText.setPadding(0,topMargin,rightMargin,topMargin);  // left,top,right,bottom
+
+        textGpsText = findViewById(R.id.gpsText);
+        textGpsText.setPadding(leftMargin,topMargin,0,topMargin);
+
+        togglePositionTypeButtonGps.setScaleX(textsizeFactor);
+        togglePositionTypeButtonGps.setScaleY(textsizeFactor);
     }
 }

@@ -21,9 +21,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +32,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.geopaparazzi.library.GPApplication;
 import eu.geopaparazzi.library.R;
 import eu.geopaparazzi.library.database.GPLog;
+import eu.geopaparazzi.library.profiles.Profile;
 import eu.geopaparazzi.library.profiles.ProfilesHandler;
 import eu.geopaparazzi.library.util.GPDialogs;
 import eu.geopaparazzi.library.util.LibraryConstants;
 import eu.geopaparazzi.library.util.Utilities;
 
-import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_CUSTOM_EXTERNALSTORAGE;
 import static eu.geopaparazzi.library.util.LibraryConstants.PREFS_KEY_DATABASE_TO_LOAD;
 
 /**
@@ -88,6 +90,7 @@ public class ResourcesManager implements Serializable {
     private File mainStorageDir;
     private List<File> otherStorageDirs = new ArrayList<>();
     private final String packageName;
+    private final String relativeAppDataFolder;
 
     /**
      * @param useInternalMemory if <code>true</code>, internal memory is used.
@@ -134,6 +137,7 @@ public class ResourcesManager implements Serializable {
     }
 
     private ResourcesManager(Context context) throws Exception {
+        if (context == null) context = GPApplication.getInstance();
         Context appContext = context.getApplicationContext();
         ApplicationInfo appInfo = appContext.getApplicationInfo();
 
@@ -144,6 +148,7 @@ public class ResourcesManager implements Serializable {
             applicationLabel = packageName.substring(lastDot + 1, packageName.length());
         }
         applicationLabel = applicationLabel.toLowerCase();
+        relativeAppDataFolder = "/Android/data/" + packageName + "/files";
 
         /*
          * take care to create all the folders needed
@@ -166,21 +171,16 @@ public class ResourcesManager implements Serializable {
 
         File[] extDirs = context.getExternalFilesDirs(null);
         File[] extRootDirs = new File[extDirs.length];
-        // remove the portion of the path that getExternalFilesDirs returns
+        // remove the portion of the relativePath that getExternalFilesDirs returns
         // that we don't want
         for (int i = 0; i < extDirs.length; i++) {
-            if (extDirs[i] == null){
-                continue;
-            } else {
-                String regex = "/Android/data/" + getPackageName() + "/files";
-                extRootDirs[i] = new File(extDirs[i].toString().replaceAll(regex, ""));
+            if (extDirs[i] != null) {
+                extRootDirs[i] = new File(extDirs[i].toString().replaceAll(relativeAppDataFolder, ""));
             }
         }
 
         for (File file : extRootDirs) {
-            if (file == null){
-                continue;
-            } else if (file.exists()) {
+            if (file != null && file.exists()) {
                 if (file.canWrite() & mainStorageDir == null) {
                     mainStorageDir = file;
                 } else if (file.canRead()) {
@@ -192,11 +192,11 @@ public class ResourcesManager implements Serializable {
         if (mainStorageDir != null) {
             applicationSupportFolder = new File(mainStorageDir, applicationLabel);
         } else if (useInternalMemory) {
-                /*
-                 * no external storage available:
-                 * - use internal memory
-                 * - set sdcard for maps inside the space
-                 */
+            /*
+             * no external storage available:
+             * - use internal memory
+             * - set sdcard for maps inside the space
+             */
             applicationSupportFolder = appContext.getDir(applicationLabel, Context.MODE_PRIVATE);
             mainStorageDir = applicationSupportFolder;
         } else {
@@ -223,15 +223,7 @@ public class ResourcesManager implements Serializable {
         /*
          * get the database file
          */
-        String databasePath = null;
-        if (ProfilesHandler.INSTANCE.getActiveProfile() != null) {
-            String projectPath = ProfilesHandler.INSTANCE.getActiveProfile().projectPath;
-            if (projectPath != null && new File(projectPath).exists()) {
-                databasePath = projectPath;
-            }
-        }
-        if (databasePath == null)
-            databasePath = preferences.getString(PREFS_KEY_DATABASE_TO_LOAD, "asdasdpoipoi");
+        String databasePath = preferences.getString(PREFS_KEY_DATABASE_TO_LOAD, "asdasdpoipoi");
         databaseFile = new File(databasePath);
         if (databaseFile.getParentFile() == null || !databaseFile.getParentFile().exists()) {
             // fallback on the default
@@ -272,6 +264,21 @@ public class ResourcesManager implements Serializable {
     }
 
     /**
+     * Get the file of the export folder.
+     *
+     * @return the export folder.
+     */
+    public File getApplicationExportDir() {
+        File exportFolder = new File(applicationSupportFolder, "export");
+        if (!exportFolder.exists()) {
+            if (!exportFolder.mkdir()) {
+                return applicationSupportFolder;
+            }
+        }
+        return exportFolder;
+    }
+
+    /**
      * Get the main writable storage dir.
      *
      * @return the writable storage dir.
@@ -289,15 +296,23 @@ public class ResourcesManager implements Serializable {
         return otherStorageDirs;
     }
 
+    public String getRelativeAppDataFolder() {
+        return relativeAppDataFolder;
+    }
+
     /**
      * Get the file to a default database location for the app.
-     * <p>
-     * <p>This path is generated with default values and can be
-     * exploited. It doesn't assure that in the location there really is a db.
      *
      * @return the {@link File} to the database.
      */
     public File getDatabaseFile() {
+        Profile activeProfile = ProfilesHandler.INSTANCE.getActiveProfile();
+        if (activeProfile != null && activeProfile.profileProject != null) {
+            String projectPath = activeProfile.profileProject.getRelativePath();
+            if (projectPath != null && activeProfile.getFile(projectPath).exists()) {
+                return activeProfile.getFile(projectPath);
+            }
+        }
         return databaseFile;
     }
 

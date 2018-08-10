@@ -76,8 +76,8 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
-
-
+        <service android:name=".network.download.DownloadFileIntentService"/>
+        <service android:name=".network.upload.UploadFileIntentService"/>
 
     </application>
 

@@ -16,21 +16,30 @@ import android.view.WindowManager;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import eu.geopaparazzi.core.GeopaparazziApplication;
 import eu.geopaparazzi.core.R;
 import eu.geopaparazzi.core.profiles.ProfilesActivity;
 import eu.geopaparazzi.library.core.ResourcesManager;
+import eu.geopaparazzi.library.forms.TagsManager;
 import eu.geopaparazzi.library.profiles.Profile;
+import eu.geopaparazzi.library.profiles.objects.ProfileBasemaps;
+import eu.geopaparazzi.library.profiles.objects.ProfileProjects;
+import eu.geopaparazzi.library.profiles.objects.ProfileSpatialitemaps;
+import eu.geopaparazzi.library.profiles.objects.ProfileTags;
 import eu.geopaparazzi.library.profiles.ProfilesHandler;
 import eu.geopaparazzi.library.style.ColorUtilities;
 import eu.geopaparazzi.library.util.FileUtilities;
 import eu.geopaparazzi.library.util.GPDialogs;
+import eu.geopaparazzi.mapsforge.BaseMapSourcesManager;
 import gov.nasa.worldwind.AddWMSDialog;
 import gov.nasa.worldwind.ogc.OGCBoundingBox;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilityInformation;
 import gov.nasa.worldwind.ogc.wms.WMSLayerCapabilities;
+import jsqlite.Exception;
 
 public class ProfileSettingsActivity extends AppCompatActivity implements AddWMSDialog.OnWMSLayersAddedListener {
 
@@ -73,7 +82,7 @@ public class ProfileSettingsActivity extends AppCompatActivity implements AddWMS
         mSelectedProfileIndex = mProfileList.indexOf(selectedProfile);
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Create the adapter that will return a fragment for each of the three
@@ -81,13 +90,13 @@ public class ProfileSettingsActivity extends AppCompatActivity implements AddWMS
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         int color = ColorUtilities.toColor(selectedProfile.color);
         mViewPager.setBackgroundColor(color);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
     }
@@ -112,34 +121,55 @@ public class ProfileSettingsActivity extends AppCompatActivity implements AddWMS
         profile.description = description;
     }
 
-    public void onFormPathChanged(String path) {
+    public void onFormPathChanged(String relativePath) {
         Profile profile = mProfileList.get(mSelectedProfileIndex);
-        profile.tagsPath = path;
+        if (profile.profileTags == null) {
+            profile.profileTags = new ProfileTags();
+        }
+        profile.profileTags.setRelativePath(relativePath);
+        TagsManager.reset();
     }
 
-    public void onProjectPathChanged(String path) {
+    public void onProjectPathChanged(String relatvePath) {
         Profile profile = mProfileList.get(mSelectedProfileIndex);
-        profile.projectPath = path;
+        if (relatvePath == null || relatvePath.length() == 0) {
+            profile.profileProject = null;
+        } else {
+            if (profile.profileProject == null) {
+                profile.profileProject = new ProfileProjects();
+            }
+            profile.profileProject.setRelativePath(relatvePath);
+        }
     }
 
-    public void onBasemapAdded(String path) {
+    public void onBasemapAdded(String relativePath) {
         Profile profile = mProfileList.get(mSelectedProfileIndex);
-        profile.basemapsList.add(path);
+        ProfileBasemaps basemap = new ProfileBasemaps();
+        basemap.setRelativePath(relativePath);
+        if (!profile.basemapsList.contains(basemap))
+            profile.basemapsList.add(basemap);
     }
 
-    public void onBasemapRemoved(String path) {
+    public void onBasemapRemoved(String relativePath) {
         Profile profile = mProfileList.get(mSelectedProfileIndex);
-        profile.basemapsList.remove(path);
+        ProfileBasemaps basemap = new ProfileBasemaps();
+        basemap.setRelativePath(relativePath);
+        profile.basemapsList.remove(basemap);
     }
 
-    public void onSpatialitedbRemoved(String path) {
+    public void onSpatialitedbAdded(String relativePath) {
         Profile profile = mProfileList.get(mSelectedProfileIndex);
-        profile.spatialiteList.remove(path);
+        ProfileSpatialitemaps spatialitemap = new ProfileSpatialitemaps();
+        spatialitemap.setRelativePath(relativePath);
+        if (!profile.spatialiteList.contains(spatialitemap))
+            profile.spatialiteList.add(spatialitemap);
     }
 
-    public void onSpatialitedbAdded(String path) {
+    public void onSpatialitedbRemoved(String relativePath) {
         Profile profile = mProfileList.get(mSelectedProfileIndex);
-        profile.spatialiteList.add(path);
+        ProfileSpatialitemaps spatialitemap = new ProfileSpatialitemaps();
+        spatialitemap.setRelativePath(relativePath);
+        profile.spatialiteList.remove(spatialitemap);
     }
 
     @Override
@@ -234,6 +264,8 @@ public class ProfileSettingsActivity extends AppCompatActivity implements AddWMS
                 GPDialogs.quickInfo(mViewPager, "WMS mapurl file successfully added to the basemaps and saved in: " + newMapurl.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
+            } catch (java.lang.Exception e) {
+                e.printStackTrace();
             }
 
             break;
@@ -245,18 +277,6 @@ public class ProfileSettingsActivity extends AppCompatActivity implements AddWMS
     public Profile getSelectedProfile() {
         return mProfileList.get(mSelectedProfileIndex);
     }
-
-    public void onActiveProfileChanged(boolean isChecked) {
-        for (int i = 0; i < mProfileList.size(); i++) {
-            Profile profile = mProfileList.get(i);
-            if (i == mSelectedProfileIndex && isChecked) {
-                profile.active = true;
-            } else {
-                profile.active = false;
-            }
-        }
-    }
-
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
