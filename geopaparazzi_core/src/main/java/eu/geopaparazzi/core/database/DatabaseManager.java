@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import eu.geopaparazzi.library.core.ResourcesManager;
 import eu.geopaparazzi.library.database.GPLog;
+import eu.geopaparazzi.library.util.Utilities;
 import eu.geopaparazzi.library.util.debug.Debug;
 
 /**
@@ -166,7 +167,8 @@ public class DatabaseManager {
             // CREATE TABLES
             GPLog.createTables(db);
             DaoMetadata.createTables();
-            DaoMetadata.initProjectMetadata(null, null, null, null);
+            String uniqueDeviceId = Utilities.getUniqueDeviceId(context);
+            DaoMetadata.initProjectMetadata(null, null, null, null, uniqueDeviceId);
             DaoNotes.createTables();
             DaoGpsLog.createTables();
             DaoBookmarks.createTables();
