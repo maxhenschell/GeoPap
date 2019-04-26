@@ -22,6 +22,8 @@ import static eu.geopaparazzi.library.util.LibraryConstants.GPS_AVERAGING_SAMPLE
 
 import android.Manifest;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +33,7 @@ import android.content.pm.PackageManager;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.app.NotificationManager;
 import android.support.v4.app.ActivityCompat;
@@ -115,6 +118,14 @@ public class GpsAvgService extends IntentService {
     private NotificationCompat.Builder nBuilder;
     private int numberSamplesUsedInAvg = -1;
 
+    public static final String CHANNEL_ID = "GeopaparazziGPSServiceChannel";
+    private int notificationId = 6789;
+    private NotificationManager notificationManagerNative;
+    private String title;
+    private String text;
+    private String name;
+    private String description;
+
     //public constructor
     public GpsAvgService() {
         super("GpsAvgService");
@@ -137,6 +148,11 @@ public class GpsAvgService extends IntentService {
         IntentFilter filter = new IntentFilter(GpsAvgService.STOP_AVERAGING_NOW);
         registerReceiver(cReceiver, filter);
         //GPLog.addLogEntry("GPSAVG","cancel receiver registered");
+
+        title = "Geopap GPS Average Service";
+        text = "Geopapaparazzi is position averaging.";
+        name = "Geopap Avg Channel";
+        description = "Geopaparazzi GPS Avg Service Channel";
     }
 
 
@@ -282,7 +298,7 @@ public class GpsAvgService extends IntentService {
                 //if signal is lost, wait.
                 // this actually happens when gps is turned off, but may not (does not?) happen when signal is lost but gps remains on
                 //todo need a way to really check if signal is lost
-                GPLog.addLogEntry("GPSAVG", "gps signal lost i= " + i);
+                //GPLog.addLogEntry("GPSAVG", "gps signal lost i= " + i);
                 hasSignal = false;
                 i--;
                 signalLostSeconds++;
@@ -323,34 +339,87 @@ public class GpsAvgService extends IntentService {
      * @param noSignalDuration the total time without GPS signal, seconds
      */
     public void notifyAboutAveraging(PendingIntent pendingIntent, NotificationManager notifyMgr, Boolean haveSignal, Integer sampsAcquired, Integer sampsTargeted, Integer noSignalDuration) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ". Tap to cancel.";
+            if (notificationManagerNative == null) {
+                // Create the NotificationChannel, but only on API 26+ because
+                // the NotificationChannel class is new and not in the support library
 
-        if (nBuilder == null) {
-            String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ".";
-            nBuilder =  new NotificationCompat.Builder(this)
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+                channel.setDescription(description);
+                // Register the channel with the system
+                notificationManagerNative = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                if (notificationManagerNative != null) {
+                    notificationManagerNative.createNotificationChannel(channel);
+
+                    Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                            .setContentTitle("GPS Position Averaging")
+                            .setContentText(msg)
+                            .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
+                            .setContentIntent(pendingIntent)
+                            .setOnlyAlertOnce(true)
+                            .setWhen(System.currentTimeMillis())
+                            .setProgress(sampsTargeted, sampsAcquired, false)
+                            .build();
+                    notification.flags |= Notification.FLAG_ONLY_ALERT_ONCE;
+
+                    startForeground(notificationId, notification);
+                }
+            } else {
+                if (haveSignal) {
+                    Notification update = new NotificationCompat.Builder(this, CHANNEL_ID)
+                            .setContentTitle("GPS Position Averaging")
+                            .setContentText(msg)
+                            .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
+                            .setContentIntent(pendingIntent)
+                            .setOnlyAlertOnce(true)
+                            .setWhen(System.currentTimeMillis())
+                            .setProgress(sampsTargeted, sampsAcquired, false)
+                            .build();
+
+                    notificationManagerNative.notify(notificationId, update);
+                } else {
+                    msg = String.valueOf(sampsAcquired) + " points sampled. GPS signal lost for " + noSignalDuration + ", waiting. Tap to stop NOW.";
+                    Notification update = new NotificationCompat.Builder(this, CHANNEL_ID)
+                            .setContentTitle("GPS Position Averaging")
+                            .setContentText(msg)
+                            .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
+                            .setContentIntent(pendingIntent)
+                            .setOnlyAlertOnce(true)
+                            .setWhen(System.currentTimeMillis())
+                            .setProgress(sampsTargeted, sampsAcquired, false)
+                            .build();
+
+                    notificationManagerNative.notify(notificationId, update);
+                }
+            }
+        } else {
+                if (nBuilder == null) {
+                    String msg = "Averaging " + String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + ". Tap to cancel.";
+                    nBuilder = new NotificationCompat.Builder(this)
                             .setSmallIcon(R.drawable.map_marker_circle)
                             .setContentTitle("GPS Position Averaging")
                             .setContentText(msg)
                             .setContentIntent(pendingIntent)
-                            //.addAction(R.drawable.goto_position,"Finish now", stopAvgPendingIntent) //button capabilities only for android 5?
-                            .setProgress(sampsTargeted,sampsAcquired,false);
+                            .setProgress(sampsTargeted, sampsAcquired, false);
 
-        } else {
-            if (haveSignal){
-                String msg = String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + " points sampled. Press to stop NOW.";
-                nBuilder.setContentText(msg)
-                        .setProgress(sampsTargeted,sampsAcquired,false);
-            } else {
-                String msg = String.valueOf(sampsAcquired) + " points sampled. GPS signal lost for " + noSignalDuration + ", waiting. Press to stop NOW.";
-                nBuilder.setContentText(msg)
-                        .setProgress(sampsTargeted,sampsAcquired,false);
+                } else {
+                    if (haveSignal) {
+                        String msg = String.valueOf(sampsAcquired) + " of " + String.valueOf(sampsTargeted) + " points sampled. Tap to stop NOW.";
+                        nBuilder.setContentText(msg)
+                                .setProgress(sampsTargeted, sampsAcquired, false);
+                    } else {
+                        String msg = String.valueOf(sampsAcquired) + " points sampled. GPS signal lost for " + noSignalDuration + ", waiting. Tap to stop NOW.";
+                        nBuilder.setContentText(msg)
+                                .setProgress(sampsTargeted, sampsAcquired, false);
 
+                    }
+                }
+                // Issue notification
+                notifyMgr.notify(notificationId, nBuilder.build());
             }
         }
-
-        // Issue notification
-        int notificationId = 6789;
-        notifyMgr.notify(notificationId, nBuilder.build());
-    }
 
     /**
     * Cancels the notification
@@ -360,7 +429,7 @@ public class GpsAvgService extends IntentService {
     */
     public void cancelAvgNotify(NotificationManager notifyMgr) {
         //GPLog.addLogEntry("GPSAVG", "cancel notification called");
-    notifyMgr.cancel(6789);
+    notifyMgr.cancel(notificationId);
 
     }
 

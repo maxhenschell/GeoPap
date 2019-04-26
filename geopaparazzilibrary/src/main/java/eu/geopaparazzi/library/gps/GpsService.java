@@ -773,59 +773,62 @@ public class GpsService extends Service implements LocationListener, Listener {
             GPLog.addLogEntry("GPSSERVICE", msg);
         }
 
-        handleForegroundNotification(message, intent, status, lon, lat, elev, accuracy, speed, bearing, time, maxSatellites, satCount, satUsedInFixCount);
+        //handleForegroundNotification(message, intent, status, lon, lat, elev, accuracy, speed, bearing, time, maxSatellites, satCount, satUsedInFixCount);
 
         sendBroadcast(intent);
     }
 
     private void handleForegroundNotification(String message, Intent intent, int status, double lon, double lat, double elev, float accuracy, float speed, float bearing, long time, int maxSatellites, int satCount, int satUsedInFixCount) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(this, 0, intent, 0);
-            NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle("");
-            StringBuilder sb = getPositionInfo(message, status, lon, lat, elev, accuracy, speed, bearing, time, maxSatellites, satCount, satUsedInFixCount);
-            NotificationCompat.MessagingStyle.Message infoMessage = new NotificationCompat.MessagingStyle.Message(sb.toString(), time, "");
-            messagingStyle.setConversationTitle("GPS Information").addMessage(infoMessage);
-            if (notificationManagerNative == null) {
-                // Create the NotificationChannel, but only on API 26+ because
-                // the NotificationChannel class is new and not in the support library
 
-                int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-                channel.setDescription(description);
-                // Register the channel with the system
-                notificationManagerNative = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                if (notificationManagerNative != null) {
-                    notificationManagerNative.createNotificationChannel(channel);
+        // do nothing ... taken over by gps averaging see GpsAvgService.java
 
-                    Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                            .setContentTitle(title)
-                            .setContentText(text)
-                            .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
-                            .setContentIntent(pendingIntent)
-                            .setStyle(messagingStyle)
-                            .setOnlyAlertOnce(true)
-                            .setOngoing(true)
-                            .setWhen(System.currentTimeMillis())
-                            .build();
-                    notification.flags |= Notification.FLAG_ONLY_ALERT_ONCE;
-
-                    startForeground(notificationId, notification);
-                }
-            } else {
-                Notification update = new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setContentTitle(title)
-                        .setContentText(text)
-                        .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
-                        .setContentIntent(pendingIntent)
-                        .setStyle(messagingStyle)
-                        .setOnlyAlertOnce(true)
-                        .setOngoing(true)
-                        .setWhen(System.currentTimeMillis())
-                        .build();
-                notificationManagerNative.notify(notificationId, update);
-            }
-        }
+        //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            PendingIntent pendingIntent =
+//                    PendingIntent.getActivity(this, 0, intent, 0);
+//            NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle("");
+//            StringBuilder sb = getPositionInfo(message, status, lon, lat, elev, accuracy, speed, bearing, time, maxSatellites, satCount, satUsedInFixCount);
+//            NotificationCompat.MessagingStyle.Message infoMessage = new NotificationCompat.MessagingStyle.Message(sb.toString(), time, "");
+//            messagingStyle.setConversationTitle("GPS Information").addMessage(infoMessage);
+//            if (notificationManagerNative == null) {
+//                // Create the NotificationChannel, but only on API 26+ because
+//                // the NotificationChannel class is new and not in the support library
+//
+//                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+//                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+//                channel.setDescription(description);
+//                // Register the channel with the system
+//                notificationManagerNative = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//                if (notificationManagerNative != null) {
+//                    notificationManagerNative.createNotificationChannel(channel);
+//
+//                    Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                            .setContentTitle(title)
+//                            .setContentText(text)
+//                            .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
+//                            .setContentIntent(pendingIntent)
+//                            .setStyle(messagingStyle)
+//                            .setOnlyAlertOnce(true)
+//                            .setOngoing(true)
+//                            .setWhen(System.currentTimeMillis())
+//                            .build();
+//                    notification.flags |= Notification.FLAG_ONLY_ALERT_ONCE;
+//
+//                    //startForeground(notificationId, notification);
+//                }
+//            } else {
+//                Notification update = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                        .setContentTitle(title)
+//                        .setContentText(text)
+//                        .setSmallIcon(R.drawable.ic_stat_geopaparazzi_notification_icon)
+//                        .setContentIntent(pendingIntent)
+//                        .setStyle(messagingStyle)
+//                        .setOnlyAlertOnce(true)
+//                        .setOngoing(true)
+//                        .setWhen(System.currentTimeMillis())
+//                        .build();
+//                //notificationManagerNative.notify(notificationId, update);
+//            }
+//        }
     }
 
     @NonNull
